@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Select, Upload, message } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Select, Upload, message, Row, Col } from 'antd';
+import { UploadOutlined, DeleteOutlined } from '@ant-design/icons';
 import { addUser } from './userService';
 import { useNavigate } from 'react-router-dom';
 
@@ -8,128 +8,194 @@ const { Option } = Select;
 
 export default function TeacherForm() {
   const [form] = Form.useForm();
-  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarBase64, setAvatarBase64] = useState('');
+  const [uploadFileList, setUploadFileList] = useState([]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // convert file -> base64
+  const fileToBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+    });
+
+  const handleBeforeUpload = async (file) => {
+    try {
+      const b64 = await fileToBase64(file);
+      setAvatarBase64(b64);
+      setUploadFileList([{ uid: '-1', name: file.name, status: 'done', url: b64 }]);
+    } catch (err) {
+      message.error('Không thể đọc file ảnh');
+    }
+    // prevent default upload
+    return false;
+  };
+
+  const handleRemoveAvatar = () => {
+    setAvatarBase64('');
+    setUploadFileList([]);
+  };
+
+  // simple code generator (HS + timestamp). Nếu backend gán code thì bạn có thể bỏ phần này.
 
   const handleSave = async () => {
     try {
+      setLoading(true);
       const values = await form.validateFields();
 
-      const userToSave = {
-        ...values,
-        avatar: avatarFile ? URL.createObjectURL(avatarFile) : '',
+      const newUser = {
+        key: Date.now(),
+        code: values.code,
+        name: values.name,
+        dob: values.dob,
+        gender: values.gender,
+        address: values.address || '',
+        level: values.level || '',
+        class: values.class || '',
+        phone: values.phone || '',
+        email: values.email || '',
+        note: values.note || '',
+        username: values.username,
+        password: values.password,
         role: 'teacher',
+        avatar: avatarBase64 || '', // lưu base64 (hoặc empty)
       };
+      await addUser(newUser);
 
-      await addUser(userToSave);
-
-      message.success({
-        content: 'Thêm giáo viên thành công!',
-        duration: 1.5, // hiển thị 1.5s
-        onClose: () => {
-          form.resetFields();
-          setAvatarFile(null);
-          navigate('/user-mana'); // quay về trang danh sách người dùng
-        },
-      });
-    } catch (error) {
-      console.error('Validation failed:', error);
-      message.error('Không thể thêm giáo viên. Vui lòng kiểm tra lại.');
+      message.success('Thêm học sinh thành công!');
+      form.resetFields();
+      setAvatarBase64('');
+      setUploadFileList([]);
+      navigate('/user-mana');
+    } catch (err) {
+      console.error(err);
+      message.error('Không thể thêm học sinh. Vui lòng kiểm tra lại.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Form form={form} layout="horizontal" className="bg-white p-6 rounded-lg shadow-md max-w-4xl mx-auto">
-      <div className="grid grid-cols-2 gap-2">
-        {/* Cột thông tin cá nhân */}
-        <Form.Item label="Họ và tên" name="name" rules={[{ required: true, message: 'Nhập họ và tên' }]}>
-          <Input />
-        </Form.Item>
+    <Form
+      form={form}
+      layout="vertical"
+      className="bg-white p-6 rounded-lg shadow-md max-w-4xl mx-auto"
+      initialValues={{
+        studyStatus: 'Đang học',
+      }}
+    >
+      {/* Avatar row */}
+      <Row gutter={16} className="mb-4">
+        <Col xs={24} md={16}>
+          <div className="text-lg font-semibold mb-2">Thông tin học sinh</div>
+        </Col>
+        <Col xs={24} md={8} className="flex items-center justify-end">
+          <div>
+            <Upload accept="image/*" beforeUpload={handleBeforeUpload} showUploadList={false}>
+              <Button icon={<UploadOutlined />}>Ảnh đại diện</Button>
+            </Upload>
 
-        <Form.Item label="Ngày sinh" name="dob" rules={[{ required: true, message: 'Chọn ngày sinh' }]}>
-          <Input type="date" />
-        </Form.Item>
+            {uploadFileList.length > 0 && (
+              <div className="mt-2 flex items-center gap-2">
+                <img src={uploadFileList[0].url} alt="avatar" className="w-16 h-16 rounded-full object-cover border" />
+                <Button icon={<DeleteOutlined />} onClick={handleRemoveAvatar} size="small" danger>
+                  Xóa
+                </Button>
+              </div>
+            )}
+          </div>
+        </Col>
+      </Row>
 
-        <Form.Item label="Giới tính" name="gender" rules={[{ required: true, message: 'Chọn giới tính' }]}>
-          <Select placeholder="Chọn giới tính">
-            <Option value="Nam">Nam</Option>
-            <Option value="Nữ">Nữ</Option>
-          </Select>
-        </Form.Item>
+      {/* 2-column grid */}
+      <Row gutter={16}>
+        <Col xs={24} md={12}>
+          <Form.Item label="Họ và tên" name="name" rules={[{ required: true, message: 'Nhập họ và tên' }]}>
+            <Input />
+          </Form.Item>
 
-        <Form.Item label="Dân tộc" name="nation">
-          <Input />
-        </Form.Item>
+          <Form.Item label="Ngày sinh" name="dob" rules={[{ required: true, message: 'Chọn ngày sinh' }]}>
+            <Input type="date" />
+          </Form.Item>
 
-        <Form.Item label="CCCD" name="cccd">
-          <Input />
-        </Form.Item>
+          <Form.Item label="Giới tính" name="gender" rules={[{ required: true, message: 'Chọn giới tính' }]}>
+            <Select placeholder="Chọn giới tính">
+              <Option value="Nam">Nam</Option>
+              <Option value="Nữ">Nữ</Option>
+            </Select>
+          </Form.Item>
 
-        <Form.Item label="Địa chỉ" name="address">
-          <Input />
-        </Form.Item>
+          <Form.Item label="Email" name="email">
+            <Input />
+          </Form.Item>
+          <Form.Item label="Số điện thoại" name="phone">
+            <Input />
+          </Form.Item>
+        </Col>
 
-        {/* Cột thông tin công tác */}
-        <Form.Item label="Số điện thoại" name="phone">
-          <Input />
-        </Form.Item>
+        <Col xs={24} md={12}>
+          <Form.Item label="Mã số" name="code">
+            <Input />
+          </Form.Item>
 
-        <Form.Item label="Lớp học phụ trách" name="class">
-          <Input />
-        </Form.Item>
+          <Form.Item label="Địa chỉ" name="address">
+            <Input />
+          </Form.Item>
 
-        <Form.Item label="Trạng thái" name="studyStatus">
-          <Select placeholder="Chọn trạng thái">
-            <Option value="Đang công tác">Đang công tác</Option>
-            <Option value="Nghỉ công tác">Nghỉ công tác</Option>
-          </Select>
-        </Form.Item>
+          <Form.Item label="Khối" name="level">
+            <Input />
+          </Form.Item>
 
-        {/* Avatar */}
-        <Form.Item label="Avatar">
-          <Upload
-            beforeUpload={(file) => {
-              setAvatarFile(file);
-              return false; // không tự động upload
-            }}
-            showUploadList={true}
-          >
-            <Button icon={<UploadOutlined />}>Tải ảnh lên</Button>
-          </Upload>
-        </Form.Item>
+          <Form.Item label="Lớp học" name="class">
+            <Input />
+          </Form.Item>
+          <Form.Item label="Ghi chú" name="note">
+            <Input />
+          </Form.Item>
+        </Col>
+      </Row>
 
-        <Form.Item label="Ghi chú" name="note">
-          <Input />
-        </Form.Item>
-      </div>
+      {/* Account row */}
+      <div className="text-lg font-semibold mt-4 mb-2">Tài khoản</div>
+      <Row gutter={16}>
+        <Col xs={24} md={8}>
+          <Form.Item label="Tên đăng nhập" name="username" rules={[{ required: true, message: 'Nhập username' }]}>
+            <Input />
+          </Form.Item>
+        </Col>
 
-      {/* Tài khoản */}
-      <div className="grid grid-cols-3 gap-2 mt-2">
-        <Form.Item label="Tên đăng nhập" name="username" rules={[{ required: true, message: 'Nhập username' }]}>
-          <Input />
-        </Form.Item>
-        <Form.Item label="Mật khẩu" name="password" rules={[{ required: true, message: 'Nhập mật khẩu' }]}>
-          <Input.Password />
-        </Form.Item>
-        <Form.Item label="Phân quyền">
-          <Input value="Giáo viên" disabled />
-        </Form.Item>
-      </div>
+        <Col xs={24} md={8}>
+          <Form.Item label="Mật khẩu" name="password" rules={[{ required: true, message: 'Nhập mật khẩu' }]}>
+            <Input.Password />
+          </Form.Item>
+        </Col>
 
-      {/* Nút Lưu/Hủy */}
+        <Col xs={24} md={8}>
+          <Form.Item label="Phân quyền">
+            <Input value="Giáo viên" disabled />
+          </Form.Item>
+        </Col>
+      </Row>
+
+      {/* action buttons */}
       <div className="flex justify-end gap-3 mt-6">
-        <Button type="primary" onClick={handleSave}>
-          Lưu
-        </Button>
         <Button
           danger
           onClick={() => {
             form.resetFields();
-            setAvatarFile(null);
+            setAvatarBase64('');
+            setUploadFileList([]);
             navigate('/user-mana');
           }}
         >
           Hủy
+        </Button>
+
+        <Button type="primary" loading={loading} onClick={handleSave}>
+          Lưu
         </Button>
       </div>
     </Form>

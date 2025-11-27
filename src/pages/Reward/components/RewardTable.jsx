@@ -1,53 +1,29 @@
 import React, { useState } from 'react';
 import { Table, Tag, Button, Space, Input, Pagination, Image } from 'antd';
-import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined } from '@ant-design/icons';
+import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { getRewards, getRewardByKey, addReward, updateReward, deleteReward } from './RewardService';
+import { useNavigate } from 'react-router-dom';
 
 export default function RewardTable() {
-  const data = [
-    {
-      key: '1',
-      rewardCode: 'R001',
-      rewardName: 'Huy hiệu Vàng',
-      image: 'https://cdn-icons-png.flaticon.com/512/2583/2583311.png',
-      category: 'Huy hiệu',
-      quantity: 10,
-      condition: 'Hoàn thành 5 nhiệm vụ liên tiếp',
-      note: 'Phần thưởng danh dự cho người chăm chỉ',
-    },
-    {
-      key: '2',
-      rewardCode: 'R002',
-      rewardName: 'Xu học tập',
-      image: 'https://cdn-icons-png.flaticon.com/512/992/992651.png',
-      category: 'Tiền tệ',
-      quantity: 1000,
-      condition: 'Điểm tổng trên 400',
-      note: 'Có thể dùng để đổi vật phẩm trong shop',
-    },
-    {
-      key: '3',
-      rewardCode: 'R003',
-      rewardName: 'Cúp danh dự',
-      image: 'https://cdn-icons-png.flaticon.com/512/1821/1821652.png',
-      category: 'Danh hiệu',
-      quantity: 3,
-      condition: 'Đứng top 3 bảng xếp hạng tháng',
-      note: 'Cúp vinh danh học sinh xuất sắc',
-    },
-  ];
-
   const [inputSearchText, setInputSearchText] = useState('');
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
-
+  const [data, setData] = useState(getRewards());
+  const navigate = useNavigate();
   const filteredRewards = () => {
     if (!inputSearchText.trim()) return data;
     return data.filter((item) => item.rewardName.toLowerCase().includes(inputSearchText.toLowerCase()) || item.rewardCode.toLowerCase().includes(inputSearchText.toLowerCase()));
   };
 
-  const handleViewDetail = (reward) => {
-    console.log('Chi tiết phần thưởng:', reward);
+  const handleViewDetail = (record) => {
+    // Chuyển tới trang detail theo key của reward
+    navigate(`/reward-mana/detail/${record.key}`);
+  };
+
+  const handleDelete = (key) => {
+    deleteReward(key);
+    setData(getRewards()); // cập nhật lại data sau khi xóa
   };
 
   const columns = [
@@ -117,9 +93,8 @@ export default function RewardTable() {
       align: 'center',
       render: (_, record) => (
         <Space>
-          <Button type="primary" icon={<EyeOutlined />} onClick={() => handleViewDetail(record)}>
-            Xem
-          </Button>
+          <EyeOutlined style={{ color: '#1890ff', fontSize: '16px', cursor: 'pointer' }} onClick={() => handleViewDetail(record)} />
+          <DeleteOutlined style={{ color: '#ff4d4f', fontSize: '16px', cursor: 'pointer' }} onClick={() => handleDelete(record.key)} />
         </Space>
       ),
     },
@@ -136,17 +111,17 @@ export default function RewardTable() {
           <Button type="primary" icon={<FilterOutlined />} style={{ backgroundColor: '#1890ff' }} />
         </Space.Compact>
 
-        <Button
-          type="default"
-          icon={<FileExcelOutlined />}
-          style={{
-            backgroundColor: '#52c41a',
-            color: '#fff',
-            borderColor: '#52c41a',
-          }}
-        >
-          Xuất Excel
-        </Button>
+        <Space.Compact>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/reward-mana/add')}>
+            Thêm
+          </Button>
+          <Button danger icon={<DeleteOutlined />}>
+            Xóa
+          </Button>
+          <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }}>
+            Xuất Excel
+          </Button>
+        </Space.Compact>
       </div>
 
       <Table

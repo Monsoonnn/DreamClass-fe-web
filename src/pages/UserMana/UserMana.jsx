@@ -1,9 +1,22 @@
 import React from 'react';
-import { Breadcrumb } from 'antd';
-import { HomeOutlined, UserOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { Breadcrumb, Tabs } from 'antd';
+import { UserOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import UserTable from './components/UserTable';
 
 export default function UserMana() {
+  const tabItems = [
+    {
+      key: 'students',
+      label: 'Danh sách học sinh',
+      children: <UserTable filterRole="student" />,
+    },
+    {
+      key: 'teachers',
+      label: 'Danh sách giáo viên',
+      children: <UserTable filterRole="teacher" />,
+    },
+  ];
+
   return (
     <div className="flex flex-col min-h-screen bg-blue-50">
       <div className="flex flex-1">
@@ -30,8 +43,9 @@ export default function UserMana() {
               },
             ]}
           />
-          <div className=" shadow-md rounded-xl ">
-            <UserTable />
+
+          <div className="shadow-md bg-white rounded-xl p-3">
+            <Tabs defaultActiveKey="students" items={tabItems} />
           </div>
         </main>
       </div>

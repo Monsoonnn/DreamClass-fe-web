@@ -1,9 +1,9 @@
 import React from 'react';
 import { Breadcrumb } from 'antd';
-import { ReadOutlined, UnorderedListOutlined } from '@ant-design/icons';
-import MissionTable from './components/MissonTable';
+import { HomeOutlined, UserOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import BookTable from './components/BookTable';
 
-export default function MissonMana() {
+export default function StoreMana() {
   return (
     <div className="flex flex-col min-h-screen bg-blue-50">
       <div className="flex flex-1">
@@ -12,11 +12,11 @@ export default function MissonMana() {
             className="mb-4 text-sm"
             items={[
               {
-                href: '/mission-mana',
+                href: '/student-mana',
                 title: (
                   <>
-                    <ReadOutlined />
-                    <span>Quản lý nhiệm vụ</span>
+                    <UserOutlined />
+                    <span>Quản lý cửa hàng</span>
                   </>
                 ),
               },
@@ -24,14 +24,14 @@ export default function MissonMana() {
                 title: (
                   <>
                     <UnorderedListOutlined />
-                    <span className="font-semibold text-[#23408e]">Danh sách nhiệm vụ</span>
+                    <span className="font-semibold text-[#23408e]">Danh sách vật phẩm</span>
                   </>
                 ),
               },
             ]}
           />
           <div className=" shadow-md rounded-xl ">
-            <MissionTable />
+            <BookTable />
           </div>
         </main>
       </div>

@@ -1,0 +1,141 @@
+import React, { useEffect, useState } from 'react';
+import { Modal, Input, Button, Select, Switch, Form, message } from 'antd';
+import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { updateMission } from './MissionService';
+
+const { TextArea } = Input;
+
+export default function EditMissionModal({ visible, onClose, missionData, refreshMissions }) {
+  const [form] = Form.useForm();
+  const [isDailyQuest, setIsDailyQuest] = useState(false);
+  const [oldQuestId, setOldQuestId] = useState('');
+
+  useEffect(() => {
+    if (missionData) {
+      setIsDailyQuest(missionData.isDailyQuest);
+      setOldQuestId(missionData.questId); // lưu ID cũ
+
+      form.setFieldsValue({
+        questId: missionData.questId,
+        name: missionData.name,
+        rewardGold: missionData.rewardGold,
+        description: missionData.description,
+        isActive: missionData.isActive,
+        isDailyQuest: missionData.isDailyQuest,
+        dailyQuestType: missionData.dailyQuestType,
+        prerequisiteQuestIds: missionData.prerequisiteQuestIds,
+        steps: missionData.steps,
+      });
+    }
+  }, [missionData, form]);
+
+  const handleSubmit = (values) => {
+    const updatedData = {
+      ...values,
+      rewardGold: Number(values.rewardGold),
+      isActive: !!values.isActive,
+      isDailyQuest: !!values.isDailyQuest,
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Sử dụng oldQuestId để update
+    updateMission(oldQuestId, updatedData);
+
+    message.success('Cập nhật nhiệm vụ thành công!');
+    refreshMissions?.();
+    onClose();
+  };
+
+  return (
+    <Modal title="Chỉnh sửa nhiệm vụ" open={visible} onCancel={onClose} footer={null} width={800} destroyOnClose>
+      <Form layout="vertical" form={form} onFinish={handleSubmit}>
+        {/* Quest ID */}
+        <Form.Item label="Quest ID" name="questId">
+          <Input disabled />
+        </Form.Item>
+
+        {/* Tên Quest */}
+        <Form.Item label="Tên Quest" name="name" rules={[{ required: true, message: 'Vui lòng nhập tên nhiệm vụ' }]}>
+          <Input />
+        </Form.Item>
+
+        {/* Reward Gold */}
+        <Form.Item label="Reward Gold" name="rewardGold" rules={[{ required: true, message: 'Vui lòng nhập điểm thưởng' }]}>
+          <Input type="number" />
+        </Form.Item>
+
+        {/* Active */}
+        <Form.Item label="Active" name="isActive" valuePropName="checked">
+          <Switch />
+        </Form.Item>
+
+        {/* Loại Quest */}
+        <Form.Item label="Daily Quest" name="isDailyQuest" valuePropName="checked">
+          <Switch onChange={setIsDailyQuest} />
+        </Form.Item>
+
+        {/* Daily Type */}
+        <Form.Item label="Daily Type" name="dailyQuestType" rules={[{ required: isDailyQuest, message: 'Chọn loại Daily Quest' }]}>
+          <Select disabled={!isDailyQuest} placeholder="Chọn loại Daily Quest">
+            <Select.Option value="NPC_INTERACTION">NPC_INTERACTION</Select.Option>
+            <Select.Option value="DAILY_TASK">DAILY_TASK</Select.Option>
+          </Select>
+        </Form.Item>
+
+        {/* Mô tả */}
+        <Form.Item label="Mô tả" name="description" rules={[{ required: true, message: 'Vui lòng nhập mô tả' }]}>
+          <TextArea rows={4} />
+        </Form.Item>
+
+        {/* Prerequisite Quest IDs */}
+        <h3 className="mt-4">Prerequisite Quest IDs</h3>
+        <Form.Item label="Chọn nhiệm vụ yêu cầu trước" name="prerequisiteQuestIds">
+          <Select mode="multiple" placeholder="Chọn hoặc bỏ trống...">
+            {missionData.allMissions?.map((m) => (
+              <Select.Option key={m.questId} value={m.questId}>
+                {m.questId} — {m.name}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        {/* Steps */}
+        <h3 className="mt-4">Steps</h3>
+        <Form.List name="steps">
+          {(fields, { add, remove }) => (
+            <>
+              {fields.map(({ key, name, ...rest }) => (
+                <div key={key} className="border p-3 mb-2 rounded">
+                  <div className="flex justify-between items-center mb-2">
+                    <strong>Step {name + 1}</strong>
+                    <MinusCircleOutlined onClick={() => remove(name)} style={{ color: 'red', cursor: 'pointer' }} />
+                  </div>
+
+                  <Form.Item {...rest} label="Step ID" name={[name, 'stepId']} rules={[{ required: true, message: 'Nhập Step ID' }]}>
+                    <Input />
+                  </Form.Item>
+
+                  <Form.Item {...rest} label="Mô tả bước" name={[name, 'description']} rules={[{ required: true, message: 'Nhập mô tả bước' }]}>
+                    <Input />
+                  </Form.Item>
+                </div>
+              ))}
+
+              <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                Thêm bước
+              </Button>
+            </>
+          )}
+        </Form.List>
+
+        {/* Footer */}
+        <div className="flex justify-end mt-4 gap-2">
+          <Button onClick={onClose}>Hủy</Button>
+          <Button type="primary" htmlType="submit">
+            Lưu
+          </Button>
+        </div>
+      </Form>
+    </Modal>
+  );
+}

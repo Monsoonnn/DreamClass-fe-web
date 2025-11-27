@@ -102,8 +102,10 @@ export default function UserDetail() {
                 <Descriptions.Item label="Giới tính">{user.gender}</Descriptions.Item>
                 <Descriptions.Item label="Ngày sinh">{user.dob}</Descriptions.Item>
                 <Descriptions.Item label="Địa chỉ">{user.address}</Descriptions.Item>
+                <Descriptions.Item label="Khối">{user.level || '—'}</Descriptions.Item>
                 <Descriptions.Item label="Lớp">{user.class || '—'}</Descriptions.Item>
                 <Descriptions.Item label="Số điện thoại">{user.phone}</Descriptions.Item>
+                <Descriptions.Item label="Email">{user.email}</Descriptions.Item>
                 <Descriptions.Item label="Tài khoản">{user.username}</Descriptions.Item>
                 <Descriptions.Item label="Ghi chú">{user.note}</Descriptions.Item>
               </Descriptions>

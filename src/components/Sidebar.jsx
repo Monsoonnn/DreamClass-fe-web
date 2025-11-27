@@ -7,14 +7,16 @@ const teacherMenu = [
   { key: 'student', label: 'Quản lý học sinh', icon: <UserOutlined style={{ fontSize: 18 }} />, path: '/student-mana' },
   { key: 'mission', label: 'Quản lý nhiệm vụ', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/mission-mana' },
   { key: 'ranking', label: 'Quản lý ranking', icon: <TeamOutlined style={{ fontSize: 18 }} />, path: '/ranking-mana' },
-  { key: 'reward', label: 'Quản lý phần thưởng', icon: <HomeOutlined style={{ fontSize: 18 }} />, path: '/reward-mana' },
+  { key: 'book', label: 'Quản lý sách', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/book-mana' },
 ];
 
 // MENU CHO ADMIN
 const adminMenu = [
   { key: 'usermana', label: 'Quản lý người dùng', icon: <HomeOutlined style={{ fontSize: 18 }} />, path: '/user-mana' },
   { key: 'rankingserver', label: 'Quản lý Ranking Server', icon: <UserOutlined style={{ fontSize: 18 }} />, path: '/ranking-server' },
-  { key: 'store', label: 'Quản lý cửa hàng', icon: <TeamOutlined style={{ fontSize: 18 }} />, path: '/store-mana' },
+  { key: 'reward', label: 'Quản lý phần thưởng', icon: <HomeOutlined style={{ fontSize: 18 }} />, path: '/reward-mana' },
+  { key: 'mission', label: 'Quản lý nhiệm vụ', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/mission-mana' },
+  { key: 'book', label: 'Quản lý sách', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/book-mana' },
 ];
 
 export default function Sidebar() {

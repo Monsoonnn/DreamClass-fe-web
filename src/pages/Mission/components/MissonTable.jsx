@@ -1,133 +1,70 @@
-import React, { useState } from 'react';
-import { Table, Tag, Button, Space, Input, Pagination } from 'antd';
-import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined } from '@ant-design/icons';
+import React, { useState, useEffect } from 'react';
+import { Table, Tag, Button, Space, Input, Pagination, Popconfirm } from 'antd';
+import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { getMissions, deleteMission } from './MissionService';
+import EditMissionModal from './EditMissionModal';
+import { useNavigate } from 'react-router-dom';
 
 export default function MissionTable() {
-  // 🧩 Dữ liệu mẫu
-  const data = [
-    {
-      key: '1',
-      missionCode: 'Q001',
-      missionName: 'Ôn tập Toán chương 1',
-      createdAt: '2025-10-05',
-      type: 'Ôn tập',
-      reward: 50,
-      status: 'Bật',
-      note: 'Dành cho khối 10',
-    },
-    {
-      key: '2',
-      missionCode: 'Q002',
-      missionName: 'Bài kiểm tra Sinh học tuần 3',
-      createdAt: '2025-10-10',
-      type: 'Kiểm tra',
-      reward: 100,
-      status: 'Tắt',
-      note: 'Tạm dừng do cập nhật nội dung',
-    },
-    {
-      key: '3',
-      missionCode: 'Q003',
-      missionName: 'Học bài: Giải phương trình bậc hai',
-      createdAt: '2025-10-15',
-      type: 'Học tập',
-      reward: 75,
-      status: 'Bật',
-      note: 'Có video hướng dẫn',
-    },
-  ];
-
-  // 🧠 State quản lý bảng
+  const [missions, setMissions] = useState([]);
   const [inputSearchText, setInputSearchText] = useState('');
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
 
-  // 🔍 Lọc danh sách theo tìm kiếm
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [currentMission, setCurrentMission] = useState(null);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    setMissions(getMissions());
+  }, []);
+
   const filteredMissions = () => {
-    if (!inputSearchText.trim()) return data;
-    return data.filter((item) => item.missionName.toLowerCase().includes(inputSearchText.toLowerCase()) || item.missionCode.toLowerCase().includes(inputSearchText.toLowerCase()));
+    if (!inputSearchText.trim()) return missions;
+    return missions.filter((item) => item.name.toLowerCase().includes(inputSearchText.toLowerCase()) || item.questId.toLowerCase().includes(inputSearchText.toLowerCase()));
   };
 
-  // 👁 Xem chi tiết
-  const handleViewDetail = (mission) => {
-    console.log('Chi tiết nhiệm vụ:', mission);
+  const handleDelete = (record) => {
+    deleteMission(record.questId);
+    setMissions(getMissions());
+    setSelectedRowKeys([]);
   };
 
-  // 🧱 Cấu hình cột bảng
+  const refreshMissions = () => {
+    setMissions(getMissions());
+  };
+
   const columns = [
-    {
-      title: 'STT',
-      dataIndex: 'index',
-      key: 'index',
-      render: (_, __, index) => index + 1,
-      width: 70,
-      align: 'center',
-    },
-    {
-      title: 'Mã nhiệm vụ',
-      dataIndex: 'missionCode',
-      key: 'missionCode',
-      align: 'center',
-    },
-    {
-      title: 'Tên nhiệm vụ',
-      dataIndex: 'missionName',
-      key: 'missionName',
-      align: 'left',
-    },
-    {
-      title: 'Ngày tạo',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      align: 'center',
-    },
-    {
-      title: 'Loại quest',
-      dataIndex: 'type',
-      key: 'type',
-      align: 'center',
-      render: (type) => {
-        const color = type === 'Ôn tập' ? 'blue' : type === 'Học tập' ? 'green' : type === 'Kiểm tra' ? 'volcano' : 'default';
-        return <Tag color={color}>{type}</Tag>;
-      },
-    },
-    {
-      title: 'Điểm thưởng',
-      dataIndex: 'reward',
-      key: 'reward',
-      align: 'center',
-      render: (reward) => <Tag color="gold">{reward}</Tag>,
-    },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status',
-      align: 'center',
-      render: (status) => (status === 'Bật' ? <Tag color="green">Bật</Tag> : <Tag color="volcano">Tắt</Tag>),
-    },
-    {
-      title: 'Ghi chú',
-      dataIndex: 'note',
-      key: 'note',
-      align: 'left',
-      ellipsis: true,
-    },
+    { title: 'STT', render: (_, __, index) => index + 1, width: 70, align: 'center' },
+    { title: 'Mã nhiệm vụ', dataIndex: 'questId', align: 'center' },
+    { title: 'Tên nhiệm vụ', dataIndex: 'name' },
+    { title: 'Ngày tạo', dataIndex: 'createdAt', align: 'center' },
+    { title: 'Loại quest', dataIndex: 'dailyQuestType', align: 'center' },
+    { title: 'Điểm thưởng', dataIndex: 'rewardGold', align: 'center', render: (rewardGold) => <Tag color="gold">{rewardGold}</Tag> },
+    { title: 'Trạng thái', dataIndex: 'isActive', align: 'center', render: (isActive) => (isActive ? <Tag color="green">Bật</Tag> : <Tag color="volcano">Tắt</Tag>) },
     {
       title: 'Thao tác',
-      key: 'action',
       align: 'center',
       render: (_, record) => (
         <Space>
-          <Button type="primary" icon={<EyeOutlined />} onClick={() => handleViewDetail(record)}>
-            Xem
-          </Button>
+          <EyeOutlined style={{ color: 'green', cursor: 'pointer' }} onClick={() => navigate(`/mission-mana/view/${record.questId}`)} />
+          <EditOutlined
+            style={{ color: 'blue', cursor: 'pointer' }}
+            onClick={() => {
+              setCurrentMission(record);
+              setEditModalVisible(true);
+            }}
+          />
+          <Popconfirm title="Bạn có chắc muốn xoá?" onConfirm={() => handleDelete(record)} okText="Xóa" cancelText="Hủy">
+            <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
+          </Popconfirm>
         </Space>
       ),
     },
   ];
 
-  // 🖼 Render giao diện
   return (
     <div className="bg-white shadow-lg p-2">
       {/* Thanh công cụ */}
@@ -140,17 +77,17 @@ export default function MissionTable() {
           <Button type="primary" icon={<FilterOutlined />} style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }} />
         </Space.Compact>
 
-        <Button
-          type="default"
-          icon={<FileExcelOutlined />}
-          style={{
-            backgroundColor: '#52c41a',
-            color: '#fff',
-            borderColor: '#52c41a',
-          }}
-        >
-          Xuất Excel
-        </Button>
+        <Space.Compact>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/mission-mana/add')}>
+            Thêm
+          </Button>
+          <Button danger icon={<DeleteOutlined />}>
+            Xóa
+          </Button>
+          <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }}>
+            Xuất Excel
+          </Button>
+        </Space.Compact>
       </div>
 
       {/* Bảng dữ liệu */}
@@ -158,7 +95,7 @@ export default function MissionTable() {
         dataSource={filteredMissions().slice((currentPage - 1) * pageSize, currentPage * pageSize)}
         columns={columns}
         pagination={false}
-        rowKey="key"
+        rowKey="questId"
         rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
         scroll={{ x: 'max-content' }}
         size="small"
@@ -182,6 +119,16 @@ export default function MissionTable() {
           pageSizeOptions={['5', '10', '20', '50']}
         />
       </div>
+
+      {/* --- Edit Mission Modal --- */}
+      {editModalVisible && currentMission && (
+        <EditMissionModal
+          visible={editModalVisible}
+          onClose={() => setEditModalVisible(false)}
+          missionData={{ ...currentMission, allMissions: missions }}
+          refreshMissions={refreshMissions}
+        />
+      )}
     </div>
   );
 }

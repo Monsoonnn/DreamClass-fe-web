@@ -3,6 +3,7 @@ import { Select, Breadcrumb } from 'antd';
 import { HomeOutlined, UserOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import StudentForm from './StudentForm';
 import TeacherForm from './TeacherForm';
+import ImportStudent from './ImportStudent';
 
 export default function AddUserPage() {
   const [userType, setUserType] = useState(null);
@@ -13,6 +14,9 @@ export default function AddUserPage() {
         return <StudentForm />;
       case 'teacher':
         return <TeacherForm />;
+      case 'import-student':
+        return <ImportStudent onCancel={() => setUserType(null)} />;
+
       default:
         return <div className="text-center text-gray-500 mt-10 text-lg">Vui lòng chọn loại người dùng để tiếp tục</div>;
     }
@@ -50,15 +54,14 @@ export default function AddUserPage() {
         <Select
           placeholder="Chọn người dùng"
           onChange={(value) => setUserType(value)}
-          style={{ width: 200 }}
+          style={{ width: 250 }}
           options={[
             { value: 'student', label: 'Học sinh' },
             { value: 'teacher', label: 'Giáo viên' },
+            { value: 'import-student', label: 'Import học sinh từ Excel' },
           ]}
         />
       </div>
-
-      {/* FORM HIỂN THỊ Ở ĐÂY */}
       {renderForm()}
     </div>
   );
