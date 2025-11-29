@@ -3,6 +3,7 @@ import { Tabs, Spin, Breadcrumb } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
 import StudentInfo from './StudentInfo';
 import StudentLearning from './StudentLearning';
+import StudentAchievements from './StudentAchievements';
 import { getStudentById } from './StudentService';
 export default function StudentDetail() {
   const { id } = useParams();
@@ -51,6 +52,11 @@ export default function StudentDetail() {
               key: '2',
               label: 'Học tập',
               children: <StudentLearning student={student} />,
+            },
+            {
+              key: '3',
+              label: 'Thành tích',
+              children: <StudentAchievements student={student} />,
             },
           ]}
         />

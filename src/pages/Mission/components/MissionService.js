@@ -9,6 +9,7 @@ const initialData = [
     name: 'Làm quen với Mai',
     description: 'Mai là cô bạn thân thiện ngồi ở bàn đầu...',
     rewardGold: 100,
+    point: 50,
     prerequisiteQuestIds: [],
     steps: [{ stepId: 'S001', description: 'Nói chuyện với Mai' }],
     isActive: false,
@@ -22,6 +23,7 @@ const initialData = [
     name: 'Thực hành: Nhiệt lượng riêng của nước',
     description: 'Tiến hành đo nhiệt lượng để xác định nhiệt dung riêng...',
     rewardGold: 80,
+    point: 50,
     prerequisiteQuestIds: [],
     steps: [
       { stepId: 'S101', description: 'Lấy nước và đo khối lượng ban đầu...' },

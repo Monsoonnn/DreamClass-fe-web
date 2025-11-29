@@ -4,7 +4,7 @@ import { Descriptions, Tag, Card } from 'antd';
 export default function StudentInfo({ student }) {
   return (
     <Card
-      className="bg-white shadow border-0 w-full max-w-none"
+      className="bg-white  border-0 w-full max-w-none"
       styles={{
         body: { padding: 0 },
       }}
@@ -55,8 +55,10 @@ export default function StudentInfo({ student }) {
             <Descriptions.Item label="Giới tính">{student.gender}</Descriptions.Item>
             <Descriptions.Item label="Ngày sinh">{student.dob}</Descriptions.Item>
             <Descriptions.Item label="Địa chỉ">{student.address}</Descriptions.Item>
+            <Descriptions.Item label="Khối">{student.level || '—'}</Descriptions.Item>
             <Descriptions.Item label="Lớp">{student.class || '—'}</Descriptions.Item>
             <Descriptions.Item label="Số điện thoại">{student.phone}</Descriptions.Item>
+            <Descriptions.Item label="Email">{student.email}</Descriptions.Item>
             <Descriptions.Item label="Tài khoản">{student.username}</Descriptions.Item>
             <Descriptions.Item label="Ghi chú">{student.note}</Descriptions.Item>
           </Descriptions>

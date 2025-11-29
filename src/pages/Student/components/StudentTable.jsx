@@ -42,6 +42,12 @@ export default function StudentTable() {
       align: 'left',
     },
     {
+      title: 'Khối',
+      dataIndex: 'level',
+      key: 'level',
+      align: 'center',
+    },
+    {
       title: 'Lớp',
       dataIndex: 'class',
       key: 'class',
@@ -66,13 +72,7 @@ export default function StudentTable() {
       align: 'left',
       ellipsis: true,
     },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status',
-      align: 'center',
-      render: (status) => (status === 'Đang học' ? <Tag color="green">Đang học</Tag> : <Tag color="volcano">Nghỉ học</Tag>),
-    },
+
     {
       title: 'Ghi chú',
       dataIndex: 'note',

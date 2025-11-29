@@ -67,19 +67,17 @@ export default function MissionDetail() {
               <strong>Mô tả:</strong> {mission.description}
             </p>
             <p>
-              <strong>Loại quest:</strong> {mission.dailyQuestType}
+              <strong>Cách nhận quest:</strong> {mission.dailyQuestType}
             </p>
             <p>
-              <strong>Điều kiện:</strong> {mission.prerequisiteQuestIds.length > 0 ? mission.prerequisiteQuestIds.join(', ') : 'Không'}
+              <strong>Điều kiện tiên quyết:</strong> {mission.prerequisiteQuestIds.length > 0 ? mission.prerequisiteQuestIds.join(', ') : 'Không'}
             </p>
-            <p>
-              <strong>Trạng thái:</strong> {mission.isActive ? 'Bật' : 'Tắt'}
-            </p>
+
             <p>
               <strong>Điểm thưởng:</strong> {mission.rewardGold}
             </p>
             <p>
-              <strong>Daily Type:</strong> {mission.isDailyQuest ? 'True' : 'False'}
+              <strong>Có phải quest hàng ngày không:</strong> {mission.isDailyQuest ? 'Có' : 'Không'}
             </p>
             <p>
               <strong>Ngày tạo:</strong> {mission.createdAt?.slice(0, 10)}

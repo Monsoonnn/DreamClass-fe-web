@@ -20,7 +20,6 @@ export default function AddMission() {
       name: values.name,
       description: values.description,
       rewardGold: values.rewardGold,
-      isActive: values.isActive,
       dailyQuestType: values.dailyQuestType || '',
       isDailyQuest: values.isDailyQuest,
       prerequisiteQuestIds: values.prerequisiteQuestIds || [],
@@ -75,20 +74,16 @@ export default function AddMission() {
               <Input placeholder="Nhập tên nhiệm vụ..." />
             </Form.Item>
 
-            <Form.Item label="Reward Gold" name="rewardGold" rules={[{ required: true }]}>
+            <Form.Item label="Điểm thưởng" name="rewardGold" rules={[{ required: true }]}>
               <Input type="number" placeholder="Nhập điểm thưởng..." />
             </Form.Item>
 
-            <Form.Item label="Active" name="isActive" valuePropName="checked">
-              <Switch />
-            </Form.Item>
-
-            <Form.Item label="Loại Quest" name="isDailyQuest" valuePropName="checked">
+            <Form.Item label="Có phải quest hàng ngày không?" name="isDailyQuest" valuePropName="checked">
               <Switch onChange={setIsDailyQuest} />
             </Form.Item>
 
-            <Form.Item label="Daily Type" name="dailyQuestType" rules={[{ required: isDailyQuest }]}>
-              <Select placeholder="Chọn loại Daily Quest" disabled={!isDailyQuest}>
+            <Form.Item label="Cách nhận quest" name="dailyQuestType" rules={[{ required: isDailyQuest }]}>
+              <Select placeholder="Chọn loại cách nhận quest" disabled={!isDailyQuest}>
                 <Select.Option value="NPC_INTERACTION">NPC_INTERACTION</Select.Option>
                 <Select.Option value="DAILY_TASK">DAILY_TASK</Select.Option>
               </Select>
@@ -99,7 +94,7 @@ export default function AddMission() {
             </Form.Item>
 
             {/* II. Prerequisite Quest IDs */}
-            <h3 className="text-lg font-semibold mt-6 mb-2">II. Prerequisite Quest IDs</h3>
+            <h3 className="text-lg font-semibold mt-6 mb-2">II. Nhiệm vụ tiên quyết</h3>
             <hr className="mb-4" />
 
             <Form.Item label="Chọn nhiệm vụ yêu cầu trước" name="prerequisiteQuestIds">
@@ -113,7 +108,7 @@ export default function AddMission() {
             </Form.Item>
 
             {/* III. Steps */}
-            <h3 className="text-lg font-semibold mt-6 mb-2">III. Steps</h3>
+            <h3 className="text-lg font-semibold mt-6 mb-2">III. Các bước thực hiện</h3>
             <hr className="mb-4" />
 
             <Form.List name="steps">

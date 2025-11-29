@@ -42,14 +42,15 @@ export default function BookTable() {
       width: 70,
       render: (_, __, index) => (currentPage - 1) * pageSize + index + 1,
     },
-    {
-      title: 'Mã sách',
-      dataIndex: 'code',
-      align: 'center',
-    },
+
     {
       title: 'Tên sách',
       dataIndex: 'name',
+      align: 'center',
+    },
+    {
+      title: 'Nhà xuất bản',
+      dataIndex: 'category',
       align: 'center',
     },
     {

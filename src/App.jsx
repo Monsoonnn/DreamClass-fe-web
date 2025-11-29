@@ -20,10 +20,12 @@ import AddReward from './pages/Reward/components/AddReward';
 import RewardDetail from './pages/Reward/components/RewardDetail';
 import AddBook from './pages/BookMana/components/AddBook';
 
+import LandingPage from './pages/LandingPage/LandingPage';
 function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/landing" element={<LandingPage />} />
         {/* Route KHÔNG dùng layout */}
         <Route path="/" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />

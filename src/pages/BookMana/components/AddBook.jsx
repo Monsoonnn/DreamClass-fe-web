@@ -24,7 +24,6 @@ export default function AddBook() {
     setFileURL(url);
 
     const newBook = {
-      code: values.code,
       name: values.name,
       level: values.level,
       description: values.description,
@@ -43,10 +42,6 @@ export default function AddBook() {
     <div className="bg-white shadow-lg p-6 max-w-xl mx-auto">
       <h2 className="text-xl font-semibold mb-4">Thêm sách mới</h2>
       <Form form={form} layout="vertical" onFinish={handleSave}>
-        <Form.Item label="Mã sách" name="code" rules={[{ required: true, message: 'Nhập mã sách' }]}>
-          <Input placeholder="Nhập mã sách" />
-        </Form.Item>
-
         <Form.Item label="Tên sách" name="name" rules={[{ required: true, message: 'Nhập tên sách' }]}>
           <Input placeholder="Nhập tên sách" />
         </Form.Item>
@@ -58,8 +53,10 @@ export default function AddBook() {
             <Option value="12">12</Option>
           </Select>
         </Form.Item>
-
-        <Form.Item label="Mô tả" name="description">
+        <Form.Item label="Nhà xuất bản" name="category" rules={[{ required: true, message: 'Nhập tên nhà xuất bản' }]}>
+          <Input placeholder="Nhập tên nhà xuất bản" />
+        </Form.Item>
+        <Form.Item label="Mô tả" name="description" rules={[{ required: true, message: 'Nhập mô tả' }]}>
           <Input.TextArea rows={3} placeholder="Mô tả sách" />
         </Form.Item>
 

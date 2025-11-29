@@ -5,27 +5,28 @@ const STORAGE_KEY = 'books_data';
 const initialBooks = [
   {
     key: '1',
-    code: 'Book001',
     name: 'Sách vật lý 11',
     level: '11',
+    category: 'Kết nối tri thức',
     description: 'Sách lớp 11 học',
     note: '',
     filePath: '', // đường dẫn file
   },
   {
     key: '2',
-    code: 'Book002',
     name: 'Sách hóa 11',
     level: '11',
+    category: 'Chân trời sáng tạo',
+
     description: 'Sách lớp 11 học',
     note: '',
     filePath: '',
   },
   {
     key: '3',
-    code: 'Book003',
     name: 'Sách sinh học 11',
     level: '11',
+    category: 'Cánh diều',
     description: 'Sách lớp 11 học',
     note: '',
     filePath: '',

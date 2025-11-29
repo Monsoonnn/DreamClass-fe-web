@@ -20,7 +20,6 @@ export default function EditMissionModal({ visible, onClose, missionData, refres
         name: missionData.name,
         rewardGold: missionData.rewardGold,
         description: missionData.description,
-        isActive: missionData.isActive,
         isDailyQuest: missionData.isDailyQuest,
         dailyQuestType: missionData.dailyQuestType,
         prerequisiteQuestIds: missionData.prerequisiteQuestIds,
@@ -33,7 +32,6 @@ export default function EditMissionModal({ visible, onClose, missionData, refres
     const updatedData = {
       ...values,
       rewardGold: Number(values.rewardGold),
-      isActive: !!values.isActive,
       isDailyQuest: !!values.isDailyQuest,
       updatedAt: new Date().toISOString(),
     };
@@ -49,6 +47,7 @@ export default function EditMissionModal({ visible, onClose, missionData, refres
   return (
     <Modal title="Chỉnh sửa nhiệm vụ" open={visible} onCancel={onClose} footer={null} width={800} destroyOnClose>
       <Form layout="vertical" form={form} onFinish={handleSubmit}>
+        <h3 className="font-semibold">I. Thông tin nhiệm vụ</h3>
         {/* Quest ID */}
         <Form.Item label="Quest ID" name="questId">
           <Input disabled />
@@ -60,22 +59,17 @@ export default function EditMissionModal({ visible, onClose, missionData, refres
         </Form.Item>
 
         {/* Reward Gold */}
-        <Form.Item label="Reward Gold" name="rewardGold" rules={[{ required: true, message: 'Vui lòng nhập điểm thưởng' }]}>
+        <Form.Item label="Điểm thưởng" name="rewardGold" rules={[{ required: true, message: 'Vui lòng nhập điểm thưởng' }]}>
           <Input type="number" />
         </Form.Item>
 
-        {/* Active */}
-        <Form.Item label="Active" name="isActive" valuePropName="checked">
-          <Switch />
-        </Form.Item>
-
         {/* Loại Quest */}
-        <Form.Item label="Daily Quest" name="isDailyQuest" valuePropName="checked">
+        <Form.Item label="Có phải quest hàng ngày không?" name="isDailyQuest" valuePropName="checked">
           <Switch onChange={setIsDailyQuest} />
         </Form.Item>
 
         {/* Daily Type */}
-        <Form.Item label="Daily Type" name="dailyQuestType" rules={[{ required: isDailyQuest, message: 'Chọn loại Daily Quest' }]}>
+        <Form.Item label="Cách nhận quest" name="dailyQuestType" rules={[{ required: isDailyQuest, message: 'Chọn loại Daily Quest' }]}>
           <Select disabled={!isDailyQuest} placeholder="Chọn loại Daily Quest">
             <Select.Option value="NPC_INTERACTION">NPC_INTERACTION</Select.Option>
             <Select.Option value="DAILY_TASK">DAILY_TASK</Select.Option>
@@ -88,7 +82,7 @@ export default function EditMissionModal({ visible, onClose, missionData, refres
         </Form.Item>
 
         {/* Prerequisite Quest IDs */}
-        <h3 className="mt-4">Prerequisite Quest IDs</h3>
+        <h3 className="mt-2 font-bold">II. Nhiệm vụ tiên quyết</h3>
         <Form.Item label="Chọn nhiệm vụ yêu cầu trước" name="prerequisiteQuestIds">
           <Select mode="multiple" placeholder="Chọn hoặc bỏ trống...">
             {missionData.allMissions?.map((m) => (
@@ -100,14 +94,14 @@ export default function EditMissionModal({ visible, onClose, missionData, refres
         </Form.Item>
 
         {/* Steps */}
-        <h3 className="mt-4">Steps</h3>
+        <h3 className="mt-2 font-semibold">II. Các bước thực hiện</h3>
         <Form.List name="steps">
           {(fields, { add, remove }) => (
             <>
               {fields.map(({ key, name, ...rest }) => (
                 <div key={key} className="border p-3 mb-2 rounded">
                   <div className="flex justify-between items-center mb-2">
-                    <strong>Step {name + 1}</strong>
+                    <strong>Bước {name + 1}</strong>
                     <MinusCircleOutlined onClick={() => remove(name)} style={{ color: 'red', cursor: 'pointer' }} />
                   </div>
 

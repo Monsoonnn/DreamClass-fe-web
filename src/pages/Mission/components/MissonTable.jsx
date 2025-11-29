@@ -42,8 +42,8 @@ export default function MissionTable() {
     { title: 'Tên nhiệm vụ', dataIndex: 'name' },
     { title: 'Ngày tạo', dataIndex: 'createdAt', align: 'center' },
     { title: 'Loại quest', dataIndex: 'dailyQuestType', align: 'center' },
-    { title: 'Điểm thưởng', dataIndex: 'rewardGold', align: 'center', render: (rewardGold) => <Tag color="gold">{rewardGold}</Tag> },
-    { title: 'Trạng thái', dataIndex: 'isActive', align: 'center', render: (isActive) => (isActive ? <Tag color="green">Bật</Tag> : <Tag color="volcano">Tắt</Tag>) },
+    { title: 'Vàng', dataIndex: 'rewardGold', align: 'center', render: (rewardGold) => <Tag color="gold">{rewardGold}</Tag> },
+    { title: 'Điểm thưởng', dataIndex: 'point', align: 'center', render: (point) => <Tag color="blue">{point}</Tag> },
     {
       title: 'Thao tác',
       align: 'center',

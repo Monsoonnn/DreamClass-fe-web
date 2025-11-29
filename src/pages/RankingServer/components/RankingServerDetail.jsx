@@ -5,6 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import UserInfo from '../../UserMana/components/UserInfo';
 import UserLearning from '../../Student/components/StudentLearning';
 import { getUsers } from '../../UserMana/components/userService';
+import UserAchievements from '../../UserMana/components/UserAchievements';
 
 export default function RankingServerDetail() {
   const { id } = useParams();
@@ -77,6 +78,11 @@ export default function RankingServerDetail() {
               key: '2',
               label: 'Học tập',
               children: <UserLearning student={user} />, // giữ tên student nếu UserLearning vẫn dùng student
+            },
+            {
+              key: '3',
+              label: 'Thành tích',
+              children: <UserAchievements user={user} />, // giữ tên student nếu UserLearning vẫn dùng student
             },
           ]}
         />
