@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Input, Pagination, message, Popconfirm } from 'antd';
 import { EditOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { loadBooks, getBookByKey, deleteBook } from './BookService';
+import BookEdit from './BookEdit';
 import { useNavigate } from 'react-router-dom';
 
 export default function BookTable() {
@@ -12,6 +13,8 @@ export default function BookTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const navigate = useNavigate();
+  const [editingKey, setEditingKey] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   // Load dữ liệu khi component mount
   useEffect(() => {
@@ -24,8 +27,13 @@ export default function BookTable() {
     return books.filter((book) => book.name.toLowerCase().includes(searchText.toLowerCase()) || book.code.toLowerCase().includes(searchText.toLowerCase()));
   };
 
-  // Xem chi tiết sách
-
+  const handleEdit = (record) => {
+    setEditingKey(record.key);
+    setIsModalVisible(true);
+  };
+  const refreshBooks = () => {
+    setBooks(loadBooks());
+  };
   // Xóa sách
   const handleDelete = (record) => {
     deleteBook(record.key); // xóa trong localStorage
@@ -87,7 +95,7 @@ export default function BookTable() {
       align: 'center',
       render: (_, record) => (
         <Space>
-          <EditOutlined style={{ color: 'blue', cursor: 'pointer' }} />
+          <EditOutlined style={{ color: 'blue', cursor: 'pointer' }} onClick={() => handleEdit(record)} />
           <Popconfirm title="Bạn có chắc muốn xoá?" onConfirm={() => handleDelete(record)} okText="Xóa" cancelText="Hủy">
             <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
           </Popconfirm>
@@ -145,6 +153,7 @@ export default function BookTable() {
           pageSizeOptions={['5', '10', '20', '50']}
         />
       </div>
+      <BookEdit visible={isModalVisible} onClose={() => setIsModalVisible(false)} bookKey={editingKey} onUpdate={refreshBooks} />
     </div>
   );
 }

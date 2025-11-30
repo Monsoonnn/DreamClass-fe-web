@@ -26,6 +26,7 @@ export default function AddBook() {
     const newBook = {
       name: values.name,
       level: values.level,
+      category: values.category,
       description: values.description,
       note: values.note,
       filePath: url, // lưu URL để click mở

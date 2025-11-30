@@ -77,7 +77,7 @@ function App() {
           <Route
             path="/book-mana/add"
             element={
-              <RoleRoute allowedRoles={['admin']}>
+              <RoleRoute allowedRoles={['teacher', 'admin']}>
                 <AddBook />
               </RoleRoute>
             }
