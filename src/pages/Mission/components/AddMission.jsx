@@ -20,6 +20,7 @@ export default function AddMission() {
       name: values.name,
       description: values.description,
       rewardGold: values.rewardGold,
+      point: values.point,
       dailyQuestType: values.dailyQuestType || '',
       isDailyQuest: values.isDailyQuest,
       prerequisiteQuestIds: values.prerequisiteQuestIds || [],
@@ -31,7 +32,7 @@ export default function AddMission() {
     addMission(newMission);
 
     message.success('Thêm nhiệm vụ thành công!');
-    navigate('/missions');
+    navigate('/mission-mana');
   };
 
   return (
@@ -74,7 +75,10 @@ export default function AddMission() {
               <Input placeholder="Nhập tên nhiệm vụ..." />
             </Form.Item>
 
-            <Form.Item label="Điểm thưởng" name="rewardGold" rules={[{ required: true }]}>
+            <Form.Item label="Nhập vàng" name="rewardGold" rules={[{ required: true }]}>
+              <Input type="number" placeholder="Nhập vàng..." />
+            </Form.Item>
+            <Form.Item label="Điểm thưởng" name="point" rules={[{ required: true }]}>
               <Input type="number" placeholder="Nhập điểm thưởng..." />
             </Form.Item>
 
