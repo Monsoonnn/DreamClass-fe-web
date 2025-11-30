@@ -13,14 +13,14 @@ export default function Header() {
     if (user) setUsername(user);
   }, []);
 
-  const notifications = [
-    { id: 1, message: 'Thông báo hệ thống 1' },
-    { id: 2, message: 'Thông báo hệ thống 2' },
-  ];
+  // const notifications = [
+  //   { id: 1, message: 'Thông báo hệ thống 1' },
+  //   { id: 2, message: 'Thông báo hệ thống 2' },
+  // ];
   const handleLogout = () => {
     Cookies.remove('token');
     Cookies.remove('username');
-    navigate('/');
+    navigate('/login');
   };
 
   const menuItems = [
@@ -33,12 +33,12 @@ export default function Header() {
     },
   ];
 
-  const notificationMenu = {
-    items: notifications.map((noti) => ({
-      key: noti.id,
-      label: noti.message,
-    })),
-  };
+  // const notificationMenu = {
+  //   items: notifications.map((noti) => ({
+  //     key: noti.id,
+  //     label: noti.message,
+  //   })),
+  // };
 
   const capitalizeName = (name) => {
     return name
@@ -53,11 +53,11 @@ export default function Header() {
 
       <div className="flex items-center space-x-4 text-base font-normal capitalize">
         {/* Thông báo */}
-        <Dropdown menu={notificationMenu} placement="bottomRight" arrow trigger={['click']} getPopupContainer={() => document.body}>
+        {/* <Dropdown menu={notificationMenu} placement="bottomRight" arrow trigger={['click']} getPopupContainer={() => document.body}>
           <Badge count={notifications.length} size="small" offset={[-2, 2]}>
             <BellFilled className="text-lg cursor-pointer" style={{ color: '#23408e' }} />
           </Badge>
-        </Dropdown>
+        </Dropdown> */}
 
         {/* Thông tin người dùng */}
         <Dropdown menu={{ items: menuItems }} placement="bottomRight" arrow getPopupContainer={() => document.body}>

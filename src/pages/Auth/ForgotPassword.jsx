@@ -22,7 +22,7 @@ export default function ForgotPassword() {
             className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-400"
           />
 
-          <button className="w-full bg-[#23408E] text-white py-2 rounded-lg font-semibold hover:bg-[#304d9b] transition duration-200" onClick={() => navigate('/')}>
+          <button className="w-full bg-[#23408E] text-white py-2 rounded-lg font-semibold hover:bg-[#304d9b] transition duration-200" onClick={() => navigate('/login')}>
             THAY ĐỔI MẬT KHẨU
           </button>
         </div>

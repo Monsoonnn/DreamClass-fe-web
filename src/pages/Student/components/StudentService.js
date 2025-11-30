@@ -7,7 +7,7 @@ const STORAGE_KEY = 'students_list';
 const sampleStudents = [
   {
     key: '1',
-    code: 'HS001',
+    studentCode: 'HS001',
     name: 'Nguyễn Văn A',
     dob: '2008-08-12',
     gender: 'Nam',
@@ -30,7 +30,7 @@ const sampleStudents = [
 
   {
     key: '2',
-    code: 'HS002',
+    studentCode: 'HS002',
     name: 'Trần Thị B',
     dob: '2009-03-21',
     gender: 'Nữ',
@@ -52,7 +52,7 @@ const sampleStudents = [
   },
   {
     key: '3',
-    code: 'HS003',
+    studentCode: 'HS003',
     name: 'Trần Thị Học Sinh',
     dob: '2009-03-21',
     gender: 'Nữ',
@@ -74,7 +74,7 @@ const sampleStudents = [
   },
   {
     key: '4',
-    code: 'HS004',
+    studentCode: 'HS004',
     name: 'Lê Thị Học Sinh',
     dob: '2009-01-21',
     gender: 'Nữ',

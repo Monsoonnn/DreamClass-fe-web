@@ -1,54 +1,189 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import ProtectedRoute from './components/ProtectedRoute';
+import RoleRoute from './components/RoleRoute';
 import Login from './pages/Auth/Login';
 import ForgotPassword from './pages/Auth/ForgotPassword';
 import Layout from './components/Layout';
 import StudentMana from './pages/Student/StudentMana';
 import StudentDetail from './pages/Student/components/StudentDetail';
-import MissonMana from './pages/Mission/MissionMana';
+import MissionMana from './pages/Mission/MissionMana';
+import MissionDetail from './pages/Mission/components/MissionDetail';
+import AddMission from './pages/Mission/components/AddMission';
 import RankingMana from './pages/Ranking/RankingMana';
 import RankingDetail from './pages/Ranking/components/RankingDetail';
 import RewardMana from './pages/Reward/RewardMana';
+import RewardDetail from './pages/Reward/components/RewardDetail';
+import AddReward from './pages/Reward/components/AddReward';
 import UserMana from './pages/UserMana/UserMana';
 import AddUser from './pages/UserMana/components/AddUser';
 import UserDetail from './pages/UserMana/components/UserDetail';
 import RankingServer from './pages/RankingServer/RankingServer';
 import RankingServerDetail from './pages/RankingServer/components/RankingServerDetail';
 import BookMana from './pages/BookMana/BookMana';
-import MissionDetail from './pages/Mission/components/MissionDetail';
-import AddMission from './pages/Mission/components/AddMission';
-import AddReward from './pages/Reward/components/AddReward';
-import RewardDetail from './pages/Reward/components/RewardDetail';
 import AddBook from './pages/BookMana/components/AddBook';
-
 import LandingPage from './pages/LandingPage/LandingPage';
+
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Trang công khai */}
         <Route path="/" element={<LandingPage />} />
-        {/* Route KHÔNG dùng layout */}
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        {/* Route DÙNG layout */}
-        <Route element={<Layout />}>
-          <Route path="/student-mana" element={<StudentMana />} />
-          <Route path="/student-mana/view/:id" element={<StudentDetail />} />
-          <Route path="/mission-mana" element={<MissonMana />} />
-          <Route path="/mission-mana/view/:questId" element={<MissionDetail />} />
-          <Route path="/mission-mana/add" element={<AddMission />} />
-          <Route path="/ranking-mana" element={<RankingMana />} />
-          <Route path="/ranking-mana/view/:id" element={<RankingDetail />} />
-          <Route path="/reward-mana" element={<RewardMana />} />
-          <Route path="/reward-mana/add" element={<AddReward />} />
-          <Route path="/reward-mana/detail/:key" element={<RewardDetail />} />
-          <Route path="/user-mana" element={<UserMana />} />
-          <Route path="/user-mana/add" element={<AddUser />} />
-          <Route path="/user-mana/view/:id" element={<UserDetail />} />
-          <Route path="/ranking-server" element={<RankingServer />} />
-          <Route path="/ranking-server/view/:id" element={<RankingServerDetail />} />
-          <Route path="/book-mana" element={<BookMana />} />
-          <Route path="/book-mana/add" element={<AddBook />} />
+        {/* Layout + bảo vệ đăng nhập */}
+        <Route
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          {/* -------- GIÁO VIÊN + ADMIN (chung) -------- */}
+          <Route
+            path="/mission-mana"
+            element={
+              <RoleRoute allowedRoles={['teacher', 'admin']}>
+                <MissionMana />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="/mission-mana/view/:questId"
+            element={
+              <RoleRoute allowedRoles={['teacher', 'admin']}>
+                <MissionDetail />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="/mission-mana/add"
+            element={
+              <RoleRoute allowedRoles={['admin']}>
+                <AddMission />
+              </RoleRoute>
+            }
+          />
+
+          <Route
+            path="/book-mana"
+            element={
+              <RoleRoute allowedRoles={['teacher', 'admin']}>
+                <BookMana />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="/book-mana/add"
+            element={
+              <RoleRoute allowedRoles={['admin']}>
+                <AddBook />
+              </RoleRoute>
+            }
+          />
+
+          {/* -------- CHỈ GIÁO VIÊN -------- */}
+          <Route
+            path="/student-mana"
+            element={
+              <RoleRoute allowedRoles={['teacher']}>
+                <StudentMana />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="/student-mana/view/:id"
+            element={
+              <RoleRoute allowedRoles={['teacher']}>
+                <StudentDetail />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="/ranking-mana"
+            element={
+              <RoleRoute allowedRoles={['teacher']}>
+                <RankingMana />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="/ranking-mana/view/:id"
+            element={
+              <RoleRoute allowedRoles={['teacher']}>
+                <RankingDetail />
+              </RoleRoute>
+            }
+          />
+
+          {/* -------- CHỈ ADMIN -------- */}
+          <Route
+            path="/reward-mana"
+            element={
+              <RoleRoute allowedRoles={['admin']}>
+                <RewardMana />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="/reward-mana/add"
+            element={
+              <RoleRoute allowedRoles={['admin']}>
+                <AddReward />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="/reward-mana/detail/:key"
+            element={
+              <RoleRoute allowedRoles={['admin']}>
+                <RewardDetail />
+              </RoleRoute>
+            }
+          />
+
+          <Route
+            path="/user-mana"
+            element={
+              <RoleRoute allowedRoles={['admin']}>
+                <UserMana />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="/user-mana/add"
+            element={
+              <RoleRoute allowedRoles={['admin']}>
+                <AddUser />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="/user-mana/view/:id"
+            element={
+              <RoleRoute allowedRoles={['admin']}>
+                <UserDetail />
+              </RoleRoute>
+            }
+          />
+
+          <Route
+            path="/ranking-server"
+            element={
+              <RoleRoute allowedRoles={['admin']}>
+                <RankingServer />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="/ranking-server/view/:id"
+            element={
+              <RoleRoute allowedRoles={['admin']}>
+                <RankingServerDetail />
+              </RoleRoute>
+            }
+          />
         </Route>
       </Routes>
     </Router>
