@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { loginAPI } from '../../services/authService';
 import { message, Modal, Spin } from 'antd';
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
@@ -11,6 +11,20 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user.role === 'teacher') navigate('/student-mana');
+        else if (user.role === 'admin') navigate('/user-mana');
+        else navigate('/');
+      } catch (e) {
+        console.error("Error parsing user from local storage", e);
+      }
+    }
+  }, [navigate]);
+
   const handleLogin = async () => {
     if (!email || !password) {
       message.warning('Vui lòng nhập tài khoản và mật khẩu!');
@@ -21,15 +35,16 @@ export default function Login() {
 
     try {
       const res = await loginAPI(email, password);
-      const user = res.data.data;
+      const user = res.data.data; // Assuming user object is in data.data
+      
+      // Token is handled by HttpOnly cookie from server.
+      // We only store non-sensitive user info for UI rendering and client-side routing checks.
+      if (user) {
+          localStorage.setItem('role', user.role);
+          localStorage.setItem('user', JSON.stringify(user));
+          localStorage.setItem('username', user.username || email);
+      }
 
-      // We are not using localStorage for auth state as requested.
-      // Session cookie (HttpOnly) is handled by the browser.
-      
-      // If you need the role for UI logic, you might need to fetch it, 
-      // or store JUST the role in localStorage (if permitted by user "don't store AUTH in LS").
-      // Assuming we proceed without storing user object for auth checks.
-      
       message.success('Đăng nhập thành công!');
 
       if (user.role === 'teacher') navigate('/student-mana');

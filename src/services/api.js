@@ -4,7 +4,7 @@ const API_BASE_URL = process.env.NODE_ENV === 'development' ? '/api' : 'https://
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true,
+  withCredentials: true, // Important: Enable sending cookies with requests
   headers: {
     'Content-Type': 'application/json',
   },
@@ -16,10 +16,8 @@ apiClient.interceptors.request.use(
     console.log('=== API REQUEST ===');
     console.log('URL:', config.url);
     console.log('Method:', config.method);
-    console.log('Params:', config.params);
-    console.log('Request Headers:', config.headers);
-    console.log('WithCredentials:', config.withCredentials);
-    console.log('(Cookie sẽ được browser tự động gửi nếu withCredentials=true)');
+    // No need to attach token manually, browser handles HttpOnly cookies
+    console.log('Headers:', config.headers);
     console.log('===================');
     return config;
   },
@@ -31,13 +29,16 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => {
     console.log('Response Status:', response.status);
-    console.log('Response Headers:', response.headers);
     return response;
   },
   (error) => {
     console.error('API Error:', error.response?.status, error.message);
     if (error.response && error.response.status === 401) {
-      // Redirect to login on 401 Unauthorized
+      // Unauthorized: Clear UI state and redirect to login
+      // We can't clear the HttpOnly cookie from JS, but we should clear our client-side user state
+      localStorage.removeItem('user');
+      localStorage.removeItem('role');
+      localStorage.removeItem('username');
       window.location.href = '/login';
     }
     return Promise.reject(error);

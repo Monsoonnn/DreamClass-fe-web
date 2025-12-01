@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Dropdown, Button, Badge, message } from 'antd';
-import { DownOutlined, LogoutOutlined, BellFilled } from '@ant-design/icons';
-import Cookies from 'js-cookie';
+import { Dropdown, Button, message } from 'antd';
+import { DownOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { logoutAPI } from '../services/authService';
 
@@ -10,40 +9,31 @@ export default function Header() {
   const [username, setUsername] = useState('');
 
   useEffect(() => {
-    const user = Cookies.get('username');
-    if (user) setUsername(user);
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+        try {
+            const user = JSON.parse(userStr);
+            setUsername(user.username || user.name || '');
+        } catch (e) {
+            console.error("Error parsing user from local storage", e);
+        }
+    } else {
+        const savedUsername = localStorage.getItem('username');
+        if (savedUsername) setUsername(savedUsername);
+    }
   }, []);
 
-  // const notifications = [
-  //   { id: 1, message: 'Thông báo hệ thống 1' },
-  //   { id: 2, message: 'Thông báo hệ thống 2' },
-  // ];
   const handleLogout = async () => {
     try {
-      // Gửi API logout để xóa cookie trên server
-      await logoutAPI();
-      console.log('✓ Logout successful - connect.sid cleared on server');
-
-      // Xóa cookies và localStorage trên client
-      Cookies.remove('token');
-      Cookies.remove('username');
-      Cookies.remove('connect.sid');
-      Cookies.remove('isAuthenticated'); // Remove the new isAuthenticated cookie
-      localStorage.removeItem('user');
-      localStorage.removeItem('role');
-
-      message.success('Đăng xuất thành công');
-      navigate('/login');
+      await logoutAPI(); 
     } catch (error) {
-      console.error('✗ Logout error:', error);
-      message.error('Lỗi khi đăng xuất');
-      // Xóa cookies và localStorage trên client dù có lỗi
-      Cookies.remove('token');
-      Cookies.remove('username');
-      Cookies.remove('connect.sid'); // Ensure this is also removed on error
-      Cookies.remove('isAuthenticated'); // Remove the new isAuthenticated cookie on error
-      localStorage.removeItem('user');
+      console.error('Logout API error (ignoring):', error);
+    } finally {
+      // Clear UI state. HttpOnly cookie is cleared by server response to logoutAPI
       localStorage.removeItem('role');
+      localStorage.removeItem('user');
+      localStorage.removeItem('username');
+      message.success('Đăng xuất thành công');
       navigate('/login');
     }
   };
@@ -58,14 +48,8 @@ export default function Header() {
     },
   ];
 
-  // const notificationMenu = {
-  //   items: notifications.map((noti) => ({
-  //     key: noti.id,
-  //     label: noti.message,
-  //   })),
-  // };
-
   const capitalizeName = (name) => {
+    if (!name) return '';
     return name
       .split(' ')
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
@@ -77,13 +61,6 @@ export default function Header() {
       <span className="ml-2">HỆ THỐNG QUẢN LÝ</span>
 
       <div className="flex items-center space-x-4 text-base font-normal capitalize">
-        {/* Thông báo */}
-        {/* <Dropdown menu={notificationMenu} placement="bottomRight" arrow trigger={['click']} getPopupContainer={() => document.body}>
-          <Badge count={notifications.length} size="small" offset={[-2, 2]}>
-            <BellFilled className="text-lg cursor-pointer" style={{ color: '#23408e' }} />
-          </Badge>
-        </Dropdown> */}
-
         {/* Thông tin người dùng */}
         <Dropdown menu={{ items: menuItems }} placement="bottomRight" arrow getPopupContainer={() => document.body}>
           <Button type="text" className="text-[#23408e] font-medium lowercase flex items-center">
