@@ -36,6 +36,10 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     console.error('API Error:', error.response?.status, error.message);
+    if (error.response && error.response.status === 401) {
+      // Redirect to login on 401 Unauthorized
+      window.location.href = '/login';
+    }
     return Promise.reject(error);
   }
 );

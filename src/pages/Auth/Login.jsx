@@ -1,9 +1,8 @@
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { loginAPI } from '../../services/authService';
 import { message, Modal, Spin } from 'antd';
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
-import Cookies from 'js-cookie'; // Import js-cookie to read cookies
 
 export default function Login() {
   const navigate = useNavigate();
@@ -11,22 +10,6 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    // Check for the presence of a non-HttpOnly cookie named 'isAuthenticated'
-    const isAuthenticated = Cookies.get('isAuthenticated');
-    if (isAuthenticated) {
-      // Assuming a simple boolean isAuthenticated.
-      // If you need role-based redirection here, your backend should either:
-      // 1. Include role in the isAuthenticated cookie itself (e.g., as a JWT)
-      // 2. Set another non-HttpOnly cookie with the role
-      // 3. Or you might still rely on localStorage for the role after successful login
-      const role = localStorage.getItem('role'); // Fallback to localStorage for role, or adapt if role is in cookie
-      if (role === 'teacher') navigate('/student-mana');
-      else if (role === 'admin') navigate('/user-mana');
-      else navigate('/');
-    }
-  }, [navigate]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -40,12 +23,13 @@ export default function Login() {
       const res = await loginAPI(email, password);
       const user = res.data.data;
 
-      // Backend must set 'isAuthenticated' cookie here (non-HttpOnly)
-      // and potentially 'role' cookie or ensure localStorage is used for role
-
-      localStorage.setItem('user', JSON.stringify(user)); // Still good for user data
-      localStorage.setItem('role', user.role); // Keep for role-based redirects
-
+      // We are not using localStorage for auth state as requested.
+      // Session cookie (HttpOnly) is handled by the browser.
+      
+      // If you need the role for UI logic, you might need to fetch it, 
+      // or store JUST the role in localStorage (if permitted by user "don't store AUTH in LS").
+      // Assuming we proceed without storing user object for auth checks.
+      
       message.success('Đăng nhập thành công!');
 
       if (user.role === 'teacher') navigate('/student-mana');
