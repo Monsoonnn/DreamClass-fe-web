@@ -56,12 +56,38 @@ export default function AddMission() {
       console.log('Creating quest with payload:', payload);
 
       const res = await apiClient.post('/quests/admin/templates', payload);
+      const createdQuest = res.data?.data;
 
-      console.log('Quest created successfully:', res.data);
+      console.log('Quest created successfully:', createdQuest);
       message.success('Thêm nhiệm vụ thành công!');
 
+      // Step 2: Assign quest to all players
+      if (createdQuest?.questId) {
+        console.log('Assigning quest to all players:', createdQuest.questId);
+        try {
+          const assignRes = await apiClient.post('/quests/admin/assign', {
+            questIds: [createdQuest.questId],
+          });
+
+          console.log('Quest assignment completed:', assignRes.data);
+
+          const assignData = assignRes.data?.data;
+          if (assignData) {
+            const totalPlayers = assignData.totalPlayers || 0;
+            const totalQuests = assignData.totalQuests || 0;
+            const successCount = assignData.assignments?.[0]?.success?.length || 0;
+            const failedCount = assignData.assignments?.[0]?.failed?.length || 0;
+
+            message.success(`Gán nhiệm vụ cho ${totalPlayers} người dùng thành công! (Thành công: ${successCount}, Thất bại: ${failedCount})`);
+          }
+        } catch (assignErr) {
+          console.warn('Quest assignment failed (non-critical):', assignErr.message);
+          message.warning('Thêm nhiệm vụ thành công, nhưng gán cho người dùng thất bại. Vui lòng gán thủ công.');
+        }
+      }
+
       form.resetFields();
-      setTimeout(() => navigate('/mission-mana'), 1000);
+      setTimeout(() => navigate('/mission-mana'), 1500);
     } catch (err) {
       console.error('Error creating quest:', err.response?.status, err.message);
       message.error(err.response?.data?.message || 'Lỗi khi thêm nhiệm vụ');

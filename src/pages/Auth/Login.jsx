@@ -27,7 +27,6 @@ export default function Login() {
       // Lưu thông tin user/role vào localStorage để dùng điều hướng
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('role', user.role);
-
       message.success('Đăng nhập thành công!');
 
       // Điều hướng theo role
