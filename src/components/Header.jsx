@@ -1,41 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Dropdown, Button, message } from 'antd';
 import { DownOutlined, LogoutOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
-import { logoutAPI } from '../services/authService';
+import { useAuth } from '../context/AuthContext';
 
 export default function Header() {
-  const navigate = useNavigate();
-  const [username, setUsername] = useState('');
-
-  useEffect(() => {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-        try {
-            const user = JSON.parse(userStr);
-            setUsername(user.username || user.name || '');
-        } catch (e) {
-            console.error("Error parsing user from local storage", e);
-        }
-    } else {
-        const savedUsername = localStorage.getItem('username');
-        if (savedUsername) setUsername(savedUsername);
-    }
-  }, []);
+  const { user, logout } = useAuth();
 
   const handleLogout = async () => {
-    try {
-      await logoutAPI(); 
-    } catch (error) {
-      console.error('Logout API error (ignoring):', error);
-    } finally {
-      // Clear UI state. HttpOnly cookie is cleared by server response to logoutAPI
-      localStorage.removeItem('role');
-      localStorage.removeItem('user');
-      localStorage.removeItem('username');
-      message.success('Đăng xuất thành công');
-      navigate('/login');
-    }
+    await logout();
+    message.success('Đăng xuất thành công');
+    // Redirection is handled by ProtectedRoute (redirects to /login when user becomes null)
   };
 
   const menuItems = [
@@ -55,6 +29,8 @@ export default function Header() {
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(' ');
   };
+
+  const username = user?.username || user?.name || '';
 
   return (
     <header className="h-12 flex items-center justify-between px-5 bg-white border-b border-gray-200 shadow text-[#23408e] font-bold tracking-wide uppercase">

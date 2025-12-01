@@ -1,29 +1,18 @@
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import { loginAPI } from '../../services/authService';
+import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { message, Modal, Spin } from 'antd';
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth(); // Use login from AuthContext
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        if (user.role === 'teacher') navigate('/student-mana');
-        else if (user.role === 'admin') navigate('/user-mana');
-        else navigate('/');
-      } catch (e) {
-        console.error("Error parsing user from local storage", e);
-      }
-    }
-  }, [navigate]);
+  // Note: Redirection for already logged-in users is now handled by the PublicRoute wrapper in App.jsx
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -34,22 +23,14 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await loginAPI(email, password);
-      const user = res.data.data; // Assuming user object is in data.data
-      
-      // Token is handled by HttpOnly cookie from server.
-      // We only store non-sensitive user info for UI rendering and client-side routing checks.
-      if (user) {
-          localStorage.setItem('role', user.role);
-          localStorage.setItem('user', JSON.stringify(user));
-          localStorage.setItem('username', user.username || email);
-      }
+      // Use context login which handles state update
+      await login(email, password);
 
       message.success('Đăng nhập thành công!');
-
-      if (user.role === 'teacher') navigate('/student-mana');
-      else if (user.role === 'admin') navigate('/user-mana');
-      else navigate('/');
+      
+      // Prompt requested explicit redirect to /dashboard
+      navigate('/user-mana');
+      
     } catch (err) {
       message.error('Sai tài khoản hoặc mật khẩu!');
       console.error('Login error:', err);

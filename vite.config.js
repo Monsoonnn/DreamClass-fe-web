@@ -10,6 +10,7 @@ export default defineConfig({
         target: 'https://vr-be.onrender.com',
         changeOrigin: true,
         secure: false,
+        cookieDomainRewrite: "", // Rewrite cookie domain to current domain (localhost)
         rewrite: (path) => path,
         ws: true,
         configure: (proxy, options) => {

@@ -1,19 +1,17 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-export default function ProtectedRoute({ children }) {
+export default function PublicRoute({ children }) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    // You can replace this with a proper Loading Spinner component
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
 
-  if (!user) {
-    // Redirect to login if not authenticated
-    return <Navigate to="/login" replace />;
+  if (user) {
+    // If already logged in, redirect to user-mana
+    return <Navigate to="/user-mana" replace />;
   }
 
-  // If children are provided, render them; otherwise use Outlet
   return children ? children : <Outlet />;
 }
