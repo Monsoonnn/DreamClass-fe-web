@@ -9,21 +9,28 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false); // trạng thái loading
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    setLoading(true); // Bắt đầu loading
-    try {
-      const res = await loginAPI(email, password);
+    if (!email || !password) {
+      message.warning('Vui lòng nhập tài khoản và mật khẩu!');
+      return;
+    }
 
+    setLoading(true);
+
+    try {
+      // Gọi API login, với session cookie được gửi tự động
+      const res = await loginAPI(email, password);
       const user = res.data.data;
 
+      // Lưu thông tin user/role vào localStorage để dùng điều hướng
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('role', user.role);
-      localStorage.setItem('token', 'true');
 
       message.success('Đăng nhập thành công!');
 
+      // Điều hướng theo role
       if (user.role === 'teacher') navigate('/student-mana');
       else if (user.role === 'admin') navigate('/user-mana');
       else navigate('/');
@@ -31,7 +38,7 @@ export default function Login() {
       message.error('Sai tài khoản hoặc mật khẩu!');
       console.error('Login error:', err);
     } finally {
-      setLoading(false); // Kết thúc loading
+      setLoading(false);
     }
   };
 
@@ -53,7 +60,7 @@ export default function Login() {
         <p className="text-center text-gray-500 mb-8">Xin chào! Vui lòng đăng nhập</p>
 
         <div className="space-y-4">
-          {/* EMAIL INPUT */}
+          {/* Email input */}
           <input
             type="text"
             placeholder="Nhập tài khoản"
@@ -63,7 +70,7 @@ export default function Login() {
             className="w-full px-4 py-2 border border-gray-300 rounded-lg"
           />
 
-          {/* PASSWORD INPUT + EYE ICON */}
+          {/* Password input */}
           <div className="relative">
             <input
               type={showPassword ? 'text' : 'password'}

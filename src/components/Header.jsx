@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Dropdown, Button, Badge } from 'antd';
+import { Dropdown, Button, Badge, message } from 'antd';
 import { DownOutlined, LogoutOutlined, BellFilled } from '@ant-design/icons';
 import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
+import { logoutAPI } from '../services/authService';
 
 export default function Header() {
   const navigate = useNavigate();
@@ -17,10 +18,27 @@ export default function Header() {
   //   { id: 1, message: 'Thông báo hệ thống 1' },
   //   { id: 2, message: 'Thông báo hệ thống 2' },
   // ];
-  const handleLogout = () => {
-    Cookies.remove('token');
-    Cookies.remove('username');
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      // Gửi API logout để xóa cookie trên server
+      await logoutAPI();
+      console.log('✓ Logout successful - connect.sid cleared on server');
+
+      // Xóa cookies trên client
+      Cookies.remove('token');
+      Cookies.remove('username');
+      Cookies.remove('connect.sid');
+
+      message.success('Đăng xuất thành công');
+      navigate('/login');
+    } catch (error) {
+      console.error('✗ Logout error:', error);
+      message.error('Lỗi khi đăng xuất');
+      // Xóa cookies trên client dù có lỗi
+      Cookies.remove('token');
+      Cookies.remove('username');
+      navigate('/login');
+    }
   };
 
   const menuItems = [

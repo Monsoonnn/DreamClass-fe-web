@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Tag, Button, Space, Input, Pagination, Avatar, Popconfirm } from 'antd';
+import { Table, Tag, Button, Space, Input, Pagination, Avatar, Popconfirm, message } from 'antd';
 import { EyeOutlined, EditOutlined, DeleteOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { getUsers, deleteUser } from './userService';
+import { apiClient } from '../../../services/api';
 
 export default function UserTable({ filterRole }) {
   const [data, setData] = useState([]);
@@ -10,12 +11,39 @@ export default function UserTable({ filterRole }) {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
+  const [status, setStatus] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    setData(getUsers());
-  }, []);
+  // --- Fetch dữ liệu từ API ---
+  const fetchPlayers = async () => {
+    setLoading(true);
+    try {
+      const response = await apiClient.get('/players/admin/players', {
+        params: {
+          page: 1, // luôn lấy tất cả dữ liệu backend
+          limit: 1000, // hoặc số lượng tối đa bạn muốn load
+          search: inputSearchText,
+          status: status,
+        },
+      });
 
+      console.log('Players API Response:', response.data);
+      setData(response.data.data || response.data);
+    } catch (error) {
+      console.error('Error fetching players:', error);
+      message.error('Không thể tải dữ liệu từ server. Sử dụng dữ liệu tạm thời.');
+      setData(getUsers());
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPlayers();
+  }, [inputSearchText, status]);
+
+  // --- Filter theo role và search ---
   const filteredList = () => {
     let list = data;
     if (filterRole) {
@@ -25,42 +53,57 @@ export default function UserTable({ filterRole }) {
       list = list.filter(
         (item) =>
           item.name.toLowerCase().includes(inputSearchText.toLowerCase()) ||
-          item.code.toLowerCase().includes(inputSearchText.toLowerCase()) ||
-          item.username.toLowerCase().includes(inputSearchText.toLowerCase())
+          item.code?.toLowerCase().includes(inputSearchText.toLowerCase()) ||
+          item.username?.toLowerCase().includes(inputSearchText.toLowerCase())
       );
     }
-
     return list;
   };
 
+  // --- Delete ---
   const handleDelete = (record) => {
-    deleteUser(record.key);
-    setData(getUsers());
-    setSelectedRowKeys([]);
+    const id = record.playerId || record._id || record.key;
+    try {
+      deleteUser(id);
+      message.success('Xóa thành công');
+      fetchPlayers(); // refresh data từ API
+      setSelectedRowKeys([]);
+    } catch (err) {
+      console.warn('Delete failed', id, err);
+      message.error('Xóa thất bại');
+    }
   };
 
   const renderRole = (role) => (role === 'teacher' ? <Tag color="blue">Giáo viên</Tag> : <Tag color="green">Học sinh</Tag>);
 
   const columns = [
-    { title: 'STT', key: 'index', align: 'center', render: (_, __, index) => index + 1 },
-    { title: 'Mã số', dataIndex: 'code', key: 'code', align: 'center' },
+    { title: 'STT', key: 'index', align: 'center', render: (_, __, index) => (currentPage - 1) * pageSize + index + 1 },
     { title: 'Avatar', dataIndex: 'avatar', key: 'avatar', align: 'center', render: (avatar) => <Avatar src={avatar} className="w-10 h-10 rounded-full" /> },
     { title: 'Họ tên', dataIndex: 'name', key: 'name', align: 'center' },
     { title: 'Giới tính', dataIndex: 'gender', key: 'gender', align: 'center' },
-    { title: 'Ngày sinh', dataIndex: 'dob', key: 'dob', align: 'center' },
+    {
+      title: 'Ngày sinh',
+      dataIndex: 'dateOfBirth',
+      key: 'dateOfBirth',
+      align: 'center',
+      render: (date) => {
+        if (!date) return '-';
+        const d = new Date(date);
+        return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+      },
+    },
     { title: 'Địa chỉ', dataIndex: 'address', key: 'address', align: 'center' },
     { title: 'Tài khoản', dataIndex: 'username', key: 'username', align: 'center' },
     { title: 'Phân loại', dataIndex: 'role', key: 'role', align: 'center', render: renderRole },
-    { title: 'Ghi chú', dataIndex: 'note', key: 'note', ellipsis: true, align: 'center' },
+    { title: 'Ghi chú', dataIndex: 'notes', key: 'notes', ellipsis: true, align: 'center' },
     {
       title: 'Thao tác',
       key: 'action',
       align: 'center',
       render: (_, record) => (
         <Space>
-          <EyeOutlined style={{ color: 'green', cursor: 'pointer' }} onClick={() => navigate(`/user-mana/view/${record.key}`)} />
-
-          <EditOutlined style={{ color: 'blue', cursor: 'pointer' }} onClick={() => console.log('Sửa:', record)} />
+          <EyeOutlined style={{ color: 'green', cursor: 'pointer' }} onClick={() => navigate(`/user-mana/view/${record.playerId || record._id || record.key}`)} />
+          {/* <EditOutlined style={{ color: 'blue', cursor: 'pointer' }} onClick={() => console.log('Sửa:', record)} /> */}
           <Popconfirm title="Bạn có chắc muốn xoá?" onConfirm={() => handleDelete(record)} okText="Xóa" cancelText="Hủy">
             <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
           </Popconfirm>
@@ -69,12 +112,15 @@ export default function UserTable({ filterRole }) {
     },
   ];
 
+  // --- Slice dữ liệu theo phân trang frontend ---
+  const paginatedData = filteredList().slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   return (
     <div className="bg-white p-3">
       <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
         <Space.Compact className="w-full max-w-xl">
           <Input placeholder="Nhập tìm kiếm..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 240 }} />
-          <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}>
+          <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }} onClick={() => setCurrentPage(1)}>
             Tìm
           </Button>
           <Button type="primary" icon={<FilterOutlined />} style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }} />
@@ -95,14 +141,15 @@ export default function UserTable({ filterRole }) {
 
       <div className="w-full overflow-auto">
         <Table
-          dataSource={filteredList().slice((currentPage - 1) * pageSize, currentPage * pageSize)}
+          dataSource={paginatedData}
           columns={columns}
           pagination={false}
-          rowKey="key"
+          rowKey={(record) => record.playerId || record._id || record.key}
           rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
           scroll={{ x: 'max-content' }}
           bordered
           size="small"
+          loading={loading}
         />
       </div>
 

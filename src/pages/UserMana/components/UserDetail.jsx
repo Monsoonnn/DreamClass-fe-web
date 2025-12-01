@@ -4,6 +4,7 @@ import { Card, Descriptions, Tag, Button, Spin, message, Breadcrumb } from 'antd
 import { ArrowLeftOutlined, HomeOutlined } from '@ant-design/icons';
 import { getUsers } from './userService';
 import UserUpdate from './UserUpdate';
+import { apiClient } from '../../../services/api';
 
 export default function UserDetail() {
   const { id } = useParams();
@@ -13,17 +14,62 @@ export default function UserDetail() {
   const [openUpdate, setOpenUpdate] = useState(false);
 
   useEffect(() => {
-    const list = getUsers();
-    const found = list.find((u) => String(u.key) === String(id));
+    const fetchUser = async () => {
+      setLoading(true);
+      try {
+        console.log('Fetching player by id:', id);
+        const res = await apiClient.get(`/players/admin/players/${id}`);
+        console.log('Player detail response:', res.data);
 
-    if (!found) {
-      message.error('Không tìm thấy người dùng!');
-      setTimeout(() => navigate('/user-mana'), 1200);
-      return;
-    }
+        const payload = res.data?.data || null;
+        if (!payload) {
+          message.error('Không tìm thấy người dùng!');
+          setTimeout(() => navigate('/user-mana'), 1200);
+          return;
+        }
 
-    setUser(found);
-    setLoading(false);
+        // Normalize API fields to the UI fields used below
+        const normalized = {
+          _id: payload._id,
+          name: payload.name,
+          playerId: payload.playerId,
+          email: payload.email,
+          role: payload.role,
+          gold: payload.gold,
+          isVerified: payload.isVerified,
+          createdAt: payload.createdAt,
+          updatedAt: payload.updatedAt,
+          avatar: payload.avatar,
+          username: payload.username,
+          address: payload.address,
+          class: payload.className || payload.class,
+          level: payload.grade || payload.level,
+          dob: payload.dateOfBirth ? new Date(payload.dateOfBirth).toLocaleDateString() : payload.dateOfBirth,
+          dateOfBirth: payload.dateOfBirth,
+          gender: payload.gender,
+          note: payload.notes || payload.note,
+          phone: payload.phone,
+          points: payload.points,
+          status: payload.status,
+          raw: payload,
+        };
+
+        setUser(normalized);
+      } catch (err) {
+        console.error('Error fetching player detail:', err.response?.status, err.message);
+        if (err.response?.status === 401) {
+          message.error('Chưa đăng nhập hoặc hết hạn phiên. Vui lòng đăng nhập lại.');
+          setTimeout(() => navigate('/login'), 800);
+        } else {
+          message.error('Lỗi khi tải thông tin người dùng');
+          setTimeout(() => navigate('/user-mana'), 1200);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) fetchUser();
   }, [id]);
 
   if (loading)
@@ -62,8 +108,6 @@ export default function UserDetail() {
               <img src={user.avatar || '/avatar-default.png'} alt="avatar" className="w-24 h-24 rounded-full border-2 border-blue-200 object-cover shadow mb-2" />
 
               <div className="text-xl font-bold text-[#23408e] leading-tight">{user.name}</div>
-
-              <div className="text-sm text-gray-500">Mã số: {user.code}</div>
 
               <Tag
                 color={user.role === 'teacher' ? 'blue' : 'green'}
@@ -133,9 +177,11 @@ export default function UserDetail() {
         open={openUpdate}
         onClose={() => setOpenUpdate(false)}
         userData={user}
-        onUpdated={() => {
-          const newData = getUsers().find((u) => u.key === user.key);
-          setUser(newData);
+        onUpdated={(updatedUser) => {
+          setUser({
+            ...user,
+            ...updatedUser,
+          });
         }}
       />
     </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Select, Button, Upload, Avatar, Row, Col } from 'antd';
+import { Modal, Form, Input, Select, Button, Upload, Avatar, Row, Col, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
-import { updateUser } from './userService';
+import { apiClient } from '../../../services/api';
 
 const { Option } = Select;
 
@@ -19,7 +19,10 @@ export default function UserUpdate({ open, onClose, userData, onUpdated }) {
 
   useEffect(() => {
     if (open && userData) {
-      form.setFieldsValue(userData);
+      form.setFieldsValue({
+        ...userData,
+        dob: userData.dateOfBirth?.split('T')[0] || userData.dob,
+      });
       setAvatarPreview(userData.avatar);
     }
   }, [open, userData]);
@@ -27,12 +30,34 @@ export default function UserUpdate({ open, onClose, userData, onUpdated }) {
   const handleUpdate = async () => {
     try {
       const values = await form.validateFields();
-      const updated = { ...values, avatar: avatarPreview };
 
-      updateUser(userData.key, updated);
-      onUpdated();
+      const payload = {
+        name: values.name,
+        username: values.username,
+        email: values.email,
+
+        avatar: avatarPreview || userData.avatar,
+
+        className: values.class || values.className || '',
+        grade: values.level || values.grade || '',
+        gender: values.gender,
+        dateOfBirth: values.dob || values.dateOfBirth,
+        address: values.address || '',
+        phone: values.phone || '',
+        notes: values.note || values.notes || '',
+      };
+
+      const identifier = userData.playerId || userData._id;
+      const res = await apiClient.put(`/players/admin/players/${identifier}`, payload);
+
+      message.success('Cập nhật thành công!');
+
+      onUpdated(res.data?.data || payload);
       onClose();
-    } catch (error) {}
+    } catch (err) {
+      console.error(err);
+      message.error('Cập nhật thất bại!');
+    }
   };
 
   return (
@@ -53,9 +78,8 @@ export default function UserUpdate({ open, onClose, userData, onUpdated }) {
           </Upload>
         </div>
 
-        {/* 2 Cột Form */}
+        {/* 2 cột form */}
         <Row gutter={16}>
-          {/* Cột trái */}
           <Col span={12}>
             <Form.Item label="Họ tên" name="name" rules={[{ required: true }]}>
               <Input />
@@ -81,12 +105,7 @@ export default function UserUpdate({ open, onClose, userData, onUpdated }) {
             </Form.Item>
           </Col>
 
-          {/* Cột phải */}
           <Col span={12}>
-            <Form.Item label="Mã số" name="code">
-              <Input />
-            </Form.Item>
-
             <Form.Item label="Số điện thoại" name="phone">
               <Input />
             </Form.Item>
@@ -105,17 +124,10 @@ export default function UserUpdate({ open, onClose, userData, onUpdated }) {
           </Col>
         </Row>
 
-        {/* Ghi chú */}
         <Form.Item label="Ghi chú" name="note">
           <Input />
         </Form.Item>
 
-        {/* Quyền/Role */}
-        <Form.Item label="Loại người dùng" name="role" rules={[{ required: true }]}>
-          <Input disabled />
-        </Form.Item>
-
-        {/* Footer */}
         <div className="flex justify-end gap-2 mt-4">
           <Button onClick={onClose}>Hủy</Button>
           <Button type="primary" onClick={handleUpdate}>
