@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getMissions } from './MissionService';
-import { Button, Breadcrumb } from 'antd';
+import { Button, Breadcrumb, Spin, message } from 'antd';
 import { ReadOutlined, UnorderedListOutlined } from '@ant-design/icons';
-import EditMissionModal from './EditMissionModal'; // import modal
+import EditMissionModal from './EditMissionModal';
+import { apiClient } from '../../../services/api';
 
 export default function MissionDetail() {
   const { questId } = useParams();
@@ -11,20 +12,83 @@ export default function MissionDetail() {
   const [mission, setMission] = useState(null);
   const [allMissions, setAllMissions] = useState([]);
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const data = getMissions();
-    const found = data.find((item) => item.questId === questId);
-    setMission(found);
-    setAllMissions(data); // lưu tất cả nhiệm vụ để chọn prerequisite
+    if (questId) {
+      fetchMissionDetail();
+    }
   }, [questId]);
 
-  const refreshMission = () => {
-    const data = getMissions();
-    const updated = data.find((item) => item.questId === questId);
-    setMission(updated);
-    setAllMissions(data);
+  const fetchMissionDetail = async () => {
+    setLoading(true);
+    try {
+      console.log('Fetching mission detail for questId:', questId);
+      const res = await apiClient.get(`/quests/admin/templates/${questId}`);
+      console.log('Mission detail response:', res.data);
+
+      const missionData = res.data?.data || null;
+      if (!missionData) {
+        message.error('Không tìm thấy nhiệm vụ');
+        setTimeout(() => navigate('/mission-mana'), 1200);
+        return;
+      }
+
+      setMission(missionData);
+
+      // Fetch all missions for prerequisite selection
+      fetchAllMissions();
+    } catch (err) {
+      console.error('Error fetching mission detail:', err.response?.status, err.message);
+      if (err.response?.status === 401) {
+        message.error('Chưa đăng nhập. Vui lòng đăng nhập lại.');
+        setTimeout(() => navigate('/login'), 800);
+      } else {
+        message.error('Lỗi khi tải thông tin nhiệm vụ');
+        setTimeout(() => navigate('/mission-mana'), 1200);
+      }
+      // Fallback to mock data
+      const data = getMissions();
+      const found = data.find((item) => item.questId === questId);
+      setMission(found);
+      setAllMissions(data);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const fetchAllMissions = async () => {
+    try {
+      const res = await apiClient.get('/quests/admin/templates');
+      const allData = res.data?.data || [];
+      setAllMissions(allData);
+    } catch (err) {
+      console.warn('Could not fetch all missions for prerequisite selection:', err.message);
+      // Fallback
+      setAllMissions(getMissions());
+    }
+  };
+
+  const refreshMission = () => {
+    fetchMissionDetail();
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '—';
+    try {
+      return new Date(dateStr).toLocaleDateString('vi-VN');
+    } catch {
+      return dateStr;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   if (!mission) return <div className="p-6">Không tìm thấy nhiệm vụ</div>;
 
@@ -74,16 +138,19 @@ export default function MissionDetail() {
             </p>
 
             <p>
-              <strong>Điểm thưởng:</strong> {mission.rewardGold}
+              <strong>Vàng:</strong> {mission.rewardGold}
+            </p>
+            <p>
+              <strong>Điểm thưởng:</strong> {mission.point}
             </p>
             <p>
               <strong>Có phải quest hàng ngày không:</strong> {mission.isDailyQuest ? 'Có' : 'Không'}
             </p>
             <p>
-              <strong>Ngày tạo:</strong> {mission.createdAt?.slice(0, 10)}
+              <strong>Ngày tạo:</strong> {formatDate(mission.createdAt)}
             </p>
             <p>
-              <strong>Ngày cập nhật:</strong> {mission.updatedAt?.slice(0, 10)}
+              <strong>Ngày cập nhật:</strong> {formatDate(mission.updatedAt)}
             </p>
           </div>
 

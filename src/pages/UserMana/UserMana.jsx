@@ -2,18 +2,19 @@ import React from 'react';
 import { Breadcrumb, Tabs } from 'antd';
 import { UserOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import UserTable from './components/UserTable';
+import TeacherTable from './components/TeacherTable';
 
 export default function UserMana() {
   const tabItems = [
     {
       key: 'students',
       label: 'Danh sách học sinh',
-      children: <UserTable filterRole="student" />,
+      children: <UserTable />,
     },
     {
       key: 'teachers',
       label: 'Danh sách giáo viên',
-      children: <UserTable filterRole="teacher" />,
+      children: <TeacherTable />,
     },
   ];
 

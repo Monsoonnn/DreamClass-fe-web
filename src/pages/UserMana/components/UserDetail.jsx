@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Descriptions, Tag, Button, Spin, message, Breadcrumb } from 'antd';
 import { ArrowLeftOutlined, HomeOutlined } from '@ant-design/icons';
-import { getUsers } from './userService';
+// import { getUsers } from './userService';
 import UserUpdate from './UserUpdate';
 import { apiClient } from '../../../services/api';
 

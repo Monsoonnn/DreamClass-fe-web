@@ -17,6 +17,7 @@ import AddReward from './pages/Reward/components/AddReward';
 import UserMana from './pages/UserMana/UserMana';
 import AddUser from './pages/UserMana/components/AddUser';
 import UserDetail from './pages/UserMana/components/UserDetail';
+import TeacherDetail from './pages/UserMana/components/TeacherDetail';
 import RankingServer from './pages/RankingServer/RankingServer';
 import RankingServerDetail from './pages/RankingServer/components/RankingServerDetail';
 import BookMana from './pages/BookMana/BookMana';
@@ -167,7 +168,14 @@ function App() {
               </RoleRoute>
             }
           />
-
+          <Route
+            path="/user-mana/view-teacher/:teacherId"
+            element={
+              <RoleRoute allowedRoles={['admin']}>
+                <TeacherDetail />
+              </RoleRoute>
+            }
+          />
           <Route
             path="/ranking-server"
             element={
