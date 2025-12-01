@@ -1,8 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { loginAPI } from '../../services/authService';
 import { message, Modal, Spin } from 'antd';
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
+import Cookies from 'js-cookie'; // Import js-cookie to read cookies
 
 export default function Login() {
   const navigate = useNavigate();
@@ -10,6 +11,22 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Check for the presence of a non-HttpOnly cookie named 'isAuthenticated'
+    const isAuthenticated = Cookies.get('isAuthenticated');
+    if (isAuthenticated) {
+      // Assuming a simple boolean isAuthenticated.
+      // If you need role-based redirection here, your backend should either:
+      // 1. Include role in the isAuthenticated cookie itself (e.g., as a JWT)
+      // 2. Set another non-HttpOnly cookie with the role
+      // 3. Or you might still rely on localStorage for the role after successful login
+      const role = localStorage.getItem('role'); // Fallback to localStorage for role, or adapt if role is in cookie
+      if (role === 'teacher') navigate('/student-mana');
+      else if (role === 'admin') navigate('/user-mana');
+      else navigate('/');
+    }
+  }, [navigate]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -20,16 +37,17 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // Gọi API login, với session cookie được gửi tự động
       const res = await loginAPI(email, password);
       const user = res.data.data;
 
-      // Lưu thông tin user/role vào localStorage để dùng điều hướng
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('role', user.role);
+      // Backend must set 'isAuthenticated' cookie here (non-HttpOnly)
+      // and potentially 'role' cookie or ensure localStorage is used for role
+
+      localStorage.setItem('user', JSON.stringify(user)); // Still good for user data
+      localStorage.setItem('role', user.role); // Keep for role-based redirects
+
       message.success('Đăng nhập thành công!');
 
-      // Điều hướng theo role
       if (user.role === 'teacher') navigate('/student-mana');
       else if (user.role === 'admin') navigate('/user-mana');
       else navigate('/');

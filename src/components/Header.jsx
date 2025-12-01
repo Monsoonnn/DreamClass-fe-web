@@ -24,19 +24,26 @@ export default function Header() {
       await logoutAPI();
       console.log('✓ Logout successful - connect.sid cleared on server');
 
-      // Xóa cookies trên client
+      // Xóa cookies và localStorage trên client
       Cookies.remove('token');
       Cookies.remove('username');
       Cookies.remove('connect.sid');
+      Cookies.remove('isAuthenticated'); // Remove the new isAuthenticated cookie
+      localStorage.removeItem('user');
+      localStorage.removeItem('role');
 
       message.success('Đăng xuất thành công');
       navigate('/login');
     } catch (error) {
       console.error('✗ Logout error:', error);
       message.error('Lỗi khi đăng xuất');
-      // Xóa cookies trên client dù có lỗi
+      // Xóa cookies và localStorage trên client dù có lỗi
       Cookies.remove('token');
       Cookies.remove('username');
+      Cookies.remove('connect.sid'); // Ensure this is also removed on error
+      Cookies.remove('isAuthenticated'); // Remove the new isAuthenticated cookie on error
+      localStorage.removeItem('user');
+      localStorage.removeItem('role');
       navigate('/login');
     }
   };
