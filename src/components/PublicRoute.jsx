@@ -9,8 +9,8 @@ export default function PublicRoute({ children }) {
   }
 
   if (user) {
-    // If already logged in, redirect to user-mana
-    return <Navigate to="/user-mana" replace />;
+    // If already logged in, redirect to dashboard
+    return <Navigate to="/dashboard" replace />;
   }
 
   return children ? children : <Outlet />;

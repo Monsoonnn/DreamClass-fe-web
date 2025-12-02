@@ -29,7 +29,7 @@ export default function Login() {
       message.success('Đăng nhập thành công!');
       
       // Prompt requested explicit redirect to /dashboard
-      navigate('/user-mana');
+      navigate('/dashboard');
       
     } catch (err) {
       message.error('Sai tài khoản hoặc mật khẩu!');

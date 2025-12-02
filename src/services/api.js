@@ -1,4 +1,5 @@
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 const API_BASE_URL = process.env.NODE_ENV === 'development' ? '/api' : 'https://vr-be.onrender.com/api';
 
@@ -13,7 +14,7 @@ export const apiClient = axios.create({
 // Interceptor để log request và response
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = Cookies.get('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

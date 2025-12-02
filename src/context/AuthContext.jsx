@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { checkAuthAPI, loginAPI, logoutAPI } from '../services/authService';
+import Cookies from 'js-cookie';
 
 const AuthContext = createContext();
 
@@ -10,8 +11,8 @@ export function AuthProvider({ children }) {
   // Check authentication status on mount
   useEffect(() => {
     const verifyUser = async () => {
-      const token = localStorage.getItem('token');
-      const savedUser = localStorage.getItem('user_data');
+      const token = Cookies.get('token');
+      const savedUser = Cookies.get('user_data');
       
       // Nếu có user đã lưu, set ngay để không bị trắng trang/mất login
       if (savedUser) {
@@ -21,6 +22,10 @@ export function AuthProvider({ children }) {
           console.error("Lỗi parse user_data", e);
         }
       }
+
+      // Cleanup old localStorage data if exists
+      localStorage.removeItem('token');
+      localStorage.removeItem('user_data');
 
       if (!token) {
         setLoading(false);
@@ -34,13 +39,13 @@ export function AuthProvider({ children }) {
         
         // Cập nhật lại user mới nhất từ server
         setUser(userData);
-        localStorage.setItem('user_data', JSON.stringify(userData));
+        Cookies.set('user_data', JSON.stringify(userData), { expires: 7 });
       } catch (error) {
         console.log('Verify failed - Token có thể hết hạn hoặc server từ chối Header');
         // Nếu API báo lỗi 401, lúc đó mới logout hẳn
         if (error.response && error.response.status === 401) {
-           localStorage.removeItem('token');
-           localStorage.removeItem('user_data');
+           Cookies.remove('token');
+           Cookies.remove('user_data');
            setUser(null);
         }
       } finally {
@@ -61,11 +66,11 @@ export function AuthProvider({ children }) {
     const token = data?.token || data?.accessToken || userData?.token || userData?.accessToken;
     
     if (token) {
-      localStorage.setItem('token', token);
+      Cookies.set('token', token, { expires: 7 });
     }
 
     if (userData) {
-      localStorage.setItem('user_data', JSON.stringify(userData));
+      Cookies.set('user_data', JSON.stringify(userData), { expires: 7 });
     }
 
     setUser(userData); 
@@ -79,9 +84,8 @@ export function AuthProvider({ children }) {
       console.error('Logout failed', error);
     } finally {
       setUser(null);
-      localStorage.removeItem('token');
-      localStorage.removeItem('user_data');
-      localStorage.clear(); 
+      Cookies.remove('token');
+      Cookies.remove('user_data');
     }
   };
 

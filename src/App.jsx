@@ -25,6 +25,7 @@ import RankingServerDetail from './pages/RankingServer/components/RankingServerD
 import BookMana from './pages/BookMana/BookMana';
 import AddBook from './pages/BookMana/components/AddBook';
 import LandingPage from './pages/LandingPage/LandingPage';
+import Dashboard from './pages/Dashboard/Dashboard';
 
 function App() {
   return (
@@ -58,6 +59,15 @@ function App() {
                           </ProtectedRoute>
                         }
                       >
+            <Route 
+              path="/dashboard" 
+              element={
+                <RoleRoute allowedRoles={['teacher', 'admin']}>
+                  <Dashboard />
+                </RoleRoute>
+              } 
+            />
+
                         {/* -------- GIÁO VIÊN + ADMIN (chung) -------- */}            <Route
               path="/mission-mana"
               element={
