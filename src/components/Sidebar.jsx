@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { UserOutlined, TeamOutlined, ReadOutlined, MenuFoldOutlined, MenuUnfoldOutlined, HomeOutlined } from '@ant-design/icons';
+import { UserOutlined, TeamOutlined, ReadOutlined, MenuFoldOutlined, MenuUnfoldOutlined, HomeOutlined, DashboardOutlined } from '@ant-design/icons';
+import { useAuth } from '../context/AuthContext';
 
 // MENU CHO GIÁO VIÊN
 const teacherMenu = [
+  { key: 'dashboard', label: 'Dashboard', icon: <DashboardOutlined style={{ fontSize: 18 }} />, path: '/dashboard' },
   { key: 'student', label: 'Quản lý học sinh', icon: <UserOutlined style={{ fontSize: 18 }} />, path: '/student-mana' },
   { key: 'mission', label: 'Quản lý nhiệm vụ', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/mission-mana' },
   { key: 'ranking', label: 'Quản lý ranking', icon: <TeamOutlined style={{ fontSize: 18 }} />, path: '/ranking-mana' },
@@ -12,6 +14,7 @@ const teacherMenu = [
 
 // MENU CHO ADMIN
 const adminMenu = [
+  { key: 'dashboard', label: 'Dashboard', icon: <DashboardOutlined style={{ fontSize: 18 }} />, path: '/dashboard' },
   { key: 'usermana', label: 'Quản lý người dùng', icon: <HomeOutlined style={{ fontSize: 18 }} />, path: '/user-mana' },
   { key: 'rankingserver', label: 'Quản lý Ranking Server', icon: <UserOutlined style={{ fontSize: 18 }} />, path: '/ranking-server' },
   { key: 'reward', label: 'Quản lý phần thưởng', icon: <HomeOutlined style={{ fontSize: 18 }} />, path: '/reward-mana' },
@@ -22,16 +25,12 @@ const adminMenu = [
 export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
 
   const [open, setOpen] = useState(true);
   const [selectedMenu, setSelectedMenu] = useState('');
-  const [role, setRole] = useState(localStorage.getItem('role') || 'teacher');
-
-  // Lấy lại role khi component mount
-  useEffect(() => {
-    const savedRole = localStorage.getItem('role') || 'teacher';
-    setRole(savedRole);
-  }, []);
+  
+  const role = user?.role || 'teacher';
 
   // Chọn menu theo role
   const menuItems = role === 'admin' ? adminMenu : teacherMenu;

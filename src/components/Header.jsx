@@ -1,44 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { Dropdown, Button, Badge, message } from 'antd';
-import { DownOutlined, LogoutOutlined, BellFilled } from '@ant-design/icons';
-import Cookies from 'js-cookie';
-import { useNavigate } from 'react-router-dom';
-import { logoutAPI } from '../services/authService';
+import React from 'react';
+import { Dropdown, Button, message } from 'antd';
+import { DownOutlined, LogoutOutlined } from '@ant-design/icons';
+import { useAuth } from '../context/AuthContext';
 
 export default function Header() {
-  const navigate = useNavigate();
-  const [username, setUsername] = useState('');
+  const { user, logout } = useAuth();
 
-  useEffect(() => {
-    const user = Cookies.get('username');
-    if (user) setUsername(user);
-  }, []);
-
-  // const notifications = [
-  //   { id: 1, message: 'Thông báo hệ thống 1' },
-  //   { id: 2, message: 'Thông báo hệ thống 2' },
-  // ];
   const handleLogout = async () => {
-    try {
-      // Gửi API logout để xóa cookie trên server
-      await logoutAPI();
-      console.log('✓ Logout successful - connect.sid cleared on server');
-
-      // Xóa cookies trên client
-      Cookies.remove('token');
-      Cookies.remove('username');
-      Cookies.remove('connect.sid');
-
-      message.success('Đăng xuất thành công');
-      navigate('/login');
-    } catch (error) {
-      console.error('✗ Logout error:', error);
-      message.error('Lỗi khi đăng xuất');
-      // Xóa cookies trên client dù có lỗi
-      Cookies.remove('token');
-      Cookies.remove('username');
-      navigate('/login');
-    }
+    await logout();
+    message.success('Đăng xuất thành công');
+    // Redirection is handled by ProtectedRoute (redirects to /login when user becomes null)
   };
 
   const menuItems = [
@@ -51,32 +22,21 @@ export default function Header() {
     },
   ];
 
-  // const notificationMenu = {
-  //   items: notifications.map((noti) => ({
-  //     key: noti.id,
-  //     label: noti.message,
-  //   })),
-  // };
-
   const capitalizeName = (name) => {
+    if (!name) return '';
     return name
       .split(' ')
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(' ');
   };
 
+  const username = user?.username || user?.name || '';
+
   return (
     <header className="h-12 flex items-center justify-between px-5 bg-white border-b border-gray-200 shadow text-[#23408e] font-bold tracking-wide uppercase">
       <span className="ml-2">HỆ THỐNG QUẢN LÝ</span>
 
       <div className="flex items-center space-x-4 text-base font-normal capitalize">
-        {/* Thông báo */}
-        {/* <Dropdown menu={notificationMenu} placement="bottomRight" arrow trigger={['click']} getPopupContainer={() => document.body}>
-          <Badge count={notifications.length} size="small" offset={[-2, 2]}>
-            <BellFilled className="text-lg cursor-pointer" style={{ color: '#23408e' }} />
-          </Badge>
-        </Dropdown> */}
-
         {/* Thông tin người dùng */}
         <Dropdown menu={{ items: menuItems }} placement="bottomRight" arrow getPopupContainer={() => document.body}>
           <Button type="text" className="text-[#23408e] font-medium lowercase flex items-center">

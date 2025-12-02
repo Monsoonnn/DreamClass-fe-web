@@ -1,15 +1,18 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { loginAPI } from '../../services/authService';
+import { useAuth } from '../../context/AuthContext';
 import { message, Modal, Spin } from 'antd';
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth(); // Use login from AuthContext
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Note: Redirection for already logged-in users is now handled by the PublicRoute wrapper in App.jsx
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -20,19 +23,14 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // Gọi API login, với session cookie được gửi tự động
-      const res = await loginAPI(email, password);
-      const user = res.data.data;
+      // Use context login which handles state update
+      await login(email, password);
 
-      // Lưu thông tin user/role vào localStorage để dùng điều hướng
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('role', user.role);
       message.success('Đăng nhập thành công!');
-
-      // Điều hướng theo role
-      if (user.role === 'teacher') navigate('/student-mana');
-      else if (user.role === 'admin') navigate('/user-mana');
-      else navigate('/');
+      
+      // Prompt requested explicit redirect to /dashboard
+      navigate('/dashboard');
+      
     } catch (err) {
       message.error('Sai tài khoản hoặc mật khẩu!');
       console.error('Login error:', err);

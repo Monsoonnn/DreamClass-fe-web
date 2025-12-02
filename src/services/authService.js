@@ -1,11 +1,13 @@
-import axios from 'axios';
-
-const baseURL = process.env.NODE_ENV === 'development' ? '/api' : 'https://vr-be.onrender.com/api';
+import apiClient from './api';
 
 export async function loginAPI(username, password) {
-  return axios.post(`${baseURL}/auth/login`, { username, password }, { withCredentials: true });
+  return apiClient.post('/auth/login', { username, password });
 }
 
 export async function logoutAPI() {
-  return axios.post(`${baseURL}/auth/logout`, {}, { withCredentials: true });
+  return apiClient.post('/auth/logout');
+}
+
+export async function checkAuthAPI() {
+  return apiClient.get('/auth/me');
 }
