@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.custom-form .ant-input,
+.custom-form .ant-select-selector,
+.custom-form .ant-input-textarea {
+  font-size: 14px;
+}
+.custom-form .ant-form-item {
+  margin-bottom: 8px; /* Mặc định là 24px, giảm xuống 8px hoặc ít hơn */
+}
+
+.question-card .ant-card-body {
+  @apply p-1;
+}
