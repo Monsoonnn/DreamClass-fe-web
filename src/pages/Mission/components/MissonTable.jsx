@@ -134,7 +134,7 @@ export default function MissionTable() {
               <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}>
                 Tìm
               </Button>
-              <Button type="primary" icon={<FilterOutlined />} style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }} />
+              {/* <Button type="primary" icon={<FilterOutlined />} style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }} /> */}
             </Space.Compact>
 
             <Space.Compact>

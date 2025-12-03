@@ -22,10 +22,17 @@ import UserDetail from './pages/UserMana/components/UserDetail';
 import TeacherDetail from './pages/UserMana/components/TeacherDetail';
 import RankingServer from './pages/RankingServer/RankingServer';
 import RankingServerDetail from './pages/RankingServer/components/RankingServerDetail';
+import RankingGrade from './pages/RankingServer/components/RankingGrade';
+import RankingClass from './pages/RankingServer/components/RankingClass';
 import BookMana from './pages/BookMana/BookMana';
 import AddBook from './pages/BookMana/components/AddBook';
 import LandingPage from './pages/LandingPage/LandingPage';
+import QuizzMana from './pages/Quizz/QuizzMana';
+import QuizzDetail from './pages/Quizz/components/QuizzDetail';
+import QuizzUpdate from './pages/Quizz/components/QuizzUpdate';
+import AddQuizz from './pages/Quizz/components/AddQuizz';
 import Dashboard from './pages/Dashboard/Dashboard';
+import Profile from './pages/Profile/Profile';
 
 function App() {
   return (
@@ -34,41 +41,42 @@ function App() {
         <Routes>
           {/* Trang công khai */}
           <Route path="/" element={<LandingPage />} />
-          <Route 
-            path="/login" 
+          <Route
+            path="/login"
             element={
               <PublicRoute>
                 <Login />
               </PublicRoute>
-            } 
+            }
           />
-          <Route 
-            path="/forgot-password" 
+          <Route
+            path="/forgot-password"
             element={
               <PublicRoute>
                 <ForgotPassword />
               </PublicRoute>
-            } 
+            }
           />
 
           {/* Layout + bảo vệ đăng nhập */}
-                      <Route
-                        element={
-                          <ProtectedRoute>
-                            <Layout />
-                          </ProtectedRoute>
-                        }
-                      >
-            <Route 
-              path="/dashboard" 
+          <Route
+            element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/profile" element={<Profile />} />
+            <Route
+              path="/dashboard"
               element={
                 <RoleRoute allowedRoles={['teacher', 'admin']}>
                   <Dashboard />
                 </RoleRoute>
-              } 
+              }
             />
-
-                        {/* -------- GIÁO VIÊN + ADMIN (chung) -------- */}            <Route
+            {/* -------- GIÁO VIÊN + ADMIN (chung) -------- */}{' '}
+            <Route
               path="/mission-mana"
               element={
                 <RoleRoute allowedRoles={['teacher', 'admin']}>
@@ -92,7 +100,6 @@ function App() {
                 </RoleRoute>
               }
             />
-
             <Route
               path="/book-mana"
               element={
@@ -109,7 +116,38 @@ function App() {
                 </RoleRoute>
               }
             />
-
+            <Route
+              path="/quizz-mana"
+              element={
+                <RoleRoute allowedRoles={['teacher', 'admin']}>
+                  <QuizzMana />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/quizz-mana/view/:quizzId"
+              element={
+                <RoleRoute allowedRoles={['teacher', 'admin']}>
+                  <QuizzDetail />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/quizz-mana/update/:quizzId"
+              element={
+                <RoleRoute allowedRoles={['teacher', 'admin']}>
+                  <QuizzUpdate />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/quizz-mana/add"
+              element={
+                <RoleRoute allowedRoles={['teacher', 'admin']}>
+                  <AddQuizz />
+                </RoleRoute>
+              }
+            />
             {/* -------- CHỈ GIÁO VIÊN -------- */}
             <Route
               path="/student-mana"
@@ -143,7 +181,6 @@ function App() {
                 </RoleRoute>
               }
             />
-
             {/* -------- CHỈ ADMIN -------- */}
             <Route
               path="/reward-mana"
@@ -169,7 +206,6 @@ function App() {
                 </RoleRoute>
               }
             />
-
             <Route
               path="/user-mana"
               element={
@@ -215,6 +251,22 @@ function App() {
               element={
                 <RoleRoute allowedRoles={['admin']}>
                   <RankingServerDetail />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/ranking-grade"
+              element={
+                <RoleRoute allowedRoles={['admin']}>
+                  <RankingGrade />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/ranking-class"
+              element={
+                <RoleRoute allowedRoles={['admin']}>
+                  <RankingClass />
                 </RoleRoute>
               }
             />

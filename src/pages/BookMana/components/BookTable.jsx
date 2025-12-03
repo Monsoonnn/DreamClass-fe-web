@@ -1,102 +1,104 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Input, Pagination, message, Popconfirm } from 'antd';
-import { EditOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
-import { loadBooks, getBookByKey, deleteBook } from './BookService';
-import BookEdit from './BookEdit';
+import { Table, Button, Space, Input, Pagination, Popconfirm, Spin, message, Tag } from 'antd';
+import { EyeOutlined, SearchOutlined, PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { apiClient } from '../../../services/api';
+import EditBookModal from './BookEdit';
 
 export default function BookTable() {
-  // STATE
   const [books, setBooks] = useState([]);
-  const [searchText, setSearchText] = useState('');
+  const [inputSearch, setInputSearch] = useState('');
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
-  const navigate = useNavigate();
-  const [editingKey, setEditingKey] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [currentBook, setCurrentBook] = useState(null);
 
-  // Load dữ liệu khi component mount
   useEffect(() => {
-    setBooks(loadBooks());
+    fetchBooks();
   }, []);
 
-  // Lọc sách theo searchText
-  const filteredList = () => {
-    if (!searchText.trim()) return books;
-    return books.filter((book) => book.name.toLowerCase().includes(searchText.toLowerCase()) || book.code.toLowerCase().includes(searchText.toLowerCase()));
+  const fetchBooks = async () => {
+    setLoading(true);
+    try {
+      const res = await apiClient.get('/pdfs/list/books');
+      const data = res.data?.data || [];
+
+      const mapped = data.map((item) => ({
+        key: item._id,
+        name: item.title,
+        category: item.category,
+        level: item.grade,
+        pages: item.pages,
+        description: item.description,
+        note: item.note,
+        filePath: item.pdfUrl,
+      }));
+
+      setBooks(mapped);
+      message.success(`Đã tải ${mapped.length} sách`);
+    } catch (err) {
+      console.error('Lỗi fetch sách:', err);
+      message.error('Không thể tải danh sách sách');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleEdit = (record) => {
-    setEditingKey(record.key);
-    setIsModalVisible(true);
-  };
-  const refreshBooks = () => {
-    setBooks(loadBooks());
-  };
-  // Xóa sách
-  const handleDelete = (record) => {
-    deleteBook(record.key); // xóa trong localStorage
-    setBooks(loadBooks()); // cập nhật lại state books
-    setSelectedRowKeys((prev) => prev.filter((k) => k !== record.key)); // bỏ khỏi selection
-    message.success('Xóa sách thành công');
+  const filteredBooks = () => {
+    if (!inputSearch.trim()) return books;
+
+    return books.filter((b) => b.name.toLowerCase().includes(inputSearch.toLowerCase()) || b.category?.toLowerCase().includes(inputSearch.toLowerCase()));
   };
 
-  // Cấu hình cột bảng
+  const handleDelete = async (record) => {
+    const backup = [...books];
+
+    try {
+      const updated = books.filter((b) => b.key !== record.key);
+      setBooks(updated);
+      setSelectedRowKeys((keys) => keys.filter((k) => k !== record.key));
+      await apiClient.delete(`/pdfs/${record.key}`);
+
+      message.success('Xóa sách thành công');
+    } catch (err) {
+      console.error('Delete failed:', err);
+      // Rollback nếu lỗi
+      setBooks(backup);
+      message.error(err.response?.data?.message || 'Xóa sách thất bại!');
+    }
+  };
+
   const columns = [
+    { title: 'STT', render: (_, __, index) => index + 1, width: 60, align: 'center' },
+    { title: 'Tên sách', dataIndex: 'name' },
+    { title: 'Nhà xuất bản', dataIndex: 'category', align: 'center' },
     {
-      title: 'STT',
-      align: 'center',
-      width: 70,
-      render: (_, __, index) => (currentPage - 1) * pageSize + index + 1,
-    },
-
-    {
-      title: 'Tên sách',
-      dataIndex: 'name',
-      align: 'center',
-    },
-    {
-      title: 'Nhà xuất bản',
-      dataIndex: 'category',
-      align: 'center',
-    },
-    {
-      title: 'Khối học',
+      title: 'Khối',
       dataIndex: 'level',
       align: 'center',
+      render: (level) => <Tag color="blue">{level}</Tag>,
     },
-    {
-      title: 'Mô tả',
-      dataIndex: 'description',
-      align: 'center',
-    },
-    {
-      title: 'File sách',
-      dataIndex: 'filePath',
-      align: 'center',
-      render: (filePath) =>
-        filePath ? (
-          <a href={filePath} target="_blank" rel="noreferrer" className="text-[#23408E] font-medium">
-            Mở file
-          </a>
-        ) : (
-          'Chưa có'
-        ),
-    },
-
-    {
-      title: 'Ghi chú',
-      dataIndex: 'note',
-      ellipsis: true,
-    },
+    { title: 'Mô tả', dataIndex: 'description', align: 'center' },
+    { title: 'Ghi chú', dataIndex: 'note' },
     {
       title: 'Thao tác',
       align: 'center',
       render: (_, record) => (
         <Space>
-          <EditOutlined style={{ color: 'blue', cursor: 'pointer' }} onClick={() => handleEdit(record)} />
-          <Popconfirm title="Bạn có chắc muốn xoá?" onConfirm={() => handleDelete(record)} okText="Xóa" cancelText="Hủy">
+          <EyeOutlined style={{ color: 'green', cursor: 'pointer' }} onClick={() => window.open(record.filePath, '_blank')} />
+
+          <EditOutlined
+            style={{ color: 'blue', cursor: 'pointer' }}
+            onClick={() => {
+              setCurrentBook(record);
+              setEditModalVisible(true);
+            }}
+          />
+
+          <Popconfirm title="Xóa sách này?" onConfirm={() => handleDelete(record)} okText="Xóa" cancelText="Hủy">
             <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
           </Popconfirm>
         </Space>
@@ -105,55 +107,63 @@ export default function BookTable() {
   ];
 
   return (
-    <div className="bg-white shadow-lg p-3">
-      {/* HEADER: Tìm kiếm + Thêm + Xuất Excel */}
-      <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
-        <Space.Compact className="w-full max-w-xl">
-          <Input placeholder="Tìm theo tên hoặc mã sách..." value={searchText} onChange={(e) => setSearchText(e.target.value)} style={{ width: 260 }} />
-          <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}>
-            Tìm
-          </Button>
-          <Button type="primary" icon={<FilterOutlined />} />
-        </Space.Compact>
+    <div className="bg-white p-3">
+      {loading ? (
+        <div className="flex justify-center items-center min-h-[200px]">
+          <Spin size="large" />
+        </div>
+      ) : (
+        <>
+          {/* Toolbar */}
+          <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
+            <Space.Compact className="w-full max-w-xl">
+              <Input placeholder="Tìm kiếm..." value={inputSearch} onChange={(e) => setInputSearch(e.target.value)} style={{ width: 220 }} />
 
-        <Space.Compact>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/book-mana/add')}>
-            Thêm mới
-          </Button>
-          <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff' }}>
-            Xuất Excel
-          </Button>
-        </Space.Compact>
-      </div>
+              <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}>
+                Tìm
+              </Button>
+            </Space.Compact>
 
-      {/* BẢNG SÁCH */}
-      <Table
-        dataSource={filteredList().slice((currentPage - 1) * pageSize, currentPage * pageSize)}
-        columns={columns}
-        pagination={false}
-        rowKey="key"
-        rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
-        scroll={{ x: 'max-content' }}
-        bordered
-        size="small"
-      />
+            <Space.Compact>
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/book-mana/add')}>
+                Thêm mới
+              </Button>
+            </Space.Compact>
+          </div>
 
-      {/* PHÂN TRANG + THỐNG KÊ */}
-      <div className="flex justify-between items-center mt-4 flex-wrap gap-2 m-2">
-        <div className="text-sm text-gray-800">Đã chọn: {selectedRowKeys.length} sách</div>
-        <Pagination
-          current={currentPage}
-          pageSize={pageSize}
-          total={filteredList().length}
-          onChange={(page, size) => {
-            setCurrentPage(page);
-            setPageSize(size);
-          }}
-          showSizeChanger
-          pageSizeOptions={['5', '10', '20', '50']}
-        />
-      </div>
-      <BookEdit visible={isModalVisible} onClose={() => setIsModalVisible(false)} bookKey={editingKey} onUpdate={refreshBooks} />
+          {/* Bảng */}
+          <Table
+            dataSource={filteredBooks().slice((currentPage - 1) * pageSize, currentPage * pageSize)}
+            columns={columns}
+            pagination={false}
+            rowKey="key"
+            rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
+            bordered
+            size="small"
+          />
+
+          {/* Pagination */}
+          <div className="flex justify-between items-center mt-4">
+            <span>Đã chọn: {selectedRowKeys.length} bản ghi</span>
+
+            <Pagination
+              current={currentPage}
+              pageSize={pageSize}
+              total={filteredBooks().length}
+              onChange={(p, s) => {
+                setCurrentPage(p);
+                setPageSize(s);
+              }}
+              showSizeChanger
+              pageSizeOptions={['5', '10', '20', '50']}
+            />
+          </div>
+
+          {editModalVisible && currentBook && (
+            <EditBookModal visible={editModalVisible} onClose={() => setEditModalVisible(false)} bookKey={currentBook.key} onUpdate={fetchBooks} />
+          )}
+        </>
+      )}
     </div>
   );
 }
