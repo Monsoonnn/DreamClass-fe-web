@@ -33,7 +33,9 @@ import QuizzUpdate from './pages/Quizz/components/QuizzUpdate';
 import AddQuizz from './pages/Quizz/components/AddQuizz';
 import Dashboard from './pages/Dashboard/Dashboard';
 import Profile from './pages/Profile/Profile';
-
+import TeacherProfile from './pages/Profile/TeacherProfile';
+import TeacherMissionTable from './pages/Mission/components/TeacherMissionTable';
+import TeacherMissionDetail from './pages/Mission/components/TeacherMissionDetail';
 function App() {
   return (
     <AuthProvider>
@@ -75,31 +77,8 @@ function App() {
                 </RoleRoute>
               }
             />
+            <Route path="/teacher-profile" element={<TeacherProfile />} />
             {/* -------- GIÁO VIÊN + ADMIN (chung) -------- */}{' '}
-            <Route
-              path="/mission-mana"
-              element={
-                <RoleRoute allowedRoles={['teacher', 'admin']}>
-                  <MissionMana />
-                </RoleRoute>
-              }
-            />
-            <Route
-              path="/mission-mana/view/:questId"
-              element={
-                <RoleRoute allowedRoles={['teacher', 'admin']}>
-                  <MissionDetail />
-                </RoleRoute>
-              }
-            />
-            <Route
-              path="/mission-mana/add"
-              element={
-                <RoleRoute allowedRoles={['admin']}>
-                  <AddMission />
-                </RoleRoute>
-              }
-            />
             <Route
               path="/book-mana"
               element={
@@ -166,6 +145,22 @@ function App() {
               }
             />
             <Route
+              path="/teacher-mission-mana"
+              element={
+                <RoleRoute allowedRoles={['teacher']}>
+                  <TeacherMissionTable />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/teacher-mission-mana/view/:questId"
+              element={
+                <RoleRoute allowedRoles={['teacher']}>
+                  <TeacherMissionDetail />
+                </RoleRoute>
+              }
+            />
+            <Route
               path="/ranking-mana"
               element={
                 <RoleRoute allowedRoles={['teacher']}>
@@ -183,7 +178,31 @@ function App() {
             />
             {/* -------- CHỈ ADMIN -------- */}
             <Route
-              path="/reward-mana"
+              path="/mission-mana"
+              element={
+                <RoleRoute allowedRoles={['teacher', 'admin']}>
+                  <MissionMana />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/mission-mana/view/:questId"
+              element={
+                <RoleRoute allowedRoles={['admin']}>
+                  <MissionDetail />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/mission-mana/add"
+              element={
+                <RoleRoute allowedRoles={['admin']}>
+                  <AddMission />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/item-mana"
               element={
                 <RoleRoute allowedRoles={['admin']}>
                   <RewardMana />
@@ -191,7 +210,7 @@ function App() {
               }
             />
             <Route
-              path="/reward-mana/add"
+              path="/item-mana/add"
               element={
                 <RoleRoute allowedRoles={['admin']}>
                   <AddReward />
@@ -199,7 +218,7 @@ function App() {
               }
             />
             <Route
-              path="/reward-mana/detail/:key"
+              path="/item-mana/detail/:itemId"
               element={
                 <RoleRoute allowedRoles={['admin']}>
                   <RewardDetail />
@@ -263,10 +282,26 @@ function App() {
               }
             />
             <Route
+              path="/ranking-grade/view/:id"
+              element={
+                <RoleRoute allowedRoles={['admin']}>
+                  <RankingServerDetail />
+                </RoleRoute>
+              }
+            />
+            <Route
               path="/ranking-class"
               element={
                 <RoleRoute allowedRoles={['admin']}>
                   <RankingClass />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/ranking-class/view/:id"
+              element={
+                <RoleRoute allowedRoles={['admin']}>
+                  <RankingServerDetail />
                 </RoleRoute>
               }
             />

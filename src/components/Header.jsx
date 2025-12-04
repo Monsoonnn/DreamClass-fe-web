@@ -14,7 +14,21 @@ export default function Header() {
   };
 
   const handleProfile = () => {
-    navigate('/profile');
+    if (!user) return;
+
+    switch (user.role) {
+      case 'admin':
+        navigate('/profile');
+        break;
+      case 'teacher':
+        navigate('/teacher-profile');
+        break;
+      case 'student':
+        navigate('/student-profile');
+        break;
+      default:
+        navigate('/profile');
+    }
   };
 
   const menuItems = [

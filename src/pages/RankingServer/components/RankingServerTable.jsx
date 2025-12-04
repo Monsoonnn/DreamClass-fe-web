@@ -78,15 +78,15 @@ export default function RankingServerTable() {
       align: 'center',
       render: (v) => <Tag color="blue">{v}</Tag>,
     },
-    {
-      title: 'Đánh giá',
-      dataIndex: 'rating',
-      align: 'center',
-      render: (rating) => {
-        const color = rating === 'Good' ? 'green' : rating === 'Medium' ? 'blue' : rating === 'Poor' ? 'volcano' : 'default';
-        return <Tag color={color}>{rating || '-'}</Tag>;
-      },
-    },
+    // {
+    //   title: 'Đánh giá',
+    //   dataIndex: 'rating',
+    //   align: 'center',
+    //   render: (rating) => {
+    //     const color = rating === 'Good' ? 'green' : rating === 'Medium' ? 'blue' : rating === 'Poor' ? 'volcano' : 'default';
+    //     return <Tag color={color}>{rating || '-'}</Tag>;
+    //   },
+    // },
     {
       title: 'Thao tác',
       align: 'center',

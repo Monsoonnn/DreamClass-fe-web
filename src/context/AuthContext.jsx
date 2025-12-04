@@ -13,13 +13,13 @@ export function AuthProvider({ children }) {
     const verifyUser = async () => {
       const token = Cookies.get('token');
       const savedUser = Cookies.get('user_data');
-      
+
       // Nếu có user đã lưu, set ngay để không bị trắng trang/mất login
       if (savedUser) {
         try {
           setUser(JSON.parse(savedUser));
         } catch (e) {
-          console.error("Lỗi parse user_data", e);
+          console.error('Lỗi parse user_data', e);
         }
       }
 
@@ -33,10 +33,10 @@ export function AuthProvider({ children }) {
       }
 
       try {
-        console.log("Đang verify user với token:", token);
+        console.log('Đang verify user với token:', token);
         const response = await checkAuthAPI();
         const userData = response.data?.data || response.data;
-        
+
         // Cập nhật lại user mới nhất từ server
         setUser(userData);
         Cookies.set('user_data', JSON.stringify(userData), { expires: 7 });
@@ -44,9 +44,9 @@ export function AuthProvider({ children }) {
         console.log('Verify failed - Token có thể hết hạn hoặc server từ chối Header');
         // Nếu API báo lỗi 401, lúc đó mới logout hẳn
         if (error.response && error.response.status === 401) {
-           Cookies.remove('token');
-           Cookies.remove('user_data');
-           setUser(null);
+          Cookies.remove('token');
+          Cookies.remove('user_data');
+          setUser(null);
         }
       } finally {
         setLoading(false);
@@ -61,10 +61,10 @@ export function AuthProvider({ children }) {
 
     const data = response.data;
     const userData = data?.data || data;
-    
+
     // Tìm token ở nhiều vị trí có thể
     const token = data?.token || data?.accessToken || userData?.token || userData?.accessToken;
-    
+
     if (token) {
       Cookies.set('token', token, { expires: 7 });
     }
@@ -73,7 +73,7 @@ export function AuthProvider({ children }) {
       Cookies.set('user_data', JSON.stringify(userData), { expires: 7 });
     }
 
-    setUser(userData); 
+    setUser(userData);
     return userData;
   };
 
@@ -89,11 +89,7 @@ export function AuthProvider({ children }) {
     }
   };
 
-  return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ user, loading, login, logout }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

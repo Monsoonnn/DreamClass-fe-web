@@ -1,98 +1,103 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Button, Select, Upload, InputNumber, Row, Col, Image } from 'antd';
+import { Form, Input, Button, Select, Row, Col, Image, Spin, message } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getRewardByKey } from './RewardService';
-import RewardEditModal from './RewardEditModal';
+import apiClient from '../../../services/api';
 
 const { Option } = Select;
 
-export default function RewardDetail() {
+export default function ItemDetail() {
   const [form] = Form.useForm();
-  const [reward, setReward] = useState(null);
-  const [previewImage, setPreviewImage] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [item, setItem] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-  const { key } = useParams(); // lấy key từ URL
+  const { itemId } = useParams();
+
+  const fetchItem = async () => {
+    try {
+      const res = await apiClient.get(`/items/admin/${itemId}`);
+      const data = res.data.data;
+
+      setItem(data);
+      form.setFieldsValue({
+        itemId: data.itemId,
+        name: data.name,
+        type: data.type,
+        description: data.description,
+        notes: data.notes,
+      });
+    } catch (err) {
+      message.error('Không thể tải dữ liệu vật phẩm');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const data = getRewardByKey(key);
-    if (data) {
-      setReward(data);
-      setPreviewImage(data.image);
-      form.setFieldsValue({
-        rewardCode: data.rewardCode,
-        rewardName: data.rewardName,
-        category: data.category,
-        quantity: data.quantity,
-        condition: data.condition,
-        note: data.note,
-      });
-    }
-  }, [key, form]);
+    fetchItem();
+  }, [itemId]);
 
-  if (!reward) return <div>Không tìm thấy phần thưởng</div>;
+  if (loading) return <Spin className="mt-10" />;
+  if (!item) return <div>Không tìm thấy vật phẩm</div>;
 
   return (
     <div className="bg-white shadow-lg p-5 rounded-md max-w-4xl mx-auto mt-5">
-      <h2 className="text-lg font-semibold mb-4">Chi tiết phần thưởng</h2>
+      <h2 className="text-lg font-semibold mb-4">Chi tiết vật phẩm</h2>
+
       <Form form={form} layout="vertical">
         <Row gutter={24}>
           {/* Cột trái */}
           <Col span={12}>
-            <Form.Item label="Mã phần thưởng" name="rewardCode">
+            <Form.Item label="Mã vật phẩm" name="itemId">
               <Input readOnly />
             </Form.Item>
-            <Form.Item label="Tên phần thưởng" name="rewardName">
+            <Form.Item label="Tên vật phẩm" name="name">
               <Input readOnly />
             </Form.Item>
-            <Form.Item label="Phân loại" name="category">
+
+            <Form.Item label="Loại" name="type">
               <Select disabled>
-                <Option value="Huy hiệu">Huy hiệu</Option>
-                <Option value="Tiền tệ">Tiền tệ</Option>
-                <Option value="Danh hiệu">Danh hiệu</Option>
+                <Option value="title">Danh hiệu</Option>
+                <Option value="badge">Huy hiệu</Option>
+                <Option value="currency">Tiền tệ</Option>
+                <Option value="other">Khác</Option>
               </Select>
             </Form.Item>
-            <Form.Item label="Số lượng" name="quantity">
-              <InputNumber min={1} style={{ width: '100%' }} readOnly />
-            </Form.Item>
-            <Form.Item label="Điều kiện nhận" name="condition">
+
+            <Form.Item label="Mô tả" name="description">
               <Input.TextArea rows={3} readOnly />
             </Form.Item>
           </Col>
 
           {/* Cột phải */}
           <Col span={12}>
-            <Form.Item label="Hình ảnh phần thưởng">
-              {previewImage && <Image src={previewImage} alt="reward" style={{ width: '100%', height: 200, objectFit: 'cover', borderRadius: 8 }} preview={false} />}
+            <Form.Item label="Hình ảnh vật phẩm">
+              <Image
+                src={item.image}
+                alt="item"
+                style={{
+                  width: '100%',
+                  height: 220,
+                  objectFit: 'cover',
+                  borderRadius: 8,
+                }}
+                preview={false}
+              />
             </Form.Item>
-            <Form.Item label="Ghi chú" name="note">
+
+            <Form.Item label="Ghi chú" name="notes">
               <Input.TextArea rows={3} readOnly />
             </Form.Item>
           </Col>
         </Row>
 
-        {/* Nút cập nhật / quay lại */}
+        {/* Nút quay lại */}
         <Form.Item className="flex gap-2 mt-4">
-          <Button type="primary" onClick={() => setIsModalVisible(true)}>
-            Cập nhật
-          </Button>
-
           <Button type="default" onClick={() => navigate(-1)}>
             Quay lại
           </Button>
         </Form.Item>
       </Form>
-      <RewardEditModal
-        visible={isModalVisible}
-        onClose={() => setIsModalVisible(false)}
-        reward={reward}
-        onUpdate={() => {
-          const updated = getRewardByKey(key);
-          setReward(updated);
-          setPreviewImage(updated.image);
-        }}
-      />
     </div>
   );
 }

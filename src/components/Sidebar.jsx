@@ -18,7 +18,7 @@ import { useAuth } from '../context/AuthContext';
 const teacherMenu = [
   { key: 'dashboard', label: 'Dashboard', icon: <DashboardOutlined style={{ fontSize: 18 }} />, path: '/dashboard' },
   { key: 'student', label: 'Quản lý học sinh', icon: <UserOutlined style={{ fontSize: 18 }} />, path: '/student-mana' },
-  { key: 'mission', label: 'Quản lý nhiệm vụ', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/mission-mana' },
+  { key: 'mission', label: 'Quản lý nhiệm vụ', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/teacher-mission-mana' },
   { key: 'ranking', label: 'Bảng xếp hạng', icon: <TrophyOutlined style={{ fontSize: 18 }} />, path: '/ranking-mana' },
   { key: 'book', label: 'Quản lý sách', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/book-mana' },
   { key: 'quizz', label: 'Quản lý câu hỏi', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/quizz-mana' },
@@ -48,7 +48,7 @@ const adminMenu = [
     icon: <GiftOutlined style={{ fontSize: 18 }} />,
     children: [
       { key: 'spin', label: 'Vòng quay', path: '/reward-spin' },
-      { key: 'item', label: 'Vật phẩm', path: '/reward-mana' },
+      { key: 'item', label: 'Vật phẩm', path: '/item-mana' },
     ],
   },
 

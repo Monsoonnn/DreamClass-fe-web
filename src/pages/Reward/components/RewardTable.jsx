@@ -1,35 +1,67 @@
-import React, { useState } from 'react';
-import { Table, Tag, Button, Space, Input, Pagination, Image } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Table, Tag, Button, Space, Input, Pagination, Image, message, Popconfirm } from 'antd';
 import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { getRewards, getRewardByKey, addReward, updateReward, deleteReward } from './RewardService';
 import { useNavigate } from 'react-router-dom';
+import apiClient from '../../../services/api'; // đường dẫn đến api.js của bạn
 
 export default function RewardTable() {
   const [inputSearchText, setInputSearchText] = useState('');
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
-  const [data, setData] = useState(getRewards());
+  const [data, setData] = useState([]);
   const navigate = useNavigate();
+
+  const fetchData = async () => {
+    try {
+      const res = await apiClient.get('/items/admin');
+      const apiData = res.data.data;
+      const mapped = apiData.map((item) => ({
+        key: item._id,
+        rewardCode: item.itemId,
+        rewardName: item.name,
+        image: item.image,
+        category: item.type,
+        quantity: item.customFields?.quantity || 1,
+        condition: item.description,
+        note: item.notes,
+        raw: item,
+      }));
+
+      setData(mapped);
+    } catch (err) {
+      console.error(err);
+      message.error('Không thể tải danh sách phần thưởng!');
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
   const filteredRewards = () => {
     if (!inputSearchText.trim()) return data;
     return data.filter((item) => item.rewardName.toLowerCase().includes(inputSearchText.toLowerCase()) || item.rewardCode.toLowerCase().includes(inputSearchText.toLowerCase()));
   };
 
   const handleViewDetail = (record) => {
-    // Chuyển tới trang detail theo key của reward
-    navigate(`/reward-mana/detail/${record.key}`);
+    navigate(`/item-mana/detail/${record.rewardCode}`);
   };
 
-  const handleDelete = (key) => {
-    deleteReward(key);
-    setData(getRewards()); // cập nhật lại data sau khi xóa
+  const handleDeleteItem = async (itemId) => {
+    try {
+      await apiClient.delete(`/items/admin/${itemId}`);
+      message.success('Đã xóa vật phẩm!');
+      fetchData();
+    } catch (err) {
+      console.log(err);
+      message.error('Xóa thất bại!');
+    }
   };
 
   const columns = [
     {
       title: 'STT',
-      key: 'index',
       align: 'center',
       width: 70,
       render: (_, __, index) => index + 1 + (currentPage - 1) * pageSize,
@@ -37,64 +69,56 @@ export default function RewardTable() {
     {
       title: 'Mã số',
       dataIndex: 'rewardCode',
-      key: 'rewardCode',
       align: 'center',
     },
     {
       title: 'Tên phần thưởng',
       dataIndex: 'rewardName',
-      key: 'rewardName',
-      align: 'left',
     },
     {
       title: 'Hình ảnh',
       dataIndex: 'image',
-      key: 'image',
       align: 'center',
       render: (src) => <Image src={src} alt="reward" width={50} height={50} style={{ borderRadius: 8, objectFit: 'cover' }} preview={false} />,
     },
     {
       title: 'Phân loại',
       dataIndex: 'category',
-      key: 'category',
       align: 'center',
-      render: (category) => {
+      render: (type) => {
         let color = 'blue';
-        if (category === 'Tiền tệ') color = 'gold';
-        else if (category === 'Danh hiệu') color = 'purple';
-        else if (category === 'Huy hiệu') color = 'green';
-        return <Tag color={color}>{category}</Tag>;
+        if (type === 'empty') color = 'gold';
+        if (type === 'title') color = 'purple';
+        if (type === 'badge') color = 'green';
+        return <Tag color={color}>{type}</Tag>;
       },
     },
     {
       title: 'Số lượng',
       dataIndex: 'quantity',
-      key: 'quantity',
       align: 'center',
-      render: (quantity) => <Tag color="cyan">{quantity}</Tag>,
+      render: (q) => <Tag color="cyan">{q}</Tag>,
     },
     {
       title: 'Điều kiện nhận',
       dataIndex: 'condition',
-      key: 'condition',
-      align: 'left',
       ellipsis: true,
     },
     {
       title: 'Ghi chú',
       dataIndex: 'note',
-      key: 'note',
-      align: 'left',
       ellipsis: true,
     },
     {
       title: 'Thao tác',
-      key: 'action',
       align: 'center',
       render: (_, record) => (
         <Space>
-          <EyeOutlined style={{ color: '#1890ff', fontSize: '16px', cursor: 'pointer' }} onClick={() => handleViewDetail(record)} />
-          <DeleteOutlined style={{ color: '#ff4d4f', fontSize: '16px', cursor: 'pointer' }} onClick={() => handleDelete(record.key)} />
+          <EyeOutlined style={{ color: '#1890ff', fontSize: 16, cursor: 'pointer' }} onClick={() => handleViewDetail(record)} />
+
+          <Popconfirm title="Bạn chắc chắn muốn xóa?" okText="Xóa" cancelText="Hủy" onConfirm={() => handleDeleteItem(record.rewardCode)}>
+            <DeleteOutlined style={{ color: '#ff4d4f', fontSize: 16, cursor: 'pointer' }} />
+          </Popconfirm>
         </Space>
       ),
     },
@@ -105,19 +129,19 @@ export default function RewardTable() {
       <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
         <Space.Compact className="w-full max-w-xl">
           <Input placeholder="Nhập tên hoặc mã phần thưởng..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 260 }} />
-          <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}>
+          <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a' }}>
             Tìm
           </Button>
-          <Button type="primary" icon={<FilterOutlined />} style={{ backgroundColor: '#1890ff' }} />
+          {/* <Button type="primary" icon={<FilterOutlined />} style={{ backgroundColor: '#1890ff' }} /> */}
         </Space.Compact>
 
         <Space.Compact>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/reward-mana/add')}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/item-mana/add')}>
             Thêm
           </Button>
-          <Button danger icon={<DeleteOutlined />}>
+          {/* <Button danger icon={<DeleteOutlined />}>
             Xóa
-          </Button>
+          </Button> */}
           <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }}>
             Xuất Excel
           </Button>
@@ -136,9 +160,8 @@ export default function RewardTable() {
       />
 
       <div className="flex justify-between items-center mt-4 flex-wrap gap-2 m-2">
-        <div className="text-sm text-gray-800">
-          <span>Đã chọn: {selectedRowKeys.length} bản ghi</span>
-        </div>
+        <div className="text-sm text-gray-800">Đã chọn: {selectedRowKeys.length} bản ghi</div>
+
         <Pagination
           current={currentPage}
           pageSize={pageSize}

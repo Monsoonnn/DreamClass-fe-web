@@ -31,7 +31,7 @@ export default function StudentLearning({ student }) {
   const COLORS = ['#52c41a', '#d9d9d9'];
 
   // =============================
-  // Tạo dữ liệu đăng nhập
+  // Tạo dữ liệu đăng nhập (chỉ quan tâm có đăng nhập hay không)
   // =============================
   const generateActivityData = (year) => {
     const data = [];
@@ -40,10 +40,10 @@ export default function StudentLearning({ student }) {
 
     for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
       const day = new Date(d);
-      const randomLogins = Math.floor(Math.random() * 6); // demo: 0-5 lần đăng nhập
+      const loggedIn = Math.random() < 0.3; // demo: 30% ngày có đăng nhập
       data.push({
         date: day.toISOString().split('T')[0],
-        count: randomLogins,
+        loggedIn, // true/false
         dayOfWeek: day.getDay(),
         month: day.getMonth(),
       });
@@ -87,15 +87,14 @@ export default function StudentLearning({ student }) {
     return map;
   }, [activityData]);
 
-  const getColor = (count) => {
-    if (count === 0) return '#ebedf0';
-    if (count === 1) return '#9be9a8';
-    if (count === 2) return '#40c463';
-    if (count === 3) return '#30a14e';
-    return '#216e39';
+  // =============================
+  // Lấy màu dựa trên việc có đăng nhập hay không
+  // =============================
+  const getColor = (loggedIn) => {
+    return loggedIn ? '#40c463' : '#ebedf0';
   };
 
-  const totalLogins = activityData.reduce((sum, d) => sum + d.count, 0);
+  const totalLogins = activityData.filter((d) => d.loggedIn).length;
   const dayLabels = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
   return (
@@ -135,7 +134,7 @@ export default function StudentLearning({ student }) {
           className="shadow-sm"
           extra={
             <span className="text-sm text-gray-500">
-              {totalLogins} lần trong năm {selectedYear}
+              {totalLogins} ngày trong năm {selectedYear}
             </span>
           }
         >
@@ -168,10 +167,10 @@ export default function StudentLearning({ student }) {
                           {monthGrid.map((week, wIdx) => (
                             <div key={wIdx} className="flex flex-col gap-1">
                               {week.map((d, i) => (
-                                <Tooltip key={i} title={d ? `${d.date}: ${d.count} lần đăng nhập` : 'Không có dữ liệu'}>
+                                <Tooltip key={i} title={d ? `${d.date}: Đã đăng nhập` : 'Không có dữ liệu'}>
                                   <div
                                     className="w-3 h-3 rounded-sm hover:ring-2 hover:ring-gray-300 cursor-pointer"
-                                    style={{ backgroundColor: d ? getColor(d.count) : '#ebedf0' }}
+                                    style={{ backgroundColor: d ? getColor(d.loggedIn) : '#ebedf0' }}
                                   />
                                 </Tooltip>
                               ))}
@@ -185,11 +184,11 @@ export default function StudentLearning({ student }) {
               </div>
 
               <div className="flex items-center justify-end mt-4 gap-2 text-xs text-gray-600">
-                <span>Ít</span>
-                {[0, 1, 2, 3, 4].map((c) => (
-                  <div key={c} className="w-3 h-3 rounded-sm" style={{ backgroundColor: getColor(c) }} />
+                <span>Không có đăng nhập</span>
+                {[0, 1].map((c) => (
+                  <div key={c} className="w-3 h-3 rounded-sm" style={{ backgroundColor: getColor(c === 1) }} />
                 ))}
-                <span>Nhiều</span>
+                <span>Có đăng nhập</span>
               </div>
             </div>
           </div>

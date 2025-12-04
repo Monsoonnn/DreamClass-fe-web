@@ -86,15 +86,15 @@ export default function RankingGrade() {
       align: 'center',
       render: (v) => <Tag color="blue">{v}</Tag>,
     },
-    {
-      title: 'Đánh giá',
-      dataIndex: 'rating',
-      align: 'center',
-      render: (rating) => {
-        const color = rating === 'Good' ? 'green' : rating === 'Medium' ? 'blue' : rating === 'Poor' ? 'volcano' : 'default';
-        return <Tag color={color}>{rating || '-'}</Tag>;
-      },
-    },
+    // {
+    //   title: 'Đánh giá',
+    //   dataIndex: 'rating',
+    //   align: 'center',
+    //   render: (rating) => {
+    //     const color = rating === 'Good' ? 'green' : rating === 'Medium' ? 'blue' : rating === 'Poor' ? 'volcano' : 'default';
+    //     return <Tag color={color}>{rating || '-'}</Tag>;
+    //   },
+    // },
     {
       title: 'Thao tác',
       align: 'center',
@@ -211,7 +211,7 @@ export default function RankingGrade() {
               <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}>
                 Tìm
               </Button>
-              <Button type="primary" icon={<FilterOutlined />} style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }} />
+              {/* <Button type="primary" icon={<FilterOutlined />} style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }} /> */}
             </Space.Compact>
 
             <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }}>

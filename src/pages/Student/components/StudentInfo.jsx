@@ -15,8 +15,6 @@ export default function StudentInfo({ student }) {
 
           <div className="text-xl font-bold text-[#23408e] leading-tight">{student.name}</div>
 
-          <div className="text-sm text-gray-500">Mã số: {student.studentCode}</div>
-
           <Tag
             color={student.role === 'teacher' ? 'blue' : 'green'}
             style={{
@@ -53,14 +51,14 @@ export default function StudentInfo({ student }) {
             }}
           >
             <Descriptions.Item label="Giới tính">{student.gender}</Descriptions.Item>
-            <Descriptions.Item label="Ngày sinh">{student.dob}</Descriptions.Item>
+            <Descriptions.Item label="Ngày sinh">{student.dateOfBirth}</Descriptions.Item>
             <Descriptions.Item label="Địa chỉ">{student.address}</Descriptions.Item>
-            <Descriptions.Item label="Khối">{student.level || '—'}</Descriptions.Item>
-            <Descriptions.Item label="Lớp">{student.class || '—'}</Descriptions.Item>
+            <Descriptions.Item label="Khối">{student.grade || '—'}</Descriptions.Item>
+            <Descriptions.Item label="Lớp">{student.className || '—'}</Descriptions.Item>
             <Descriptions.Item label="Số điện thoại">{student.phone}</Descriptions.Item>
             <Descriptions.Item label="Email">{student.email}</Descriptions.Item>
             <Descriptions.Item label="Tài khoản">{student.username}</Descriptions.Item>
-            <Descriptions.Item label="Ghi chú">{student.note}</Descriptions.Item>
+            <Descriptions.Item label="Ghi chú">{student.notes}</Descriptions.Item>
           </Descriptions>
         </div>
       </div>
