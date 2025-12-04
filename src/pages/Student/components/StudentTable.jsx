@@ -1,143 +1,141 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, Tag, Button, Space, Input, Pagination } from 'antd';
+import { Table, Button, Space, Input, Pagination, message } from 'antd';
 import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined } from '@ant-design/icons';
-import { getStudents } from './StudentService';
+import apiClient from '../../../services/api'; // đường dẫn đến api.js của bạn
 
 export default function StudentTable() {
-  const data = getStudents();
   const navigate = useNavigate();
+
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [inputSearchText, setInputSearchText] = useState('');
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
 
-  // Lọc danh sách theo tìm kiếm
-  const filteredClassList = () => {
-    if (!inputSearchText.trim()) return data;
-    return data.filter((item) => item.name.toLowerCase().includes(inputSearchText.toLowerCase()) || item.studentCode.toLowerCase().includes(inputSearchText.toLowerCase()));
-  };
+  useEffect(() => {
+    const loadStudents = async () => {
+      try {
+        setLoading(true);
+        const res = await apiClient.get('/teacher/students');
+        setStudents(res.data.data || []); // backend trả {data: [...]}
+      } catch (error) {
+        console.error(error);
+        message.error('Không thể tải danh sách học sinh!');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Xem chi tiết
+    loadStudents();
+  }, []);
+
+  const filteredStudents = students.filter((item) => {
+    const t = inputSearchText.toLowerCase().trim();
+    return item.name?.toLowerCase().includes(t) || item.username?.toLowerCase().includes(t);
+  });
 
   const columns = [
     {
       title: 'STT',
-      dataIndex: 'index',
-      key: 'index',
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => index + 1 + (currentPage - 1) * pageSize,
       width: 70,
       align: 'center',
     },
-    {
-      title: 'Mã học sinh',
-      dataIndex: 'studentCode',
-      key: 'studentCode',
-      align: 'center',
-    },
+    // {
+    //   title: 'Mã học sinh',
+    //   dataIndex: 'username',
+    //   align: 'center',
+    // },
     {
       title: 'Họ tên',
       dataIndex: 'name',
-      key: 'name',
       align: 'left',
     },
     {
       title: 'Khối',
-      dataIndex: 'level',
-      key: 'level',
+      dataIndex: 'grade',
       align: 'center',
     },
     {
       title: 'Lớp',
-      dataIndex: 'class',
-      key: 'class',
+      dataIndex: 'className',
       align: 'center',
     },
     {
       title: 'Ngày sinh',
-      dataIndex: 'dob',
-      key: 'dob',
+      dataIndex: 'dateOfBirth',
       align: 'center',
+      render: (dob) => (dob ? new Date(dob).toLocaleDateString('vi-VN') : ''),
     },
     {
       title: 'Giới tính',
       dataIndex: 'gender',
-      key: 'gender',
       align: 'center',
     },
     {
       title: 'Địa chỉ',
       dataIndex: 'address',
-      key: 'address',
       align: 'left',
       ellipsis: true,
     },
-
     {
       title: 'Ghi chú',
-      dataIndex: 'note',
-      key: 'note',
+      dataIndex: 'notes',
       align: 'left',
       ellipsis: true,
     },
     {
       title: 'Thao tác',
-      key: 'action',
       align: 'center',
       render: (_, record) => (
         <Space>
-          <Button type="primary" icon={<EyeOutlined />} onClick={() => navigate(`/student-mana/view/${record.key}`)}>
+          <Button type="primary" icon={<EyeOutlined />} onClick={() => navigate(`/student-mana/view/${record.playerId}`)}>
             Xem
           </Button>
         </Space>
       ),
     },
   ];
-
   return (
     <div className="bg-white shadow-lg p-2 ">
-      {/* Thanh công cụ */}
       <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
         <Space.Compact className="w-full max-w-xl">
           <Input placeholder="Nhập tìm kiếm..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 220 }} />
-          <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}>
+          <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a' }}>
             Tìm
           </Button>
-          <Button type="primary" icon={<FilterOutlined />} style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }} />
+          {/* <Button type="primary" icon={<FilterOutlined />} /> */}
         </Space.Compact>
 
-        <Button
-          type="default"
-          icon={<FileExcelOutlined />}
-          style={{
-            backgroundColor: '#52c41a',
-            color: '#fff',
-            borderColor: '#52c41a',
-          }}
-        >
+        <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff' }}>
           Xuất Excel
         </Button>
       </div>
 
-      {/* Bảng dữ liệu */}
       <Table
-        dataSource={filteredClassList().slice((currentPage - 1) * pageSize, currentPage * pageSize)}
+        dataSource={filteredStudents.slice((currentPage - 1) * pageSize, currentPage * pageSize)}
         columns={columns}
+        loading={loading}
         pagination={false}
-        rowKey="studentCode"
+        rowKey="_id"
         rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
         scroll={{ x: 'max-content' }}
         size="small"
         bordered
       />
+
       <div className="flex justify-between items-center mt-4 flex-wrap gap-2 m-2">
         <div className="text-sm text-gray-800">
           <span>Đã chọn: {selectedRowKeys.length} bản ghi</span>
         </div>
+
         <Pagination
           current={currentPage}
           pageSize={pageSize}
-          total={filteredClassList().length}
+          total={filteredStudents.length}
           onChange={(page, size) => {
             setCurrentPage(page);
             setPageSize(size);

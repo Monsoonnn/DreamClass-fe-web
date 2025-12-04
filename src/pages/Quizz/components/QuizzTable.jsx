@@ -31,6 +31,7 @@ export default function QuizzTable() {
         id: q._id,
         name: q.name,
         subject: q.subject,
+        grade: q.grade,
         chapter: q.chapters?.map((c) => c.name).join(', ') || 'Không có',
         note: `Số chương: ${q.chapters?.length || 0}`,
       }));
@@ -46,17 +47,13 @@ export default function QuizzTable() {
   useEffect(() => {
     fetchData();
   }, []);
-
-  // ================= FILTER =================
   const filteredData = quizzList.filter((item) => item.name.toLowerCase().includes(inputSearchText.toLowerCase()));
 
-  // ================= DELETE LOCAL =================
   const handleDelete = (id) => {
     setQuizzList(quizzList.filter((item) => item.id !== id));
     message.success('Xóa thành công');
   };
 
-  // ================= TABLE COLUMNS =================
   const columns = [
     {
       title: 'STT',
@@ -68,6 +65,11 @@ export default function QuizzTable() {
       title: 'Tên quizz',
       dataIndex: 'name',
       className: 'font-medium',
+    },
+    {
+      title: 'Khối',
+      dataIndex: 'grade',
+      render: (text) => <Tag color="green">{text}</Tag>,
     },
     {
       title: 'Môn học',

@@ -4,21 +4,26 @@ import { UploadOutlined } from '@ant-design/icons';
 import { apiClient } from '../../services/api';
 import dayjs from 'dayjs';
 
-export default function ProfileEdit({ visible, onClose, user, onUpdated }) {
-  const [avatarPreview, setAvatarPreview] = useState(user?.avatar || null);
+export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdated }) {
+  const [avatarPreview, setAvatarPreview] = useState(null);
   const [form] = Form.useForm();
 
   useEffect(() => {
-    if (user) {
-      // Điền thông tin vào form khi modal mở
-      form.setFieldsValue({
-        ...user, // Các trường cơ bản
-        dateOfBirth: user.dateOfBirth ? dayjs(user.dateOfBirth) : null, // Format lại ngày sinh
-      });
-      setAvatarPreview(user.avatar); // Đặt ảnh đại diện mặc định
-    }
-  }, [user, form]);
+    if (teacher) {
+      // Kiểm tra nếu có thông tin lớp và khối
+      const assignedClass = teacher.assignedClasses && teacher.assignedClasses[0];
 
+      form.setFieldsValue({
+        ...teacher,
+        className: assignedClass ? assignedClass.className : '', // Nếu có lớp thì lấy tên lớp
+        grade: assignedClass ? assignedClass.grade : '', // Nếu có khối thì lấy giá trị khối
+        dateOfBirth: teacher.dateOfBirth ? dayjs(teacher.dateOfBirth) : null, // Format ngày sinh
+      });
+      setAvatarPreview(teacher.avatar);
+    }
+  }, [teacher, form]);
+
+  // Xử lý thay đổi ảnh đại diện
   const handleAvatarChange = (info) => {
     const file = info.file.originFileObj;
     const preview = URL.createObjectURL(file);
@@ -29,21 +34,21 @@ export default function ProfileEdit({ visible, onClose, user, onUpdated }) {
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
+      let avatarUrl = teacher.avatar;
 
-      let avatarUrl = user.avatar;
       if (values.avatarFile) {
-        avatarUrl = avatarPreview; // Nếu có thay đổi ảnh, dùng ảnh mới
+        avatarUrl = avatarPreview;
       }
 
-      const updatedUser = {
-        ...user,
+      const updatedTeacher = {
+        ...teacher,
         ...values,
         avatar: avatarUrl,
-        dateOfBirth: values.dateOfBirth.format('YYYY-MM-DD'), // Format lại ngày sinh
+        dateOfBirth: values.dateOfBirth.format('YYYY-MM-DD'),
       };
 
       // Gửi API cập nhật thông tin
-      await apiClient.put(`/api/auth/profile`, updatedUser);
+      await apiClient.put(`/api/auth/profile`, updatedTeacher);
 
       message.success('Cập nhật thông tin thành công!');
       onUpdated(); // Reload lại dữ liệu sau khi cập nhật
@@ -69,8 +74,8 @@ export default function ProfileEdit({ visible, onClose, user, onUpdated }) {
         form={form}
         layout="vertical"
         initialValues={{
-          ...user, // Đảm bảo user có đầy đủ các trường ban đầu
-          dateOfBirth: user.dateOfBirth ? dayjs(user.dateOfBirth) : null, // Format ngày sinh
+          ...teacher,
+          dateOfBirth: teacher.dateOfBirth ? dayjs(teacher.dateOfBirth) : null, // Format ngày sinh
         }}
       >
         {/* Avatar */}

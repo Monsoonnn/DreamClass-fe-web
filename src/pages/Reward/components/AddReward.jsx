@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Form, Input, Button, Select, Upload, message, InputNumber, Row, Col } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { addReward } from './RewardService';
+import apiClient from '../../../services/api';
 
 const { Option } = Select;
 
@@ -15,46 +15,54 @@ export default function AddReward() {
   const maxSizeMB = 1;
 
   const handleUploadChange = ({ file, fileList }) => {
-    // Lấy file gốc, fallback nếu originFileObj undefined
     const currentFile = file.originFileObj || file;
-
     if (!currentFile) return;
 
     if (currentFile.size / 1024 / 1024 > maxSizeMB) {
       message.error(`Dung lượng tối đa là ${maxSizeMB}MB`);
       return;
     }
-
     setFileList(fileList);
-
-    // Chuyển file thành base64 để preview
     const reader = new FileReader();
     reader.onload = (e) => setPreviewImage(e.target.result);
     reader.readAsDataURL(currentFile);
   };
 
-  const onFinish = (values) => {
-    if (!previewImage) {
+  const onFinish = async (values) => {
+    if (fileList.length === 0) {
       message.error('Vui lòng tải lên ảnh phần thưởng');
       return;
     }
 
-    addReward({
-      rewardCode: values.rewardCode,
-      rewardName: values.rewardName,
-      category: values.category,
-      quantity: values.quantity,
-      condition: values.condition,
-      note: values.note,
-      image: previewImage,
-    });
+    const file = fileList[0].originFileObj;
 
-    message.success('Thêm phần thưởng thành công!');
-    form.resetFields();
-    setPreviewImage(null);
-    setFileList([]);
+    const formData = new FormData();
+    formData.append('itemId', values.rewardCode);
+    formData.append('name', values.rewardName);
+    formData.append('type', values.category); // Lưu ý: Backend có thể cần 'empty', 'badge'... thay vì tiếng Việt
+    formData.append('condition', values.condition);
+    formData.append('notes', values.note || '');
+    formData.append('image', file);
 
-    navigate('/reward-mana');
+    formData.append('description', values.condition || 'Mô tả phần thưởng');
+
+    try {
+      await apiClient.post('/items/admin', formData, {
+        headers: {
+          'Content-Type': undefined,
+        },
+      });
+
+      message.success('Thêm phần thưởng thành công!');
+      form.resetFields();
+      setPreviewImage(null);
+      setFileList([]);
+      navigate('/item-mana');
+    } catch (error) {
+      console.error('Add Reward Error:', error);
+      const errorMsg = error.response?.data?.message || 'Lỗi hệ thống (500)';
+      message.error(errorMsg);
+    }
   };
 
   return (
@@ -63,55 +71,48 @@ export default function AddReward() {
       <Form form={form} layout="vertical" onFinish={onFinish} initialValues={{ quantity: 1 }}>
         <Row gutter={24}>
           <Col span={12}>
-            <Form.Item label="Mã phần thưởng" name="rewardCode" rules={[{ required: true, message: 'Vui lòng nhập mã phần thưởng' }]}>
-              <Input placeholder="Nhập mã phần thưởng" />
+            <Form.Item label="Mã phần thưởng" name="rewardCode" rules={[{ required: true, message: 'Nhập mã' }]}>
+              <Input placeholder="VD: GG001118" />
             </Form.Item>
-            <Form.Item label="Tên phần thưởng" name="rewardName" rules={[{ required: true, message: 'Vui lòng nhập tên phần thưởng' }]}>
-              <Input placeholder="Nhập tên phần thưởng" />
+            <Form.Item label="Tên phần thưởng" name="rewardName" rules={[{ required: true, message: 'Nhập tên' }]}>
+              <Input placeholder="VD: Chúc bạn may mắn" />
             </Form.Item>
-            <Form.Item label="Phân loại" name="category" rules={[{ required: true, message: 'Vui lòng chọn phân loại' }]}>
+            <Form.Item label="Phân loại" name="category" rules={[{ required: true, message: 'Chọn phân loại' }]}>
               <Select placeholder="Chọn phân loại">
-                <Option value="Huy hiệu">Huy hiệu</Option>
-                <Option value="Tiền tệ">Tiền tệ</Option>
-                <Option value="Danh hiệu">Danh hiệu</Option>
+                {/* Đảm bảo value khớp với backend quy định */}
+
+                <Option value="banner">Cờ hiệu</Option>
+                <Option value="title">Danh hiệu</Option>
+                <Option value="empty">Khác (Empty)</Option>
               </Select>
             </Form.Item>
-            <Form.Item label="Số lượng" name="quantity" rules={[{ required: true, message: 'Vui lòng nhập số lượng' }]}>
+            <Form.Item label="Số lượng" name="quantity">
               <InputNumber min={1} style={{ width: '100%' }} />
             </Form.Item>
-            <Form.Item label="Điều kiện nhận" name="condition" rules={[{ required: true, message: 'Vui lòng nhập điều kiện nhận' }]}>
-              <Input.TextArea placeholder="Nhập điều kiện nhận" rows={3} />
+            <Form.Item label="Điều kiện nhận" name="condition" rules={[{ required: true, message: 'Nhập điều kiện' }]}>
+              <Input.TextArea rows={3} />
             </Form.Item>
           </Col>
-
           <Col span={12}>
-            <Form.Item label="Tải hình ảnh phần thưởng" required>
-              <Upload
-                listType="picture"
-                beforeUpload={() => false} // chặn auto upload
-                fileList={fileList}
-                onChange={handleUploadChange}
-                maxCount={1}
-                accept="image/*"
-              >
-                <Button icon={<UploadOutlined />}>Tải ảnh lên (tối đa {maxSizeMB}MB)</Button>
+            <Form.Item label="Ảnh phần thưởng (Bắt buộc)">
+              <Upload listType="picture" beforeUpload={() => false} fileList={fileList} onChange={handleUploadChange} maxCount={1} accept="image/*">
+                <Button icon={<UploadOutlined />}>Tải ảnh lên</Button>
               </Upload>
-              {previewImage && <img src={previewImage} alt="preview" style={{ marginTop: 10, width: '100%', height: 200, objectFit: 'cover', borderRadius: 8 }} />}
+              {previewImage && <img src={previewImage} alt="preview" className="mt-2 w-full h-48 object-cover rounded" />}
             </Form.Item>
             <Form.Item label="Ghi chú" name="note">
-              <Input.TextArea placeholder="Nhập ghi chú (nếu có)" rows={3} />
+              <Input.TextArea rows={3} />
             </Form.Item>
           </Col>
         </Row>
-
-        <Form.Item className="flex gap-2 mt-4">
-          <Button type="primary" htmlType="submit" style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }}>
+        <div className="flex gap-2 mt-4">
+          <Button type="primary" htmlType="submit">
             Lưu
           </Button>
-          <Button type="default" danger onClick={() => navigate('/reward-mana')}>
+          <Button danger onClick={() => navigate('/item-mana')}>
             Hủy
           </Button>
-        </Form.Item>
+        </div>
       </Form>
     </div>
   );

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // Dữ liệu mẫu
 const GAME_DATA = {
@@ -88,39 +89,44 @@ const GameIcon = ({ type, className }) => {
 };
 
 // Component Header
-const Header = () => (
-  <header className="bg-black bg-opacity-60 fixed w-full top-0 z-50 backdrop-blur-sm">
-    <div className="container mx-auto flex items-center p-4 text-white">
-      {/* Logo bên trái */}
-      <a href="#" className="flex items-center space-x-2 ml-20">
-        <img src={GAME_DATA.logoUrl} alt="Game Logo" className="h-10 md:h-12" />
-      </a>
+// Header component (đã bật useNavigate bên trong)
+const Header = () => {
+  const navigate = useNavigate(); // phải ở trong component
 
-      {/* Nav chính giữa */}
-      <nav className="hidden md:flex flex-1 justify-center space-x-8 ml-20 font-semibold">
-        <a href="#about" className="hover:text-cyan-400 transition-colors duration-300">
-          GIỚI THIỆU
+  return (
+    <header className="bg-black bg-opacity-60 fixed w-full top-0 z-50 backdrop-blur-sm">
+      <div className="container mx-auto flex items-center p-4 text-white">
+        <a href="#" className="flex items-center space-x-2 ml-20">
+          <img src={GAME_DATA.logoUrl} alt="Game Logo" className="h-10 md:h-12" />
         </a>
-        <a href="#screenshots" className="hover:text-cyan-400 transition-colors duration-300">
-          HÌNH ẢNH
-        </a>
-        <a href="#download" className="hover:text-cyan-400 transition-colors duration-300">
-          TẢI GAME
-        </a>
-      </nav>
 
-      {/* Nút bên phải */}
-      <div className="hidden md:flex items-center space-x-4">
-        <a href="#download" className="bg-cyan-500 hover:bg-cyan-400 text-black font-bold py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
-          Tải Ngay
-        </a>
-        <button className="bg-transparent border border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-black font-bold py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
-          Đăng Nhập
-        </button>
+        <nav className="hidden md:flex flex-1 justify-center space-x-8 ml-20 font-semibold">
+          <a href="#about" className="hover:text-cyan-400 transition-colors duration-300">
+            GIỚI THIỆU
+          </a>
+          <a href="#screenshots" className="hover:text-cyan-400 transition-colors duration-300">
+            HÌNH ẢNH
+          </a>
+          <a href="#download" className="hover:text-cyan-400 transition-colors duration-300">
+            TẢI GAME
+          </a>
+        </nav>
+
+        <div className="hidden md:flex items-center space-x-4">
+          <a href="#download" className="bg-cyan-500 hover:bg-cyan-400 text-black font-bold py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+            Tải Ngay
+          </a>
+          <button
+            className="bg-transparent border border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-black font-bold py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
+            onClick={() => navigate('/login')} // bỏ comment nếu muốn chuyển trang
+          >
+            Đăng Nhập
+          </button>
+        </div>
       </div>
-    </div>
-  </header>
-);
+    </header>
+  );
+};
 
 // Component Hero Section
 const Hero = () => (

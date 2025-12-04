@@ -112,7 +112,7 @@ export default function TeacherDetail() {
               <Descriptions.Item label="Địa chỉ">{teacher.address}</Descriptions.Item>
               <Descriptions.Item label="Số điện thoại">{teacher.phone}</Descriptions.Item>
               <Descriptions.Item label="Email">{teacher.email}</Descriptions.Item>
-              <Descriptions.Item label="Tài khoản">{teacher.name}</Descriptions.Item>
+              <Descriptions.Item label="Tài khoản">{teacher.username}</Descriptions.Item>
               <Descriptions.Item label="Lớp được phân công">
                 {teacher.assignedClasses.length > 0 ? teacher.assignedClasses.map((c) => `${c.grade} - ${c.className}`).join(', ') : '—'}
               </Descriptions.Item>

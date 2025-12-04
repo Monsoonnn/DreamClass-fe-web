@@ -4,8 +4,8 @@ import { OrderedListOutlined, TeamOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import UserInfo from '../../UserMana/components/UserInfo';
 import UserLearning from '../../Student/components/StudentLearning';
-import { getUsers } from '../../UserMana/components/userService';
 import UserAchievements from '../../UserMana/components/UserAchievements';
+import { apiClient } from '../../../services/api.js';
 
 export default function RankingServerDetail() {
   const { id } = useParams();
@@ -14,23 +14,36 @@ export default function RankingServerDetail() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Lấy học sinh theo id
-  const getStudentById = (key) => {
-    const found = getUsers().find((u) => u.key === key && u.role === 'student');
-    return found || null;
+  const getStudentById = async (playerID) => {
+    try {
+      // Gọi API số 1
+      const response = await apiClient.get(`/players/admin/players/${playerID}`);
+      return response.data.data || null;
+    } catch (error) {
+      console.error('Error fetching player data:', error);
+      return null;
+    }
   };
 
   useEffect(() => {
-    const found = getStudentById(id);
+    const fetchData = async () => {
+      if (!id) return;
+      setLoading(true);
+      const found = await getStudentById(id);
 
-    if (!found) {
-      navigate('/ranking-server'); // nếu không tìm thấy
-      return;
-    }
+      if (!found) {
+        // Xử lý nếu không tìm thấy, có thể navigate về hoặc hiện thông báo
+        // navigate('/ranking-server');
+        setLoading(false);
+        return;
+      }
 
-    setUser(found);
-    setLoading(false);
-  }, [id, navigate]);
+      setUser(found);
+      setLoading(false);
+    };
+
+    fetchData();
+  }, [id]);
 
   if (loading)
     return (
@@ -65,27 +78,30 @@ export default function RankingServerDetail() {
       />
 
       <div className="bg-white shadow p-2">
-        <Tabs
-          className="font-medium text-[#23408e]"
-          defaultActiveKey="1"
-          items={[
-            {
-              key: '1',
-              label: 'Thông tin học sinh',
-              children: <UserInfo user={user} />, // truyền prop user
-            },
-            {
-              key: '2',
-              label: 'Học tập',
-              children: <UserLearning student={user} />, // giữ tên student nếu UserLearning vẫn dùng student
-            },
-            {
-              key: '3',
-              label: 'Thành tích',
-              children: <UserAchievements user={user} />, // giữ tên student nếu UserLearning vẫn dùng student
-            },
-          ]}
-        />
+        {user && (
+          <Tabs
+            className="font-medium text-[#23408e]"
+            defaultActiveKey="1"
+            items={[
+              {
+                key: '1',
+                label: 'Thông tin học sinh',
+                children: <UserInfo user={user} />,
+              },
+              {
+                key: '2',
+                label: 'Học tập',
+                // Truyền cả user và id để bên trong gọi API lịch sử
+                children: <UserLearning user={user} playerId={user._id} />,
+              },
+              {
+                key: '3',
+                label: 'Thành tích',
+                children: <UserAchievements user={user} />,
+              },
+            ]}
+          />
+        )}
       </div>
     </div>
   );
