@@ -28,26 +28,22 @@ const teacherMenu = [
 const adminMenu = [
   { key: 'dashboard', label: 'Dashboard', icon: <DashboardOutlined style={{ fontSize: 18 }} />, path: '/dashboard' },
   { key: 'usermana', label: 'Quản lý người dùng', icon: <HomeOutlined style={{ fontSize: 18 }} />, path: '/user-mana' },
-
-  // === MENU RANKING (CÓ SUBMENU) ===
   {
     key: 'ranking',
     label: 'Bảng xếp hạng',
     icon: <TrophyOutlined style={{ fontSize: 18 }} />,
     children: [
-      { key: 'rankingserver', label: 'Xếp hạng server', path: '/ranking-server' },
+      { key: 'rankingserver', label: 'Xếp hạng máy chủ', path: '/ranking-server' },
       { key: 'rankinggrade', label: 'Xếp hạng theo khối', path: '/ranking-grade' },
       { key: 'rankingclass', label: 'Xếp hạng theo lớp', path: '/ranking-class' },
     ],
   },
-
-  // === MENU REWARD (CÓ SUBMENU) ===
   {
     key: 'reward',
     label: 'Quản lý phần thưởng',
     icon: <GiftOutlined style={{ fontSize: 18 }} />,
     children: [
-      { key: 'spin', label: 'Vòng quay', path: '/reward-spin' },
+      { key: 'spin', label: 'Vòng quay', path: '/spin-mana' },
       { key: 'item', label: 'Vật phẩm', path: '/item-mana' },
     ],
   },
@@ -55,6 +51,23 @@ const adminMenu = [
   { key: 'mission', label: 'Quản lý nhiệm vụ', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/mission-mana' },
   { key: 'book', label: 'Quản lý sách', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/book-mana' },
   { key: 'quizz', label: 'Quản lý câu hỏi', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/quizz-mana' },
+];
+// MENU CHO HỌC SINH
+const StudentMenu = [
+  { key: 'dashboard', label: 'Dashboard', icon: <DashboardOutlined style={{ fontSize: 18 }} />, path: '/dashboard' },
+
+  { key: 'quizz', label: 'Làm bài quizz', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/student-quizz-list' },
+  {
+    key: 'ranking',
+    label: 'Bảng xếp hạng',
+    icon: <TrophyOutlined style={{ fontSize: 18 }} />,
+    children: [
+      { key: 'rankingserver', label: 'Xếp hạng máy chủ', path: '/student-ranking-server' },
+      { key: 'rankinggrade', label: 'Xếp hạng theo khối', path: '/student-ranking-grade' },
+      { key: 'rankingclass', label: 'Xếp hạng theo lớp', path: '/student-ranking-class' },
+    ],
+  },
+  { key: 'book', label: 'Xem sách', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/student-book' },
 ];
 
 export default function Sidebar() {
@@ -67,7 +80,8 @@ export default function Sidebar() {
   const [openDropdowns, setOpenDropdowns] = useState({}); // QUẢN LÝ DROPDOWN
 
   const role = user?.role || 'teacher';
-  const menuItems = role === 'admin' ? adminMenu : teacherMenu;
+
+  const menuItems = role === 'admin' ? adminMenu : role === 'student' ? StudentMenu : teacherMenu;
 
   // Đổi highlight menu theo URL
   useEffect(() => {

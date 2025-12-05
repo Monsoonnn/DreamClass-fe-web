@@ -34,8 +34,18 @@ import AddQuizz from './pages/Quizz/components/AddQuizz';
 import Dashboard from './pages/Dashboard/Dashboard';
 import Profile from './pages/Profile/Profile';
 import TeacherProfile from './pages/Profile/TeacherProfile';
+import StudentProfile from './pages/Profile/StudentProfile';
 import TeacherMissionTable from './pages/Mission/components/TeacherMissionTable';
 import TeacherMissionDetail from './pages/Mission/components/TeacherMissionDetail';
+import StudentQuizList from './pages/Quizz/components/StudentQuizList';
+import StudentQuizzDetail from './pages/Quizz/components/StudentQuizzDetail';
+import StudentRankingClass from './pages/Ranking/components/StudentRankingClass';
+import StudentRankingGrade from './pages/Ranking/components/StudentRankingGrade';
+import StudentRankingServer from './pages/Ranking/components/StudentRankingServer';
+import StudentBook from './pages/BookMana/components/StudentBook';
+import SpinMana from './pages/SpinWheel/SpinMana';
+import AddSpin from './pages/SpinWheel/components/AddSpin';
+import StudentQuizDetail from './pages/Quizz/components/StudentQuizzDetail';
 function App() {
   return (
     <AuthProvider>
@@ -59,7 +69,14 @@ function App() {
               </PublicRoute>
             }
           />
-
+          <Route
+            path="/student-quizz-detail/:id"
+            element={
+              <RoleRoute allowedRoles={['student']}>
+                <StudentQuizDetail />
+              </RoleRoute>
+            }
+          />
           {/* Layout + bảo vệ đăng nhập */}
           <Route
             element={
@@ -72,12 +89,61 @@ function App() {
             <Route
               path="/dashboard"
               element={
-                <RoleRoute allowedRoles={['teacher', 'admin']}>
+                <RoleRoute allowedRoles={['teacher', 'admin', 'student']}>
                   <Dashboard />
                 </RoleRoute>
               }
             />
-            <Route path="/teacher-profile" element={<TeacherProfile />} />
+            {/* <Route path="/teacher-profile" element={<TeacherProfile />} /> */}
+            {/* ---Học sinh---- */}
+            <Route
+              path="/student-profile"
+              element={
+                <RoleRoute allowedRoles={['student']}>
+                  <StudentProfile />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/student-quizz-list"
+              element={
+                <RoleRoute allowedRoles={['student']}>
+                  <StudentQuizList />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/student-ranking-class"
+              element={
+                <RoleRoute allowedRoles={['student']}>
+                  <StudentRankingClass />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/student-ranking-grade"
+              element={
+                <RoleRoute allowedRoles={['student']}>
+                  <StudentRankingGrade />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/student-ranking-server"
+              element={
+                <RoleRoute allowedRoles={['student']}>
+                  <StudentRankingServer />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/student-book"
+              element={
+                <RoleRoute allowedRoles={['student']}>
+                  <StudentBook />
+                </RoleRoute>
+              }
+            />
             {/* -------- GIÁO VIÊN + ADMIN (chung) -------- */}{' '}
             <Route
               path="/book-mana"
@@ -128,6 +194,14 @@ function App() {
               }
             />
             {/* -------- CHỈ GIÁO VIÊN -------- */}
+            <Route
+              path="/teacher-profile"
+              element={
+                <RoleRoute allowedRoles={['teacher']}>
+                  <TeacherProfile />
+                </RoleRoute>
+              }
+            />
             <Route
               path="/student-mana"
               element={
@@ -222,6 +296,22 @@ function App() {
               element={
                 <RoleRoute allowedRoles={['admin']}>
                   <RewardDetail />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/spin-mana"
+              element={
+                <RoleRoute allowedRoles={['admin']}>
+                  <SpinMana />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/spin-mana/add"
+              element={
+                <RoleRoute allowedRoles={['admin']}>
+                  <AddSpin />
                 </RoleRoute>
               }
             />
