@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Input, Pagination, Popconfirm, Spin, message, Tag } from 'antd';
-import { EyeOutlined, SearchOutlined, PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Input, Pagination, Popconfirm, Spin, message, Tag, Breadcrumb } from 'antd';
+import { EyeOutlined, SearchOutlined, PlusOutlined, DeleteOutlined, EditOutlined, UserOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../../services/api';
 // import EditBookModal from './BookEdit';
@@ -115,6 +115,30 @@ export default function StudentBook() {
       ) : (
         <>
           {/* Toolbar */}
+          <div>
+            <Breadcrumb
+              className="mb-4 text-sm"
+              items={[
+                {
+                  href: '/book-mana',
+                  title: (
+                    <>
+                      <UserOutlined />
+                      <span>Quản lý bài trắc nghiệm</span>
+                    </>
+                  ),
+                },
+                {
+                  title: (
+                    <>
+                      <UnorderedListOutlined />
+                      <span className="font-semibold text-[#23408e]">Danh sách bài trắc nghiệm</span>
+                    </>
+                  ),
+                },
+              ]}
+            />
+          </div>
           <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
             <Space.Compact className="w-full max-w-xl">
               <Input placeholder="Tìm kiếm..." value={inputSearch} onChange={(e) => setInputSearch(e.target.value)} style={{ width: 220 }} />

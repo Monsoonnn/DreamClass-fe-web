@@ -33,17 +33,17 @@ export default function StudentQuizList() {
   const getTotalQuestions = (quiz) => quiz.chapters?.reduce((sum, ch) => sum + ch.questions.length, 0) || 0;
 
   return (
-    <div className="min-h-screen bg-gray-50  md:p-10 font-sans text-slate-800">
+    <div className="min-h-screen bg-blue-50  md:p-10 font-sans text-slate-800">
       <div className=" ">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-1">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-2 gap-1">
           <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">Danh sách quizz</h1>
+            <h1 className="text-lg md:text-2xl font-extrabold text-slate-900 tracking-tight">Danh sách quizz</h1>
           </div>
         </div>
 
         {/* Filters Section */}
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-2 flex flex-col sm:flex-row gap-2 items-center">
+        <div className="bg-white max-w-xl p-2 rounded-xl shadow-sm border border-gray-100 mb-2 flex flex-col sm:flex-row gap-2 items-center">
           <div className="relative w-full sm:w-80">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               {/* Search Icon SVG */}

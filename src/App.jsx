@@ -46,6 +46,7 @@ import StudentBook from './pages/BookMana/components/StudentBook';
 import SpinMana from './pages/SpinWheel/SpinMana';
 import AddSpin from './pages/SpinWheel/components/AddSpin';
 import StudentQuizDetail from './pages/Quizz/components/StudentQuizzDetail';
+import StudentQuizResult from './pages/Quizz/components/StudentQuizResult';
 function App() {
   return (
     <AuthProvider>
@@ -77,6 +78,7 @@ function App() {
               </RoleRoute>
             }
           />
+          <Route path="/student-quizz-result/:id" element={<StudentQuizResult />} />
           {/* Layout + bảo vệ đăng nhập */}
           <Route
             element={
