@@ -1,10 +1,9 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { Card, Spin, Radio, Button, Typography, message, Progress } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Spin, Radio, Button, Typography, message } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiClient } from '../../../services/api';
-import { CheckCircleOutlined, ClockCircleOutlined, BookOutlined } from '@ant-design/icons';
 
-const { Title, Paragraph, Text } = Typography;
+const { Title, Paragraph } = Typography;
 
 export default function StudentQuizDetail() {
   const { id } = useParams();
@@ -12,6 +11,7 @@ export default function StudentQuizDetail() {
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
   const [answers, setAnswers] = useState({});
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
   // Fetch quiz
   const fetchQuiz = async () => {
@@ -30,6 +30,23 @@ export default function StudentQuizDetail() {
     fetchQuiz();
   }, [id]);
 
+  // Lấy tất cả câu hỏi từ tất cả chapters
+  const getAllQuestions = () => {
+    if (!quiz || !quiz.chapters) return [];
+    return quiz.chapters.flatMap((chapter) =>
+      chapter.questions.map((q) => ({
+        ...q,
+        chapterName: chapter.name,
+        options: q.options || {},
+      }))
+    );
+  };
+
+  const allQuestions = getAllQuestions();
+  const currentQuestion = allQuestions.length > 0 ? allQuestions[currentQuestionIndex] : null;
+  const totalQuestions = allQuestions.length;
+
+  // Khi học sinh chọn đáp án
   const handleSelect = (questionId, optionKey) => {
     setAnswers((prev) => ({
       ...prev,
@@ -37,158 +54,190 @@ export default function StudentQuizDetail() {
     }));
   };
 
-  const handleSubmit = () => {
-    console.log('Student Answers:', answers);
-    message.success('Đã nộp bài thành công!');
-    navigate('/student-quizz-list');
+  // Chuyển sang câu tiếp theo
+  const handleNext = () => {
+    if (currentQuestionIndex < totalQuestions - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    }
   };
 
-  // Tính toán số lượng câu hỏi để hiển thị tiến độ (Logic UI only)
-  const totalQuestions = useMemo(() => {
-    return quiz?.chapters?.reduce((acc, curr) => acc + curr.questions.length, 0) || 0;
-  }, [quiz]);
+  // Quay lại câu trước
+  const handlePrev = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+    }
+  };
 
-  const answeredCount = Object.keys(answers).length;
-  const progressPercent = totalQuestions > 0 ? Math.round((answeredCount / totalQuestions) * 100) : 0;
+  // Nhảy đến câu hỏi cụ thể
+  const handleJumpToQuestion = (index) => {
+    setCurrentQuestionIndex(index);
+  };
+
+  // Nộp bài
+  // Nộp bài
+  const handleSubmit = async () => {
+    try {
+      const payload = {
+        answers: Object.entries(answers).map(([questionId, selectedOption]) => ({
+          questionId,
+          selectedOption,
+        })),
+      };
+
+      const res = await apiClient.post(`/quizzes/${id}/submit`, payload);
+
+      navigate(`/student-quizz-result/${id}`, {
+        state: res.data.data,
+      });
+    } catch (error) {
+      console.error(error);
+      message.error('Không thể nộp bài!');
+    }
+  };
 
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Spin size="large" tip="Đang tải đề thi..." />
+      <div className="p-5 text-center">
+        <Spin size="large" />
       </div>
     );
 
-  if (!quiz)
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <h3 className="text-xl font-semibold text-gray-500">Không tìm thấy bài thi</h3>
-          <Button onClick={() => navigate(-1)} className="mt-4">
-            Quay lại
-          </Button>
-        </div>
-      </div>
-    );
+  if (!quiz || allQuestions.length === 0) return <div className="p-4 text-lg">Không tìm thấy bài quiz</div>;
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] font-sans pb-20">
-      {/* --- Sticky Header: Hiển thị tên bài và Tiến độ --- */}
-      <div className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200 px-4 py-3">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-lg font-bold text-gray-800 truncate max-w-md" title={quiz.name}>
-              {quiz.name}
-            </h1>
-            <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
-              <span className="flex items-center">
-                <BookOutlined className="mr-1" /> {quiz.subject}
-              </span>
-              <span className="bg-gray-100 px-2 py-0.5 rounded text-gray-600">Khối {quiz.grade}</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4 min-w-[200px]">
-            <div className="flex-1">
-              <div className="flex justify-between text-xs mb-1 text-gray-500">
-                <span>
-                  Đã làm:{' '}
-                  <b className="text-blue-600">
-                    {answeredCount}/{totalQuestions}
-                  </b>
-                </span>
-                <span>{progressPercent}%</span>
-              </div>
-              <Progress percent={progressPercent} showInfo={false} strokeColor="#2563eb" size="small" />
-            </div>
-            <Button type="primary" onClick={handleSubmit} className="bg-blue-600 hover:bg-blue-500 font-medium shadow-md">
-              Nộp bài
-            </Button>
-          </div>
+    <div className="min-h-screen bg-gray-50 p-2 md:p-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-2">
+          <Title level={2} className="!mb-2">
+            {quiz.name}
+          </Title>
+          <Paragraph type="secondary" className="!mb-0">
+            Môn học: {quiz.subject} • Khối: {quiz.grade}
+          </Paragraph>
         </div>
-      </div>
 
-      {/* --- Main Content --- */}
-      <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-8">
-        {quiz.chapters.map((chapter, cIndex) => (
-          <div key={chapter._id} className="animate-fade-in-up">
-            {/* Tên chương */}
-            <div className="flex items-center gap-2 mb-4 mt-6">
-              <div className="w-1 h-6 bg-blue-600 rounded-full"></div>
-              <h2 className="text-xl font-bold text-gray-800 uppercase tracking-wide">{chapter.name}</h2>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+          {/* Main Content */}
+          <div className="lg:col-span-2">
+            {currentQuestion && (
+              <div className="bg-white rounded-xl shadow-lg p-4">
+                {/* Question Box */}
+                <div className="mb-8 pb-2 border-b border-gray-200">
+                  <div className="inline-block px-3  bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-2">Câu {currentQuestionIndex + 1}</div>
+                  <Paragraph strong className="!text-lg !mb-0">
+                    {currentQuestion.questionText}
+                  </Paragraph>
+                </div>
 
-            <div className="space-y-6">
-              {chapter.questions.map((q, qIndex) => {
-                // Tính số thứ tự câu hỏi toàn cục (nếu cần logic phức tạp hơn thì tính ở ngoài, đây là demo hiển thị theo index mảng)
-                const questionNumber = qIndex + 1;
-
-                return (
-                  <Card key={q._id} className="border-0 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-300" bodyStyle={{ padding: '24px' }}>
-                    <div className="flex gap-3 mb-4">
-                      <div className="flex-none">
-                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 font-bold text-sm border border-blue-100">
-                          {questionNumber}
-                        </span>
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-base md:text-lg font-medium text-gray-800 leading-relaxed">{q.questionText}</h3>
-                      </div>
-                    </div>
-
-                    {/* Vùng chọn đáp án Custom */}
-                    <div className="space-y-3 pl-0 md:pl-11">
-                      {Object.entries(q.options).map(([key, value]) => {
-                        const isSelected = answers[q._id] === key;
-                        return (
+                {/* Options */}
+                <div className="mb-8">
+                  <Radio.Group onChange={(e) => handleSelect(currentQuestion._id, e.target.value)} value={answers[currentQuestion._id] || ''} className="w-full">
+                    <div className="space-y-3">
+                      {currentQuestion.options &&
+                        Object.entries(currentQuestion.options).map(([key, value]) => (
                           <div
                             key={key}
-                            onClick={() => handleSelect(q._id, key)}
-                            className={`
-                              group relative flex items-center p-3 md:p-4 rounded-lg border-2 cursor-pointer transition-all duration-200
-                              ${isSelected ? 'border-blue-500 bg-blue-50/50' : 'border-gray-100 bg-white hover:border-blue-200 hover:bg-gray-50'}
-                            `}
+                            className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 cursor-pointer transition-all"
+                            onClick={() => handleSelect(currentQuestion._id, key)}
                           >
-                            <div className="flex items-center h-5">
-                              <Radio
-                                checked={isSelected}
-                                value={key}
-                                className="mr-0"
-                                style={{ pointerEvents: 'none' }} // Chặn sự kiện click của radio để div xử lý
-                              />
-                            </div>
-                            <div className="ml-3 flex text-sm md:text-base">
-                              <span className={`font-bold mr-2 ${isSelected ? 'text-blue-600' : 'text-gray-500'}`}>{key}.</span>
-                              <span className={`${isSelected ? 'text-gray-900 font-medium' : 'text-gray-700'}`}>{value}</span>
-                            </div>
-
-                            {/* Icon check mark khi chọn */}
-                            {isSelected && (
-                              <div className="absolute right-4 text-blue-500">
-                                <CheckCircleOutlined style={{ fontSize: '20px' }} />
-                              </div>
-                            )}
+                            <Radio value={key}>
+                              <span className="font-semibold">{key}.</span> {value}
+                            </Radio>
                           </div>
-                        );
-                      })}
+                        ))}
                     </div>
-                  </Card>
-                );
-              })}
+                  </Radio.Group>
+                </div>
+
+                {/* Explanation (if available) */}
+                {currentQuestion.explanation && (
+                  <div className="mb-8 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <Paragraph strong className="!text-amber-900 !mb-2">
+                      Giải thích
+                    </Paragraph>
+                    <Paragraph className="!text-amber-800 !mb-0">{currentQuestion.explanation}</Paragraph>
+                  </div>
+                )}
+
+                {/* Navigation Buttons */}
+                <div className="flex gap-4 justify-between">
+                  <Button onClick={handlePrev} disabled={currentQuestionIndex === 0} className="px-6">
+                    Câu trước
+                  </Button>
+                  <Button onClick={handleNext} disabled={currentQuestionIndex === totalQuestions - 1} type="primary" className="px-6">
+                    Câu tiếp theo
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar - Question Navigator */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-xl shadow-lg p-6 sticky top-4">
+              {/* Progress Info */}
+              <div className="mb-6">
+                <div className="text-sm text-gray-600 mb-2">
+                  Câu hỏi <span className="font-bold text-blue-600">{currentQuestionIndex + 1}</span>
+                  <span className="text-gray-400">/{totalQuestions}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="bg-blue-600 h-2 rounded-full transition-all duration-300" style={{ width: `${((currentQuestionIndex + 1) / totalQuestions) * 100}%` }}></div>
+                </div>
+              </div>
+
+              {/* Help Button */}
+              <button className="w-full mb-6 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">Cần giúp đỡ?</button>
+
+              {/* Question Navigator Grid */}
+              <div>
+                <Paragraph className="!text-sm !font-semibold !mb-3 !text-gray-700">Điều hướng câu hỏi</Paragraph>
+                <div className="grid grid-cols-5 gap-2">
+                  {allQuestions.map((q, index) => {
+                    const isAnswered = answers[q._id] !== undefined;
+                    const isCurrent = index === currentQuestionIndex;
+
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => handleJumpToQuestion(index)}
+                        className={`
+                          h-10 rounded-lg font-medium text-sm transition-all
+                          ${
+                            isCurrent
+                              ? 'bg-blue-600 text-white shadow-md'
+                              : isAnswered
+                              ? 'bg-blue-200 text-blue-700 hover:bg-blue-300'
+                              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                          }
+                        `}
+                      >
+                        {index + 1}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Legend */}
+              <div className="mt-6 pt-4 border-t border-gray-200 space-y-2">
+                <div className="flex items-center gap-2 text-xs">
+                  <div className="w-3 h-3 rounded bg-blue-200"></div>
+                  <span>Đã trả lời</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs">
+                  <div className="w-3 h-3 rounded bg-gray-200"></div>
+                  <span>Chưa trả lời</span>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <Button type="primary" size="large" onClick={handleSubmit} className="w-full mt-6" danger>
+                Nộp bài
+              </Button>
             </div>
           </div>
-        ))}
-
-        {/* Nút nộp bài dự phòng ở cuối trang */}
-        <div className="flex justify-center pt-8 pb-10">
-          <Button
-            size="large"
-            type="primary"
-            onClick={handleSubmit}
-            className="h-12 px-12 text-lg rounded-full bg-gradient-to-r from-blue-600 to-blue-500 hover:to-blue-600 shadow-lg border-none"
-            icon={<CheckCircleOutlined />}
-          >
-            Hoàn thành bài thi
-          </Button>
         </div>
       </div>
     </div>
