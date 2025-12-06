@@ -51,7 +51,7 @@ export default function ProfileEdit({ visible, onClose, user, onUpdated }) {
       // 1. Update Profile Info (JSON)
       const updateData = {
         ...values,
-        dateOfBirth: values.dateOfBirth ? values.dateOfBirth.format('YYYY-MM-DD') : null,
+        dateOfBirth: values.dateOfBirth ? values.dateOfBirth.format('DD-MM-YYYY') : null,
       };
       
       // Remove undefined keys if necessary, but usually Axios handles JSON fine.
@@ -156,7 +156,7 @@ export default function ProfileEdit({ visible, onClose, user, onUpdated }) {
           </Form.Item>
 
           <Form.Item name="dateOfBirth" label="Ngày sinh">
-            <DatePicker format="DD/MM/YYYY" className="w-full" disabled={submitting} />
+            <DatePicker format="DD-MM-YYYY" className="w-full" disabled={submitting} />
           </Form.Item>
 
           <Form.Item name="address" label="Địa chỉ">

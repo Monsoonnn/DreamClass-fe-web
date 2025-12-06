@@ -5,6 +5,7 @@ import PublicRoute from './components/PublicRoute';
 import RoleRoute from './components/RoleRoute';
 import Login from './pages/Auth/Login';
 import ForgotPassword from './pages/Auth/ForgotPassword';
+import ResetPassword from './pages/Auth/ResetPassword';
 import Layout from './components/Layout';
 import StudentMana from './pages/Student/StudentMana';
 import StudentDetail from './pages/Student/components/StudentDetail';
@@ -67,6 +68,14 @@ function App() {
             element={
               <PublicRoute>
                 <ForgotPassword />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/reset/:token"
+            element={
+              <PublicRoute>
+                <ResetPassword />
               </PublicRoute>
             }
           />

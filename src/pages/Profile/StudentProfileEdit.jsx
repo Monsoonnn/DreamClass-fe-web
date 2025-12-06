@@ -36,7 +36,7 @@ export default function StudentProfileEdit({ visible, onClose, student, onUpdate
       // 1. Update Profile Info (JSON)
       const payload = {
         ...values,
-        dateOfBirth: values.dateOfBirth ? values.dateOfBirth.format('YYYY-MM-DD') : student.dateOfBirth,
+        dateOfBirth: values.dateOfBirth ? values.dateOfBirth.format('DD-MM-YYYY') : student.dateOfBirth,
       };
 
       await apiClient.put(`/players/profile`, payload);
@@ -114,7 +114,7 @@ export default function StudentProfileEdit({ visible, onClose, student, onUpdate
           </Form.Item>
 
           <Form.Item name="dateOfBirth" label="Ngày sinh">
-            <DatePicker format="YYYY-MM-DD" className="w-full" disabled={submitting} />
+            <DatePicker format="DD-MM-YYYY" className="w-full" disabled={submitting} />
           </Form.Item>
 
           <Form.Item name="phone" label="Số điện thoại">

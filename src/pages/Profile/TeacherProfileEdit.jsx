@@ -42,7 +42,7 @@ export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdate
       // 1. Update Profile Info (JSON)
       const updateData = {
         ...values,
-        dateOfBirth: values.dateOfBirth ? values.dateOfBirth.format('YYYY-MM-DD') : null,
+        dateOfBirth: values.dateOfBirth ? values.dateOfBirth.format('DD-MM-YYYY') : null,
       };
       
       await apiClient.put(`/teacher/profile`, updateData);
@@ -118,11 +118,11 @@ export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdate
           </Form.Item>
 
           <Form.Item name="className" label="Lớp">
-            <Input disabled={submitting} />
+            <Input disabled={true} />
           </Form.Item>
 
           <Form.Item name="grade" label="Khối">
-            <Input disabled={submitting} />
+            <Input disabled={true} />
           </Form.Item>
 
           <Form.Item name="gender" label="Giới tính">
@@ -137,7 +137,7 @@ export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdate
           </Form.Item>
 
           <Form.Item name="dateOfBirth" label="Ngày sinh">
-            <DatePicker format="YYYY-MM-DD" className="w-full" disabled={submitting} />
+            <DatePicker format="DD-MM-YYYY" className="w-full" disabled={submitting} />
           </Form.Item>
 
           <Form.Item name="address" label="Địa chỉ">
