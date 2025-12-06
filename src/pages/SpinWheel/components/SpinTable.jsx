@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Tag, Button, Space, Input, Pagination, message, Popconfirm } from 'antd';
-import { EyeOutlined, FileExcelOutlined, SearchOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Table, Tag, Button, Space, Input, Pagination, message, Popconfirm, Select, Modal } from 'antd';
+import { EyeOutlined, FileExcelOutlined, SearchOutlined, DeleteOutlined, PlusOutlined, FilterOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../../../services/api';
+import * as XLSX from 'xlsx';
+
+const { Option } = Select;
 
 export default function SpinTable() {
   const [inputSearchText, setInputSearchText] = useState('');
@@ -10,6 +13,8 @@ export default function SpinTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [data, setData] = useState([]);
+  const [filterStatus, setFilterStatus] = useState('all'); // 'all', 'active', 'inactive'
+
   const navigate = useNavigate();
 
   const fetchData = async () => {
@@ -42,12 +47,24 @@ export default function SpinTable() {
   }, []);
 
   const filteredData = () => {
-    if (!inputSearchText.trim()) return data;
-    return data.filter((item) => item.name.toLowerCase().includes(inputSearchText.toLowerCase()) || item.description.toLowerCase().includes(inputSearchText.toLowerCase()));
+    let list = data;
+    
+    // Filter by Status
+    if (filterStatus !== 'all') {
+      const isActive = filterStatus === 'active';
+      list = list.filter((item) => item.active === isActive);
+    }
+
+    // Filter by Search
+    if (inputSearchText.trim()) {
+      list = list.filter((item) => item.name.toLowerCase().includes(inputSearchText.toLowerCase()) || item.description.toLowerCase().includes(inputSearchText.toLowerCase()));
+    }
+    
+    return list;
   };
 
   const handleViewDetail = (record) => {
-    navigate(`/reward-spin/detail/${record.key}`);
+    navigate(`/spin-mana/detail/${record.key}`);
   };
 
   const handleDeleteSpin = async (spinId) => {
@@ -59,6 +76,62 @@ export default function SpinTable() {
       console.log(err);
       message.error('Xóa thất bại!');
     }
+  };
+
+  const handleDeleteMultiple = () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning('Vui lòng chọn ít nhất một vòng quay để xóa');
+      return;
+    }
+
+    Modal.confirm({
+      title: 'Xác nhận xóa',
+      content: `Bạn có chắc muốn xóa ${selectedRowKeys.length} vòng quay đã chọn?`,
+      okText: 'Xóa',
+      okType: 'danger',
+      cancelText: 'Hủy',
+      onOk: async () => {
+        try {
+          await Promise.all(
+            selectedRowKeys.map((key) => apiClient.delete(`/spin-wheels/${key}`))
+          );
+          message.success('Đã xóa các vòng quay đã chọn');
+          setSelectedRowKeys([]);
+          fetchData();
+        } catch (err) {
+          console.error(err);
+          message.error('Có lỗi xảy ra khi xóa nhiều vòng quay');
+          fetchData(); // Refresh anyway
+        }
+      },
+    });
+  };
+
+  const handleExport = () => {
+    const listToExport = filteredData();
+    if (listToExport.length === 0) {
+      message.warning('Không có dữ liệu để xuất Excel');
+      return;
+    }
+
+    const exportData = listToExport.map((item, index) => ({
+      'STT': index + 1,
+      'Tên vòng quay': item.name,
+      'Mô tả': item.description,
+      'Giá quay': item.price,
+      'Tiền tệ': item.currency,
+      'Bắt đầu': item.startTime ? new Date(item.startTime).toLocaleString('vi-VN') : '',
+      'Kết thúc': item.endTime ? new Date(item.endTime).toLocaleString('vi-VN') : '',
+      'Trạng thái': item.active ? 'Đang hoạt động' : 'Ngừng',
+      'Số lượng Item': item.itemCount,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sách vòng quay');
+
+    XLSX.writeFile(workbook, 'Danh_sach_vong_quay.xlsx');
+    message.success('Xuất Excel thành công');
   };
 
   const columns = [
@@ -90,12 +163,12 @@ export default function SpinTable() {
     {
       title: 'Thời gian bắt đầu',
       dataIndex: 'startTime',
-      render: (t) => new Date(t).toLocaleString(),
+      render: (t) => new Date(t).toLocaleString('vi-VN'),
     },
     {
       title: 'Thời gian kết thúc',
       dataIndex: 'endTime',
-      render: (t) => new Date(t).toLocaleString(),
+      render: (t) => new Date(t).toLocaleString('vi-VN'),
     },
     {
       title: 'Số lượng item',
@@ -131,8 +204,17 @@ export default function SpinTable() {
     <div className="bg-white shadow-lg p-2 rounded-md">
       <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
         <Space.Compact className="w-full max-w-xl">
-          <Input placeholder="Nhập tên vòng quay..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 260 }} />
-          <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a' }}>
+          <Input placeholder="Nhập tên vòng quay..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 200 }} />
+          <Select 
+            defaultValue="all" 
+            style={{ width: 150 }} 
+            onChange={setFilterStatus}
+          >
+            <Option value="all">Tất cả trạng thái</Option>
+            <Option value="active">Đang hoạt động</Option>
+            <Option value="inactive">Ngừng hoạt động</Option>
+          </Select>
+          <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a' }} onClick={() => setCurrentPage(1)}>
             Tìm
           </Button>
         </Space.Compact>
@@ -141,10 +223,12 @@ export default function SpinTable() {
           <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/spin-mana/add')}>
             Thêm mới
           </Button>
-
-          {/* <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }}>
+          <Button danger icon={<DeleteOutlined />} onClick={handleDeleteMultiple}>
+            Xóa
+          </Button>
+          <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
             Xuất Excel
-          </Button> */}
+          </Button>
         </Space.Compact>
       </div>
 

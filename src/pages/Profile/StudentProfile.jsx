@@ -3,11 +3,14 @@ import { Card, Descriptions, Avatar, Button, Spin, message, Tag } from 'antd';
 import { UserOutlined, EditOutlined } from '@ant-design/icons';
 import { apiClient } from '../../services/api';
 import StudentProfileEdit from './StudentProfileEdit';
+import { useAuth } from '../../context/AuthContext';
+import dayjs from 'dayjs';
 
 export default function StudentProfile() {
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(false);
   const [editVisible, setEditVisible] = useState(false);
+  const { updateUser } = useAuth();
 
   useEffect(() => {
     fetchProfile();
@@ -17,13 +20,21 @@ export default function StudentProfile() {
     setLoading(true);
     try {
       const res = await apiClient.get('/auth/profile');
-      setStudent(res.data.data);
+      const newData = res.data.data;
+      setStudent(newData);
+      updateUser(newData);
     } catch (err) {
       console.error(err);
       message.error('Không thể tải thông tin học sinh!');
     } finally {
       setLoading(false);
     }
+  };
+
+  const translateGender = (gender) => {
+    if (gender === 'Male') return 'Nam';
+    if (gender === 'Female') return 'Nữ';
+    return gender;
   };
 
   if (loading || !student) {
@@ -60,8 +71,8 @@ export default function StudentProfile() {
           <Descriptions.Item label="Tên học sinh">{student.name}</Descriptions.Item>
           <Descriptions.Item label="Username">{student.username}</Descriptions.Item>
           <Descriptions.Item label="Email">{student.email}</Descriptions.Item>
-          <Descriptions.Item label="Giới tính">{student.gender}</Descriptions.Item>
-          <Descriptions.Item label="Ngày sinh">{student.dateOfBirth ? student.dateOfBirth.substring(0, 10) : ''}</Descriptions.Item>
+          <Descriptions.Item label="Giới tính">{translateGender(student.gender)}</Descriptions.Item>
+          <Descriptions.Item label="Ngày sinh">{student.dateOfBirth ? dayjs(student.dateOfBirth).format('DD-MM-YYYY') : ''}</Descriptions.Item>
           <Descriptions.Item label="Số điện thoại">{student.phone}</Descriptions.Item>
           <Descriptions.Item label="Địa chỉ">{student.address}</Descriptions.Item>
 

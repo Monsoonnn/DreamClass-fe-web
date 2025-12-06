@@ -8,35 +8,39 @@ const { Option } = Select;
 export default function TeacherUpdate({ open, onClose, teacherData, onUpdated }) {
   const [form] = Form.useForm();
   const [avatarPreview, setAvatarPreview] = useState('');
-
-  const convertToBase64 = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-      reader.readAsDataURL(file);
-    });
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (open && teacherData) {
       form.setFieldsValue({
         ...teacherData,
         dob: teacherData.dateOfBirth?.split('T')[0] || teacherData.dob,
+        password: '', // Reset password
       });
 
       setAvatarPreview(teacherData.avatar || '');
+      setSelectedFile(null);
     }
   }, [open, teacherData]);
 
+  const handleBeforeUpload = (file) => {
+    const preview = URL.createObjectURL(file);
+    setAvatarPreview(preview);
+    setSelectedFile(file);
+    return false;
+  };
+
   const handleUpdate = async () => {
     try {
+      setLoading(true);
       const values = await form.validateFields();
 
       const payload = {
         name: values.name,
         username: values.username,
         email: values.email,
-        avatar: avatarPreview || teacherData.avatar || null,
+        // avatar: avatarPreview || teacherData.avatar || null, // Don't send avatar in JSON
         gender: values.gender,
         dateOfBirth: values.dob || values.dateOfBirth,
         address: values.address || '',
@@ -44,11 +48,23 @@ export default function TeacherUpdate({ open, onClose, teacherData, onUpdated })
         notes: values.note || teacherData.notes || '',
       };
 
-      const teacherId = teacherData.teacherId || teacherData._id;
-      console.log('Updating teacher with payload:', payload);
+      if (values.password) {
+        payload.password = values.password;
+      }
 
+      const teacherId = teacherData.teacherId || teacherData._id;
+      
+      // 1. Update Info
       const res = await apiClient.put(`/accounts/teachers/${teacherId}`, payload);
-      console.log('Update response:', res.data);
+
+      // 2. Update Avatar if selected
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('avatar', selectedFile);
+        await apiClient.put(`/accounts/teachers/${teacherId}/avatar`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+      }
 
       message.success('Cập nhật giáo viên thành công!');
 
@@ -57,22 +73,29 @@ export default function TeacherUpdate({ open, onClose, teacherData, onUpdated })
     } catch (err) {
       console.error('Update error:', err.response?.data || err.message || err);
       message.error('Cập nhật thất bại! ' + (err.response?.data?.message || err.message));
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Modal title="Cập nhật thông tin giáo viên" open={open} onCancel={onClose} footer={null} centered width={800}>
+    <Modal 
+      title="Cập nhật thông tin giáo viên" 
+      open={open} 
+      onCancel={onClose} 
+      footer={null} 
+      centered 
+      width={800}
+      confirmLoading={loading}
+    >
       <Form layout="vertical" form={form}>
         {/* Avatar */}
         <div className="flex flex-col items-center mb-5">
           <Avatar src={avatarPreview || '/avatar-default.png'} size={110} className="border shadow-md mb-3" />
           <Upload
             showUploadList={false}
-            beforeUpload={async (file) => {
-              const base64 = await convertToBase64(file);
-              setAvatarPreview(base64);
-              return false;
-            }}
+            beforeUpload={handleBeforeUpload}
+            accept="image/*"
           >
             <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
           </Upload>
@@ -100,6 +123,9 @@ export default function TeacherUpdate({ open, onClose, teacherData, onUpdated })
             <Form.Item label="Địa chỉ" name="address">
               <Input />
             </Form.Item>
+             <Form.Item label="Mật khẩu mới" name="password">
+              <Input.Password placeholder="Để trống nếu không đổi" />
+            </Form.Item>
           </Col>
 
           <Col span={12}>
@@ -123,7 +149,7 @@ export default function TeacherUpdate({ open, onClose, teacherData, onUpdated })
 
         <div className="flex justify-end gap-2 mt-4">
           <Button onClick={onClose}>Hủy</Button>
-          <Button type="primary" onClick={handleUpdate}>
+          <Button type="primary" onClick={handleUpdate} loading={loading}>
             Cập nhật
           </Button>
         </div>

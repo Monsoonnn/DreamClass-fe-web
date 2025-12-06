@@ -3,6 +3,7 @@ import { Table, Tag, Button, Space, Input, Pagination, Card, Avatar, Image, mess
 import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, TrophyOutlined } from '@ant-design/icons';
 import { apiClient } from '../../../services/api';
 import { useNavigate } from 'react-router-dom';
+import * as XLSX from 'xlsx';
 
 export default function RankingServerTable() {
   const [data, setData] = useState([]);
@@ -45,6 +46,30 @@ export default function RankingServerTable() {
 
     // Sort theo rank (rank = 1,2,3,…)
     return filtered.sort((a, b) => a.rank - b.rank);
+  };
+
+  const handleExport = () => {
+    const listToExport = filteredRanking();
+    if (listToExport.length === 0) {
+      message.warning('Không có dữ liệu để xuất Excel');
+      return;
+    }
+
+    const exportData = listToExport.map((item) => ({
+      'Hạng': item.rank,
+      'Tên học sinh': item.name,
+      'Lớp': item.className,
+      'Khối': item.grade,
+      'Tổng điểm': item.points,
+      'Số bài đã làm': item.totalExercisesCompleted,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Bảng xếp hạng server');
+
+    XLSX.writeFile(workbook, 'Bang_xep_hang_server.xlsx');
+    message.success('Xuất Excel thành công');
   };
 
   const paginatedData = filteredRanking().slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -181,7 +206,7 @@ export default function RankingServerTable() {
           <Button type="primary" icon={<FilterOutlined />} style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }} />
         </Space.Compact>
 
-        <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }}>
+        <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
           Xuất Excel
         </Button>
       </div>

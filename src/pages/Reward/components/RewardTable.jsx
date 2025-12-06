@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Tag, Button, Space, Input, Pagination, Image, message, Popconfirm } from 'antd';
-import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Table, Tag, Button, Space, Input, Pagination, Image, message, Popconfirm, Select } from 'antd';
+import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, DeleteOutlined, PlusOutlined, EditOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import apiClient from '../../../services/api'; // đường dẫn đến api.js của bạn
+import apiClient from '../../../services/api';
+import * as XLSX from 'xlsx';
+import RewardEditModal from './RewardEditModal';
+
+const { Option } = Select;
 
 export default function RewardTable() {
   const [inputSearchText, setInputSearchText] = useState('');
@@ -10,6 +14,10 @@ export default function RewardTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [data, setData] = useState([]);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+  const [filterCategory, setFilterCategory] = useState('all');
+
   const navigate = useNavigate();
 
   const fetchData = async () => {
@@ -17,12 +25,12 @@ export default function RewardTable() {
       const res = await apiClient.get('/items/admin');
       const apiData = res.data.data;
       const mapped = apiData.map((item) => ({
-        key: item._id,
-        rewardCode: item.itemId,
+        key: item._id, // Internal ID
+        rewardCode: item.itemId, // The business ID
         rewardName: item.name,
         image: item.image,
         category: item.type,
-        quantity: item.customFields?.quantity || 1,
+        quantity: item.customFields?.quantity || item.quantity || 1, // Fallback
         condition: item.description,
         note: item.notes,
         raw: item,
@@ -40,8 +48,43 @@ export default function RewardTable() {
   }, []);
 
   const filteredRewards = () => {
-    if (!inputSearchText.trim()) return data;
-    return data.filter((item) => item.rewardName.toLowerCase().includes(inputSearchText.toLowerCase()) || item.rewardCode.toLowerCase().includes(inputSearchText.toLowerCase()));
+    let list = data;
+
+    // Filter by Category
+    if (filterCategory !== 'all') {
+      list = list.filter((item) => item.category === filterCategory);
+    }
+
+    // Filter by Search
+    if (inputSearchText.trim()) {
+      list = list.filter((item) => item.rewardName.toLowerCase().includes(inputSearchText.toLowerCase()) || item.rewardCode.toLowerCase().includes(inputSearchText.toLowerCase()));
+    }
+    return list;
+  };
+
+  const handleExport = () => {
+    const listToExport = filteredRewards();
+    if (listToExport.length === 0) {
+      message.warning('Không có dữ liệu để xuất Excel');
+      return;
+    }
+
+    const exportData = listToExport.map((item, index) => ({
+      'STT': index + 1,
+      'Mã số': item.rewardCode,
+      'Tên phần thưởng': item.rewardName,
+      'Phân loại': item.category === 'banner' ? 'Cờ hiệu' : item.category === 'title' ? 'Danh hiệu' : item.category === 'badge' ? 'Huy hiệu' : 'Khác',
+      'Số lượng': item.quantity,
+      'Điều kiện nhận': item.condition,
+      'Ghi chú': item.note,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sách phần thưởng');
+
+    XLSX.writeFile(workbook, 'Danh_sach_phan_thuong.xlsx');
+    message.success('Xuất Excel thành công');
   };
 
   const handleViewDetail = (record) => {
@@ -57,6 +100,11 @@ export default function RewardTable() {
       console.log(err);
       message.error('Xóa thất bại!');
     }
+  };
+
+  const handleEdit = (record) => {
+    setEditingItem(record);
+    setEditModalVisible(true);
   };
 
   const columns = [
@@ -87,10 +135,13 @@ export default function RewardTable() {
       align: 'center',
       render: (type) => {
         let color = 'blue';
-        if (type === 'empty') color = 'gold';
-        if (type === 'title') color = 'purple';
-        if (type === 'badge') color = 'green';
-        return <Tag color={color}>{type}</Tag>;
+        let text = type;
+        if (type === 'empty') { color = 'gold'; text = 'Khác'; }
+        if (type === 'title') { color = 'purple'; text = 'Danh hiệu'; }
+        if (type === 'badge') { color = 'green'; text = 'Huy hiệu'; }
+        if (type === 'banner') { color = 'cyan'; text = 'Cờ hiệu'; }
+        
+        return <Tag color={color}>{text}</Tag>;
       },
     },
     {
@@ -115,7 +166,7 @@ export default function RewardTable() {
       render: (_, record) => (
         <Space>
           <EyeOutlined style={{ color: '#1890ff', fontSize: 16, cursor: 'pointer' }} onClick={() => handleViewDetail(record)} />
-
+          <EditOutlined style={{ color: 'blue', fontSize: 16, cursor: 'pointer' }} onClick={() => handleEdit(record)} />
           <Popconfirm title="Bạn chắc chắn muốn xóa?" okText="Xóa" cancelText="Hủy" onConfirm={() => handleDeleteItem(record.rewardCode)}>
             <DeleteOutlined style={{ color: '#ff4d4f', fontSize: 16, cursor: 'pointer' }} />
           </Popconfirm>
@@ -128,21 +179,28 @@ export default function RewardTable() {
     <div className="bg-white shadow-lg p-3 rounded-md">
       <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
         <Space.Compact className="w-full max-w-xl">
-          <Input placeholder="Nhập tên hoặc mã phần thưởng..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 260 }} />
-          <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a' }}>
+          <Input placeholder="Nhập tên hoặc mã phần thưởng..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 200 }} />
+          <Select 
+            defaultValue="all" 
+            style={{ width: 150 }} 
+            onChange={setFilterCategory}
+          >
+            <Option value="all">Tất cả phân loại</Option>
+            <Option value="banner">Cờ hiệu</Option>
+            <Option value="title">Danh hiệu</Option>
+            <Option value="badge">Huy hiệu</Option>
+            <Option value="empty">Khác</Option>
+          </Select>
+          <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a' }} onClick={() => setCurrentPage(1)}>
             Tìm
           </Button>
-          {/* <Button type="primary" icon={<FilterOutlined />} style={{ backgroundColor: '#1890ff' }} /> */}
         </Space.Compact>
 
         <Space.Compact>
           <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/item-mana/add')}>
             Thêm
           </Button>
-          {/* <Button danger icon={<DeleteOutlined />}>
-            Xóa
-          </Button> */}
-          <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }}>
+          <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
             Xuất Excel
           </Button>
         </Space.Compact>
@@ -174,6 +232,13 @@ export default function RewardTable() {
           pageSizeOptions={['5', '10', '20', '50']}
         />
       </div>
+
+      <RewardEditModal 
+        visible={editModalVisible}
+        onClose={() => setEditModalVisible(false)}
+        reward={editingItem}
+        onUpdate={fetchData}
+      />
     </div>
   );
 }

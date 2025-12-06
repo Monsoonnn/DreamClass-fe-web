@@ -156,10 +156,10 @@ export default function AddSpin() {
                   />
                 </div>
 
-                <div className="flex items-center justify-between">
+                {/* <div className="flex items-center justify-between">
                   <label className="text-sm font-medium">Vật phẩm hiếm?</label>
                   <Switch checked={item.isRare} onChange={(v) => updateItem(index, 'isRare', v)} />
-                </div>
+                </div> */}
 
                 {items.length > 1 && <DeleteOutlined style={{ color: '#ff4d4f', fontSize: 16, cursor: 'pointer' }} onClick={() => removeItem(index)} block />}
               </Space>

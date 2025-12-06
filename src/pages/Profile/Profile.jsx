@@ -3,27 +3,53 @@ import { Card, Descriptions, Avatar, Button, Spin, message } from 'antd';
 import { UserOutlined, EditOutlined } from '@ant-design/icons';
 import { apiClient } from '../../services/api';
 import ProfileEdit from './ProfileEdit';
+import { useAuth } from '../../context/AuthContext';
+import dayjs from 'dayjs';
 
 export default function Profile() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [editVisible, setEditVisible] = useState(false);
+  const { updateUser, user } = useAuth();
 
   useEffect(() => {
+    // Initial fetch of profile data
     fetchProfile();
   }, []);
 
   const fetchProfile = async () => {
     setLoading(true);
     try {
-      const res = await apiClient.get('/auth/profile');
-      setProfile(res.data.data);
+      const role = user?.role;
+      let endpoint = '/auth/profile'; // Default/Admin
+
+      if (role === 'student') {
+        endpoint = '/players/profile';
+      } else if (role === 'teacher') {
+        endpoint = '/teacher/profile';
+      }
+
+      const res = await apiClient.get(endpoint);
+      const newData = res.data.data;
+      setProfile(newData);
+      // Cập nhật luôn vào Global State (AuthContext) để Header nhận diện thay đổi mới nhất
+      updateUser(newData);
     } catch (err) {
       console.error(err);
       message.error('Không thể tải thông tin người dùng!');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleProfileUpdate = () => {
+    fetchProfile();
+  };
+
+  const translateGender = (gender) => {
+    if (gender === 'Male') return 'Nam';
+    if (gender === 'Female') return 'Nữ';
+    return gender;
   };
 
   if (loading || !profile) {
@@ -69,16 +95,16 @@ export default function Profile() {
             </>
           )}
 
-          <Descriptions.Item label="Giới tính">{profile.gender}</Descriptions.Item>
-          <Descriptions.Item label="Ngày sinh">{profile.dateOfBirth ? profile.dateOfBirth.substring(0, 10) : ''}</Descriptions.Item>
-          <Descriptions.Item label="Địa chỉ">{profile.address}</Descriptions.Item>
+          <Descriptions.Item label="Giới tính">{translateGender(profile.gender)}</Descriptions.Item>
+          <Descriptions.Item label="Ngày sinh">{profile.dateOfBirth ? dayjs(profile.dateOfBirth).format('DD-MM-YYYY') : ''}</Descriptions.Item>
+          {/* <Descriptions.Item label="Địa chỉ">{profile.address}</Descriptions.Item> */}
           <Descriptions.Item label="Số điện thoại">{profile.phone}</Descriptions.Item>
-          <Descriptions.Item label="Ghi chú">{profile.notes}</Descriptions.Item>
+          {/* <Descriptions.Item label="Ghi chú">{profile.notes}</Descriptions.Item> */}
         </Descriptions>
       </Card>
 
       {/* Modal Edit Profile */}
-      <ProfileEdit visible={editVisible} onClose={() => setEditVisible(false)} user={profile} onUpdated={fetchProfile} />
+      <ProfileEdit visible={editVisible} onClose={() => setEditVisible(false)} user={profile} onUpdated={handleProfileUpdate} />
     </div>
   );
 }

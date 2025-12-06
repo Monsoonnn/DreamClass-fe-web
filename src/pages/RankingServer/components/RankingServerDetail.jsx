@@ -92,7 +92,7 @@ export default function RankingServerDetail() {
                 key: '2',
                 label: 'Học tập',
                 // Truyền cả user và id để bên trong gọi API lịch sử
-                children: <UserLearning user={user} playerId={user._id} />,
+                children: <UserLearning user={user} playerId={user.playerId} />,
               },
               {
                 key: '3',

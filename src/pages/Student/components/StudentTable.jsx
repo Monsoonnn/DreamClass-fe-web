@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Table, Button, Space, Input, Pagination, message } from 'antd';
 import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined } from '@ant-design/icons';
 import apiClient from '../../../services/api'; // đường dẫn đến api.js của bạn
+import * as XLSX from 'xlsx';
 
 export default function StudentTable() {
   const navigate = useNavigate();
@@ -36,6 +37,31 @@ export default function StudentTable() {
     const t = inputSearchText.toLowerCase().trim();
     return item.name?.toLowerCase().includes(t) || item.username?.toLowerCase().includes(t);
   });
+
+  const handleExport = () => {
+    if (filteredStudents.length === 0) {
+      message.warning('Không có dữ liệu để xuất Excel');
+      return;
+    }
+
+    const exportData = filteredStudents.map((item, index) => ({
+      'STT': index + 1,
+      'Họ tên': item.name,
+      'Khối': item.grade,
+      'Lớp': item.className,
+      'Ngày sinh': item.dateOfBirth ? new Date(item.dateOfBirth).toLocaleDateString('vi-VN') : '',
+      'Giới tính': item.gender,
+      'Địa chỉ': item.address,
+      'Ghi chú': item.notes,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sách học sinh');
+
+    XLSX.writeFile(workbook, 'Danh_sach_hoc_sinh.xlsx');
+    message.success('Xuất Excel thành công');
+  };
 
   const columns = [
     {
@@ -110,7 +136,7 @@ export default function StudentTable() {
           {/* <Button type="primary" icon={<FilterOutlined />} /> */}
         </Space.Compact>
 
-        <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff' }}>
+        <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff' }} onClick={handleExport}>
           Xuất Excel
         </Button>
       </div>

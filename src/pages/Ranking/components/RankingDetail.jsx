@@ -79,7 +79,7 @@ export default function StudentDetail() {
                 key: '2',
                 label: 'Học tập',
                 // student._id chính là playerId trong hệ thống
-                children: <StudentLearning student={student} playerId={student._id} />,
+                children: <StudentLearning student={student} playerId={student.playerId} />,
               },
               {
                 key: '3',

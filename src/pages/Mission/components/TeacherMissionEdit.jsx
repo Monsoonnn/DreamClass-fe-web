@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Button, Select, Switch, message } from 'antd';
+import { Modal, Form, Input, Button, Select, Switch, message, InputNumber } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { apiClient } from '../../../services/api';
 
@@ -35,6 +35,10 @@ export default function TeacherMissionEdit({ visible, onClose, missionData, refr
       const payload = {
         name: values.name,
         description: values.description,
+        rewardGold: values.rewardGold,
+        point: values.point,
+        isDailyQuest: values.isDailyQuest,
+        dailyQuestType: values.isDailyQuest ? values.dailyQuestType : null, // Only send if it's a daily quest
       };
 
       const res = await apiClient.put(`/teacher/quest-templates/${missionData.questId}`, payload);
@@ -44,7 +48,7 @@ export default function TeacherMissionEdit({ visible, onClose, missionData, refr
       onClose();
     } catch (err) {
       console.error(err);
-      message.error('Không thể cập nhật nhiệm vụ');
+      message.error('Không thể cập nhật nhiệm vụ: ' + (err.response?.data?.message || err.message));
     } finally {
       setSubmitting(false);
     }
@@ -65,35 +69,37 @@ export default function TeacherMissionEdit({ visible, onClose, missionData, refr
           <Input />
         </Form.Item>
 
-        {/* Reward Gold - DISABLED */}
-        <Form.Item label="Điểm thưởng" name="rewardGold">
-          <Input type="number" disabled />
+        {/* Editable: Reward Gold */}
+        <Form.Item label="Vàng thưởng" name="rewardGold">
+          <InputNumber min={0} className="w-full" />
         </Form.Item>
 
-        {/* Point - DISABLED */}
-        <Form.Item label="Điểm" name="point">
-          <Input type="number" disabled />
+        {/* Editable: Point */}
+        <Form.Item label="Điểm thưởng" name="point">
+          <InputNumber min={0} className="w-full" />
         </Form.Item>
 
-        {/* isDailyQuest - DISABLED */}
-        <Form.Item label="Có phải quest hàng ngày không?" name="isDailyQuest" valuePropName="checked">
-          <Switch disabled />
+        {/* Editable: isDailyQuest */}
+        <Form.Item label="Là nhiệm vụ hàng ngày?" name="isDailyQuest" valuePropName="checked">
+          <Switch onChange={(checked) => setIsDailyQuest(checked)} />
         </Form.Item>
 
-        {/* dailyQuestType - DISABLED */}
-        <Form.Item label="Cách nhận quest" name="dailyQuestType">
-          <Select disabled placeholder="Chọn loại Daily Quest">
-            <Select.Option value="NPC_INTERACTION">NPC_INTERACTION</Select.Option>
-            <Select.Option value="DAILY_TASK">DAILY_TASK</Select.Option>
-          </Select>
-        </Form.Item>
+        {/* Editable: dailyQuestType (conditional) */}
+        {isDailyQuest && (
+          <Form.Item label="Loại nhiệm vụ hàng ngày" name="dailyQuestType">
+            <Select placeholder="Chọn loại Daily Quest">
+              <Select.Option value="NPC_INTERACTION">NPC_INTERACTION</Select.Option>
+              <Select.Option value="DAILY_TASK">DAILY_TASK</Select.Option>
+            </Select>
+          </Form.Item>
+        )}
 
         {/* Editable: Description */}
         <Form.Item label="Mô tả" name="description" rules={[{ required: true, message: 'Vui lòng nhập mô tả' }]}>
           <TextArea rows={4} />
         </Form.Item>
 
-        {/* Prerequisite - DISABLED */}
+        {/* Prerequisite - Still Disabled for teacher */}
         <h3 className="mt-2 font-bold">II. Nhiệm vụ tiên quyết</h3>
         <Form.Item label="Chọn nhiệm vụ yêu cầu trước" name="prerequisiteQuestIds">
           <Select mode="multiple" disabled placeholder="Không thể sửa">
@@ -105,7 +111,7 @@ export default function TeacherMissionEdit({ visible, onClose, missionData, refr
           </Select>
         </Form.Item>
 
-        {/* Steps - DISABLE tất cả */}
+        {/* Steps - Still Disabled for teacher */}
         <h3 className="mt-2 font-semibold">II. Các bước thực hiện</h3>
 
         <Form.List name="steps">
@@ -115,9 +121,7 @@ export default function TeacherMissionEdit({ visible, onClose, missionData, refr
                 <div key={key} className="border p-3 mb-2 rounded bg-gray-50">
                   <div className="flex justify-between items-center mb-2">
                     <strong>Bước {name + 1}</strong>
-
-                    {/* Teacher không được xóa bước */}
-                    <MinusCircleOutlined style={{ color: '#ccc' }} disabled />
+                    <MinusCircleOutlined style={{ color: '#ccc' }} />
                   </div>
 
                   <Form.Item {...rest} label="Step ID" name={[name, 'stepId']}>
@@ -129,8 +133,6 @@ export default function TeacherMissionEdit({ visible, onClose, missionData, refr
                   </Form.Item>
                 </div>
               ))}
-
-              {/* Teacher không được thêm bước */}
               <Button type="dashed" block disabled icon={<PlusOutlined />}>
                 Thêm bước
               </Button>
