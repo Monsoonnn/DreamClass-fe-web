@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Table, Tag, Button, Space, Input, Pagination, Avatar } from 'antd';
+import { Table, Tag, Button, Space, Input, Pagination, Avatar, message } from 'antd';
 import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, PlusOutlined } from '@ant-design/icons';
+import * as XLSX from 'xlsx';
 
 export default function StoreTable() {
   // 🧩 DỮ LIỆU MẪU VẬT PHẨM CỬA HÀNG
@@ -48,6 +49,31 @@ export default function StoreTable() {
     if (!searchText.trim()) return data;
 
     return data.filter((item) => item.name.toLowerCase().includes(searchText.toLowerCase()) || item.code.toLowerCase().includes(searchText.toLowerCase()));
+  };
+
+  const handleExport = () => {
+    const listToExport = filteredList();
+    if (listToExport.length === 0) {
+      message.warning('Không có dữ liệu để xuất Excel');
+      return;
+    }
+
+    const exportData = listToExport.map((item, index) => ({
+      'STT': index + 1,
+      'Mã vật phẩm': item.code,
+      'Tên vật phẩm': item.name,
+      'Phân loại': item.category,
+      'Số lượng': item.quantity,
+      'Giá (Points)': item.price,
+      'Ghi chú': item.note,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sách vật phẩm');
+
+    XLSX.writeFile(workbook, 'Danh_sach_vat_pham.xlsx');
+    message.success('Xuất Excel thành công');
   };
 
   // 🟦 Thao tác
@@ -136,7 +162,7 @@ export default function StoreTable() {
             Thêm mới
           </Button>
 
-          <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff' }}>
+          <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff' }} onClick={handleExport}>
             Xuất Excel
           </Button>
         </Space.Compact>

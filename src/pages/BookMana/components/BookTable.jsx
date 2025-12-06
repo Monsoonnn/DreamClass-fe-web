@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Input, Pagination, Popconfirm, Spin, message, Tag } from 'antd';
-import { EyeOutlined, SearchOutlined, PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Input, Pagination, Popconfirm, Spin, message, Tag, Select, Modal } from 'antd';
+import { EyeOutlined, SearchOutlined, PlusOutlined, DeleteOutlined, EditOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../../services/api';
 import EditBookModal from './BookEdit';
+import * as XLSX from 'xlsx';
+
+const { Option } = Select;
 
 export default function BookTable() {
   const [books, setBooks] = useState([]);
@@ -15,6 +18,8 @@ export default function BookTable() {
   const [pageSize, setPageSize] = useState(5);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [currentBook, setCurrentBook] = useState(null);
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [filterLevel, setFilterLevel] = useState('all');
 
   useEffect(() => {
     fetchBooks();
@@ -48,9 +53,19 @@ export default function BookTable() {
   };
 
   const filteredBooks = () => {
-    if (!inputSearch.trim()) return books;
+    let list = books;
 
-    return books.filter((b) => b.name.toLowerCase().includes(inputSearch.toLowerCase()) || b.category?.toLowerCase().includes(inputSearch.toLowerCase()));
+    if (filterCategory !== 'all') {
+      list = list.filter(b => b.category === filterCategory);
+    }
+
+    if (filterLevel !== 'all') {
+      list = list.filter(b => String(b.level) === String(filterLevel));
+    }
+
+    if (!inputSearch.trim()) return list;
+
+    return list.filter((b) => b.name.toLowerCase().includes(inputSearch.toLowerCase()) || b.category?.toLowerCase().includes(inputSearch.toLowerCase()));
   };
 
   const handleDelete = async (record) => {
@@ -65,14 +80,66 @@ export default function BookTable() {
       message.success('Xóa sách thành công');
     } catch (err) {
       console.error('Delete failed:', err);
-      // Rollback nếu lỗi
-      setBooks(backup);
+      setBooks(backup); // Rollback nếu lỗi
       message.error(err.response?.data?.message || 'Xóa sách thất bại!');
     }
   };
 
+  const handleDeleteMultiple = () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning('Vui lòng chọn ít nhất một sách để xóa');
+      return;
+    }
+
+    Modal.confirm({
+      title: 'Xác nhận xóa',
+      content: `Bạn có chắc muốn xóa ${selectedRowKeys.length} sách đã chọn?`,
+      okText: 'Xóa',
+      okType: 'danger',
+      cancelText: 'Hủy',
+      onOk: async () => {
+        try {
+          await Promise.all(
+            selectedRowKeys.map(id => apiClient.delete(`/pdfs/${id}`))
+          );
+          message.success('Đã xóa các sách đã chọn');
+          fetchBooks();
+          setSelectedRowKeys([]);
+        } catch (err) {
+          console.error(err);
+          message.error('Có lỗi xảy ra khi xóa nhiều sách');
+          fetchBooks();
+        }
+      },
+    });
+  };
+
+  const handleExport = () => {
+    const listToExport = filteredBooks();
+    if (listToExport.length === 0) {
+      message.warning('Không có dữ liệu để xuất Excel');
+      return;
+    }
+
+    const exportData = listToExport.map((item, index) => ({
+      'STT': index + 1,
+      'Tên sách': item.name,
+      'Nhà xuất bản': item.category,
+      'Khối học': item.level,
+      'Mô tả': item.description,
+      'Ghi chú': item.note,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sách sách');
+
+    XLSX.writeFile(workbook, 'Danh_sach_sach.xlsx');
+    message.success('Xuất Excel thành công');
+  };
+
   const columns = [
-    { title: 'STT', render: (_, __, index) => index + 1, width: 60, align: 'center' },
+    { title: 'STT', render: (_, __, index) => index + 1 + (currentPage - 1) * pageSize, width: 60, align: 'center' },
     { title: 'Tên sách', dataIndex: 'name' },
     { title: 'Nhà xuất bản', dataIndex: 'category', align: 'center' },
     {
@@ -106,6 +173,10 @@ export default function BookTable() {
     },
   ];
 
+  // Get unique categories and levels for filter options
+  const uniqueCategories = [...new Set(books.map(item => item.category).filter(Boolean))];
+  const uniqueLevels = [...new Set(books.map(item => item.level).filter(Boolean))];
+
   return (
     <div className="bg-white p-3">
       {loading ? (
@@ -117,8 +188,23 @@ export default function BookTable() {
           {/* Toolbar */}
           <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
             <Space.Compact className="w-full max-w-xl">
-              <Input placeholder="Tìm kiếm..." value={inputSearch} onChange={(e) => setInputSearch(e.target.value)} style={{ width: 220 }} />
-
+              <Input placeholder="Tìm kiếm..." value={inputSearch} onChange={(e) => setInputSearch(e.target.value)} style={{ width: 200 }} />
+              <Select 
+                defaultValue="all" 
+                style={{ width: 120 }} 
+                onChange={setFilterCategory}
+              >
+                <Option value="all">Tất cả NXB</Option>
+                {uniqueCategories.map(cat => <Option key={cat} value={cat}>{cat}</Option>)}
+              </Select>
+              <Select 
+                defaultValue="all" 
+                style={{ width: 120 }} 
+                onChange={setFilterLevel}
+              >
+                <Option value="all">Tất cả Khối</Option>
+                {uniqueLevels.map(lvl => <Option key={lvl} value={lvl}>{lvl}</Option>)}
+              </Select>
               <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}>
                 Tìm
               </Button>
@@ -127,6 +213,12 @@ export default function BookTable() {
             <Space.Compact>
               <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/book-mana/add')}>
                 Thêm mới
+              </Button>
+              <Button danger icon={<DeleteOutlined />} onClick={handleDeleteMultiple}>
+                Xóa
+              </Button>
+              <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
+                Xuất Excel
               </Button>
             </Space.Compact>
           </div>
@@ -160,7 +252,13 @@ export default function BookTable() {
           </div>
 
           {editModalVisible && currentBook && (
-            <EditBookModal visible={editModalVisible} onClose={() => setEditModalVisible(false)} bookKey={currentBook.key} onUpdate={fetchBooks} />
+            <EditBookModal
+              visible={editModalVisible}
+              onClose={() => setEditModalVisible(false)}
+              bookKey={currentBook.key}
+              bookData={currentBook}
+              onUpdate={fetchBooks}
+            />
           )}
         </>
       )}

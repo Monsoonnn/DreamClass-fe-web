@@ -8,36 +8,38 @@ const { Option } = Select;
 export default function UserUpdate({ open, onClose, userData, onUpdated }) {
   const [form] = Form.useForm();
   const [avatarPreview, setAvatarPreview] = useState('');
-
-  const convertToBase64 = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-      reader.readAsDataURL(file);
-    });
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (open && userData) {
       form.setFieldsValue({
         ...userData,
         dob: userData.dateOfBirth?.split('T')[0] || userData.dob,
+        password: '', // Reset password field
       });
       setAvatarPreview(userData.avatar);
+      setSelectedFile(null);
     }
   }, [open, userData]);
 
+  const handleBeforeUpload = (file) => {
+    const preview = URL.createObjectURL(file);
+    setAvatarPreview(preview);
+    setSelectedFile(file);
+    return false; // Prevent auto upload
+  };
+
   const handleUpdate = async () => {
     try {
+      setLoading(true);
       const values = await form.validateFields();
 
       const payload = {
         name: values.name,
         username: values.username,
         email: values.email,
-
-        avatar: avatarPreview || userData.avatar,
-
+        // avatar: avatarPreview || userData.avatar, // Don't send avatar in JSON if we upload file separately
         className: values.class || values.className || '',
         grade: values.level || values.grade || '',
         gender: values.gender,
@@ -47,8 +49,22 @@ export default function UserUpdate({ open, onClose, userData, onUpdated }) {
         notes: values.note || values.notes || '',
       };
 
+      if (values.password) {
+        payload.password = values.password;
+      }
+
       const identifier = userData.playerId || userData._id;
+      // 1. Update Info
       const res = await apiClient.put(`/players/admin/players/${identifier}`, payload);
+
+      // 2. Update Avatar if selected
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('avatar', selectedFile);
+        await apiClient.put(`/players/admin/players/${identifier}/avatar`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+      }
 
       message.success('Cập nhật thành công!');
 
@@ -57,22 +73,29 @@ export default function UserUpdate({ open, onClose, userData, onUpdated }) {
     } catch (err) {
       console.error(err);
       message.error('Cập nhật thất bại!');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Modal title="Cập nhật thông tin người dùng" open={open} onCancel={onClose} footer={null} centered width={800}>
+    <Modal 
+      title="Cập nhật thông tin người dùng" 
+      open={open} 
+      onCancel={onClose} 
+      footer={null} 
+      centered 
+      width={800}
+      confirmLoading={loading}
+    >
       <Form layout="vertical" form={form}>
         {/* Avatar */}
         <div className="flex flex-col items-center mb-5">
           <Avatar src={avatarPreview || '/avatar-default.png'} size={110} className="border shadow-md mb-3" />
           <Upload
             showUploadList={false}
-            beforeUpload={async (file) => {
-              const base64 = await convertToBase64(file);
-              setAvatarPreview(base64);
-              return false;
-            }}
+            beforeUpload={handleBeforeUpload}
+            accept="image/*"
           >
             <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
           </Upload>
@@ -103,6 +126,9 @@ export default function UserUpdate({ open, onClose, userData, onUpdated }) {
             <Form.Item label="Khối" name="level">
               <Input />
             </Form.Item>
+             <Form.Item label="Mật khẩu mới" name="password">
+              <Input.Password placeholder="Để trống nếu không đổi" />
+            </Form.Item>
           </Col>
 
           <Col span={12}>
@@ -130,7 +156,7 @@ export default function UserUpdate({ open, onClose, userData, onUpdated }) {
 
         <div className="flex justify-end gap-2 mt-4">
           <Button onClick={onClose}>Hủy</Button>
-          <Button type="primary" onClick={handleUpdate}>
+          <Button type="primary" onClick={handleUpdate} loading={loading}>
             Cập nhật
           </Button>
         </div>

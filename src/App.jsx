@@ -45,6 +45,7 @@ import StudentRankingServer from './pages/Ranking/components/StudentRankingServe
 import StudentBook from './pages/BookMana/components/StudentBook';
 import SpinMana from './pages/SpinWheel/SpinMana';
 import AddSpin from './pages/SpinWheel/components/AddSpin';
+import SpinDetail from './pages/SpinWheel/components/SpinDetail';
 import StudentQuizDetail from './pages/Quizz/components/StudentQuizzDetail';
 import StudentQuizResult from './pages/Quizz/components/StudentQuizResult';
 function App() {
@@ -314,6 +315,14 @@ function App() {
               element={
                 <RoleRoute allowedRoles={['admin']}>
                   <AddSpin />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/spin-mana/detail/:id"
+              element={
+                <RoleRoute allowedRoles={['admin']}>
+                  <SpinDetail />
                 </RoleRoute>
               }
             />

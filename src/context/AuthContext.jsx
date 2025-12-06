@@ -89,7 +89,26 @@ export function AuthProvider({ children }) {
     }
   };
 
-  return <AuthContext.Provider value={{ user, loading, login, logout }}>{children}</AuthContext.Provider>;
+  const refreshUser = async () => {
+    const token = Cookies.get('token');
+    if (!token) return;
+
+    try {
+      const response = await checkAuthAPI();
+      const userData = response.data?.data || response.data;
+      setUser(userData);
+      Cookies.set('user_data', JSON.stringify(userData), { expires: 7 });
+    } catch (error) {
+      console.error('Refresh user failed', error);
+    }
+  };
+
+  const updateUser = (userData) => {
+    setUser(userData);
+    Cookies.set('user_data', JSON.stringify(userData), { expires: 7 });
+  };
+
+  return <AuthContext.Provider value={{ user, loading, login, logout, refreshUser, updateUser }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

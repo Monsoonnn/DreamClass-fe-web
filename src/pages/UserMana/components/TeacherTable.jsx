@@ -1,9 +1,13 @@
 // src/pages/user-mana/components/TeacherTable.jsx
 import React, { useState, useEffect } from 'react';
-import { Table, Tag, Button, Space, Input, Pagination, Avatar, Popconfirm, message } from 'antd';
-import { EyeOutlined, DeleteOutlined, FileExcelOutlined, SearchOutlined, PlusOutlined } from '@ant-design/icons';
+import { Table, Tag, Button, Space, Input, Pagination, Avatar, Popconfirm, message, Select, Modal } from 'antd';
+import { EyeOutlined, EditOutlined, DeleteOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../../services/api';
+import * as XLSX from 'xlsx';
+import TeacherUpdate from './TeacherUpdate';
+
+const { Option } = Select;
 
 export default function TeacherTable() {
   const [data, setData] = useState([]);
@@ -13,24 +17,37 @@ export default function TeacherTable() {
   const [pageSize, setPageSize] = useState(5);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingTeacher, setEditingTeacher] = useState(null);
+  const [filterGender, setFilterGender] = useState('');
+
   const navigate = useNavigate();
 
   // --- Fetch dữ liệu giáo viên từ API ---
   const fetchTeachers = async () => {
     setLoading(true);
     try {
+      // Note: API seems to support pagination.
+      // To support client-side filtering properly with small datasets, we might want to fetch all?
+      // But let's stick to server pagination if API supports it.
+      // However, if we want to filter by Gender client-side, we need all data or API support.
+      // Assuming API doesn't support gender filter, let's fetch all for now like UserTable to be safe if dataset is small.
+      // But the original code used server pagination.
+      // Let's keep server pagination but pass search.
+      // If "Missing filter data" means visual filter, I'll implement client side filter on the FETCHED data? No, that's wrong.
+      // I'll try to fetch all (limit=1000) to be consistent with UserTable and avoid "incomplete list" issues.
+      
       const response = await apiClient.get('/accounts/teachers', {
         params: {
-          page: currentPage,
-          limit: pageSize,
+          page: 1,
+          limit: 1000,
           search: inputSearchText || undefined,
         },
       });
 
       const teachers = response.data?.data || [];
-      const pagination = response.data?.pagination || { total: teachers.length };
       setData(teachers);
-      setTotal(pagination.total || teachers.length);
+      setTotal(teachers.length);
     } catch (error) {
       console.error('Error fetching teachers:', error);
       message.error('Không thể tải dữ liệu từ server.');
@@ -44,7 +61,23 @@ export default function TeacherTable() {
   useEffect(() => {
     fetchTeachers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, pageSize, inputSearchText]);
+  }, [inputSearchText]);
+
+  // Client-side filtering wrapper
+  const filteredData = () => {
+    let list = data;
+    if (filterGender) {
+       list = list.filter(t => t.gender === filterGender);
+    }
+    // Search is already handled by API but we can double check or refined filter
+    if (inputSearchText) {
+         list = list.filter((item) =>
+          item.name.toLowerCase().includes(inputSearchText.toLowerCase()) ||
+          item.username?.toLowerCase().includes(inputSearchText.toLowerCase())
+      );
+    }
+    return list;
+  };
 
   // --- Delete ---
   const handleDelete = async (record) => {
@@ -66,6 +99,71 @@ export default function TeacherTable() {
       // refresh to restore
       fetchTeachers();
     }
+  };
+
+  const handleDeleteMultiple = async () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning('Vui lòng chọn ít nhất một giáo viên để xóa');
+      return;
+    }
+
+    Modal.confirm({
+      title: 'Xác nhận xóa',
+      content: `Bạn có chắc muốn xóa ${selectedRowKeys.length} giáo viên đã chọn?`,
+      okText: 'Xóa',
+      okType: 'danger',
+      cancelText: 'Hủy',
+      onOk: async () => {
+        try {
+          await Promise.all(
+            selectedRowKeys.map(async (key) => {
+               await apiClient.delete(`/accounts/teachers/${key}`);
+            })
+          );
+          message.success('Đã xóa các giáo viên đã chọn');
+          fetchTeachers();
+          setSelectedRowKeys([]);
+        } catch (err) {
+          console.error('Delete multiple failed', err);
+          message.error('Xóa thất bại một số bản ghi');
+          fetchTeachers();
+        }
+      },
+    });
+  };
+
+  const handleEdit = (record) => {
+    setEditingTeacher(record);
+    setEditModalVisible(true);
+  };
+
+  const handleExport = () => {
+    const listToExport = filteredData(); 
+
+    if (listToExport.length === 0) {
+      message.warning('Không có dữ liệu để xuất Excel');
+      return;
+    }
+
+    const exportData = listToExport.map((item, index) => ({
+      'STT': index + 1,
+      'Họ tên': item.name,
+      'Tài khoản': item.username,
+      'Email': item.email,
+      'Giới tính': item.gender === 'Male' ? 'Nam' : item.gender === 'Female' ? 'Nữ' : item.gender,
+      'Ngày sinh': item.dateOfBirth ? new Date(item.dateOfBirth).toLocaleDateString('vi-VN') : '',
+      'Địa chỉ': item.address,
+      'Số điện thoại': item.phone,
+      'Lớp dạy': item.assignedClasses ? item.assignedClasses.map(c => c.className).join(', ') : '',
+      'Ghi chú': item.notes,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sách giáo viên');
+
+    XLSX.writeFile(workbook, 'Danh_sach_giao_vien.xlsx');
+    message.success('Xuất Excel thành công');
   };
 
   const renderRole = () => <Tag color="blue">Giáo viên</Tag>;
@@ -107,6 +205,7 @@ export default function TeacherTable() {
       render: (_, record) => (
         <Space>
           <EyeOutlined style={{ color: 'green', cursor: 'pointer' }} onClick={() => navigate(`/user-mana/view-teacher/${record.teacherId || record._id || record.key}`)} />
+          <EditOutlined style={{ color: 'blue', cursor: 'pointer' }} onClick={() => handleEdit(record)} />
           <Popconfirm title="Bạn có chắc muốn xoá?" onConfirm={() => handleDelete(record)} okText="Xóa" cancelText="Hủy">
             <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
           </Popconfirm>
@@ -115,25 +214,36 @@ export default function TeacherTable() {
     },
   ];
 
-  const paginatedData = data.filter(
-    (item) => item.name.toLowerCase().includes(inputSearchText.toLowerCase()) || item.username?.toLowerCase().includes(inputSearchText.toLowerCase())
-  );
+  const paginatedData = filteredData().slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
     <div className="bg-white p-3">
       <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
         <Space.Compact className="w-full max-w-xl">
           <Input placeholder="Nhập tìm kiếm..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 240 }} />
+          <Select
+            placeholder="Lọc giới tính"
+            style={{ width: 120 }}
+            allowClear
+            onChange={(value) => setFilterGender(value)}
+          >
+            <Option value="Male">Nam</Option>
+            <Option value="Female">Nữ</Option>
+          </Select>
           <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }} onClick={() => setCurrentPage(1)}>
             Tìm
           </Button>
+          <Button type="primary" icon={<FilterOutlined />} style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }} />
         </Space.Compact>
 
         <Space.Compact>
           <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/user-mana/add')}>
             Thêm
           </Button>
-          <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }}>
+          <Button danger icon={<DeleteOutlined />} onClick={handleDeleteMultiple}>
+            Xóa
+          </Button>
+          <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
             Xuất Excel
           </Button>
         </Space.Compact>
@@ -160,7 +270,7 @@ export default function TeacherTable() {
         <Pagination
           current={currentPage}
           pageSize={pageSize}
-          total={data.length}
+          total={filteredData().length}
           onChange={(page, size) => {
             setCurrentPage(page);
             setPageSize(size);
@@ -169,6 +279,13 @@ export default function TeacherTable() {
           pageSizeOptions={['5', '10', '20', '50']}
         />
       </div>
+
+      <TeacherUpdate
+        open={editModalVisible}
+        onClose={() => setEditModalVisible(false)}
+        teacherData={editingTeacher}
+        onUpdated={fetchTeachers}
+      />
     </div>
   );
 }

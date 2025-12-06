@@ -65,6 +65,14 @@ export default function AddQuizz() {
    * ======================== */
   const handleSubmit = async (values) => {
     try {
+      // Validate that each question has at least one correct answer
+      for (const q of questions) {
+        if (!q.answers.some(a => a.isCorrect)) {
+          message.error('Mỗi câu hỏi phải có ít nhất một đáp án đúng được chọn!');
+          return;
+        }
+      }
+
       // Convert UI -> backend format
       const convertedQuestions = questions.map((q) => {
         const correctIndex = q.answers.findIndex((a) => a.isCorrect);

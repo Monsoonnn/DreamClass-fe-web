@@ -5,17 +5,29 @@ import { apiClient } from '../../../services/api';
 
 const { Option } = Select;
 
-export default function BookEdit({ visible, onClose, bookKey, onUpdate }) {
+export default function BookEdit({ visible, onClose, bookKey, bookData, onUpdate }) {
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState([]);
   const [fileURL, setFileURL] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (bookKey && visible) {
-      fetchBookDetail();
+    if (visible) {
+      if (bookData) {
+        form.setFieldsValue({
+          title: bookData.name,
+          category: bookData.category,
+          grade: bookData.level,
+          description: bookData.description,
+          note: bookData.note,
+        });
+        setFileURL(bookData.filePath || '');
+      }
+      if (bookKey) {
+        fetchBookDetail();
+      }
     }
-  }, [bookKey, visible]);
+  }, [bookKey, visible, bookData]);
 
   const fetchBookDetail = async () => {
     try {
@@ -37,7 +49,7 @@ export default function BookEdit({ visible, onClose, bookKey, onUpdate }) {
       }
     } catch (err) {
       console.error('Lỗi fetch chi tiết sách:', err);
-      message.error('Không thể tải thông tin sách');
+      // Không show error message để tránh spam nếu fetch lỗi nhẹ hoặc user đóng nhanh
     } finally {
       setLoading(false);
     }
@@ -58,7 +70,7 @@ export default function BookEdit({ visible, onClose, bookKey, onUpdate }) {
       formData.append('note', values.note || '');
 
       if (fileList.length > 0) {
-        formData.append('file', fileList[0].originFileObj);
+        formData.append('file', fileList[0].originFileObj || fileList[0]);
       }
 
       await apiClient.put(`/pdfs/${bookKey}`, formData, {
@@ -130,9 +142,7 @@ export default function BookEdit({ visible, onClose, bookKey, onUpdate }) {
                   <a href={fileURL} target="_blank" rel="noreferrer">
                     📄 Xem file hiện tại
                   </a>
-                  <Button type="link" danger icon={<DeleteOutlined />} onClick={handleRemoveFile}>
-                    Xóa file
-                  </Button>
+                  {/* Removed "Xóa file" button */}
                 </div>
               )}
 

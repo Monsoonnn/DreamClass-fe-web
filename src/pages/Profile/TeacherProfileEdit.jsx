@@ -6,6 +6,8 @@ import dayjs from 'dayjs';
 
 export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdated }) {
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -20,42 +22,49 @@ export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdate
         dateOfBirth: teacher.dateOfBirth ? dayjs(teacher.dateOfBirth) : null, // Format ngày sinh
       });
       setAvatarPreview(teacher.avatar);
+      setSelectedFile(null);
     }
   }, [teacher, form]);
 
   // Xử lý thay đổi ảnh đại diện
-  const handleAvatarChange = (info) => {
-    const file = info.file.originFileObj;
+  const handleBeforeUpload = (file) => {
     const preview = URL.createObjectURL(file);
     setAvatarPreview(preview);
-    form.setFieldValue('avatarFile', file);
+    setSelectedFile(file);
+    return false;
   };
 
   const handleSubmit = async () => {
     try {
+      setSubmitting(true);
       const values = await form.validateFields();
-      let avatarUrl = teacher.avatar;
-
-      if (values.avatarFile) {
-        avatarUrl = avatarPreview;
-      }
-
-      const updatedTeacher = {
-        ...teacher,
+      
+      // 1. Update Profile Info (JSON)
+      const updateData = {
         ...values,
-        avatar: avatarUrl,
-        dateOfBirth: values.dateOfBirth.format('YYYY-MM-DD'),
+        dateOfBirth: values.dateOfBirth ? values.dateOfBirth.format('YYYY-MM-DD') : null,
       };
+      
+      await apiClient.put(`/teacher/profile`, updateData);
 
-      // Gửi API cập nhật thông tin
-      await apiClient.put(`/api/auth/profile`, updatedTeacher);
+      // 2. Update Avatar (FormData) if selected
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('avatar', selectedFile);
+        
+        await apiClient.put(`/teacher/profile/avatar`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+      }
 
       message.success('Cập nhật thông tin thành công!');
       onUpdated(); // Reload lại dữ liệu sau khi cập nhật
       onClose(); // Đóng modal
     } catch (err) {
       console.error('Validation Failed:', err);
-      message.error('Cập nhật thông tin thất bại!');
+      message.error('Cập nhật thông tin thất bại! ' + (err.response?.data?.message || err.message));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -67,6 +76,7 @@ export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdate
       onOk={handleSubmit}
       okText="Lưu thay đổi"
       cancelText="Hủy"
+      confirmLoading={submitting}
       className="profile-edit-modal"
       width={600}
     >
@@ -80,8 +90,14 @@ export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdate
       >
         {/* Avatar */}
         <Form.Item label="Ảnh đại diện">
-          <Upload beforeUpload={() => false} onChange={handleAvatarChange} showUploadList={false}>
-            <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
+          <Upload 
+            beforeUpload={handleBeforeUpload} 
+            showUploadList={false}
+            accept="image/*"
+            maxCount={1}
+            disabled={submitting}
+          >
+            <Button icon={<UploadOutlined />} disabled={submitting}>Chọn ảnh</Button>
           </Upload>
 
           {avatarPreview && <img src={avatarPreview} alt="avatar" className="mt-3 w-24 h-24 rounded-full object-cover" />}
@@ -90,23 +106,23 @@ export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdate
         {/* 2 CỘT */}
         <div className="grid grid-cols-2 gap-1">
           <Form.Item name="name" label="Họ và tên" rules={[{ required: true }]}>
-            <Input />
+            <Input disabled={submitting} />
           </Form.Item>
 
-          <Form.Item name="username" label="Username" rules={[{ required: true }]}>
-            <Input />
+          <Form.Item name="username" label="Tài khoản" rules={[{ required: true }]}>
+            <Input disabled={submitting} />
           </Form.Item>
 
           <Form.Item name="email" label="Email">
-            <Input />
+            <Input disabled={submitting} />
           </Form.Item>
 
           <Form.Item name="className" label="Lớp">
-            <Input />
+            <Input disabled={submitting} />
           </Form.Item>
 
           <Form.Item name="grade" label="Khối">
-            <Input />
+            <Input disabled={submitting} />
           </Form.Item>
 
           <Form.Item name="gender" label="Giới tính">
@@ -116,23 +132,28 @@ export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdate
                 { value: 'Female', label: 'Nữ' },
                 { value: 'Other', label: 'Khác' },
               ]}
+              disabled={submitting}
             />
           </Form.Item>
 
           <Form.Item name="dateOfBirth" label="Ngày sinh">
-            <DatePicker format="YYYY-MM-DD" className="w-full" />
+            <DatePicker format="YYYY-MM-DD" className="w-full" disabled={submitting} />
           </Form.Item>
 
           <Form.Item name="address" label="Địa chỉ">
-            <Input />
+            <Input disabled={submitting} />
+          </Form.Item>
+          
+          <Form.Item name="phone" label="Số điện thoại">
+             <Input disabled={submitting} />
           </Form.Item>
 
           <Form.Item name="notes" label="Ghi chú">
-            <Input.TextArea rows={1} />
+            <Input.TextArea rows={1} disabled={submitting} />
           </Form.Item>
 
           <Form.Item name="password" label="Mật khẩu mới">
-            <Input.Password placeholder="Nhập mật khẩu mới (nếu muốn đổi)" />
+            <Input.Password placeholder="Nhập mật khẩu mới (nếu muốn đổi)" disabled={submitting} />
           </Form.Item>
         </div>
       </Form>

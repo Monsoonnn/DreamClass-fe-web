@@ -3,11 +3,14 @@ import { Card, Descriptions, Avatar, Button, Spin, message } from 'antd';
 import { UserOutlined, EditOutlined } from '@ant-design/icons';
 import { apiClient } from '../../services/api';
 import TeacherProfileEdit from './TeacherProfileEdit';
+import { useAuth } from '../../context/AuthContext';
+import dayjs from 'dayjs';
 
 export default function TeacherProfile() {
   const [teacher, setTeacher] = useState(null);
   const [loading, setLoading] = useState(false);
   const [editVisible, setEditVisible] = useState(false);
+  const { updateUser } = useAuth();
 
   useEffect(() => {
     fetchProfile();
@@ -16,14 +19,22 @@ export default function TeacherProfile() {
   const fetchProfile = async () => {
     setLoading(true);
     try {
-      const res = await apiClient.get('/auth/profile');
-      setTeacher(res.data.data);
+      const res = await apiClient.get('/teacher/profile');
+      const newData = res.data.data;
+      setTeacher(newData);
+      updateUser(newData);
     } catch (err) {
       console.error(err);
       message.error('Không thể tải thông tin giáo viên!');
     } finally {
       setLoading(false);
     }
+  };
+
+  const translateGender = (gender) => {
+    if (gender === 'Male') return 'Nam';
+    if (gender === 'Female') return 'Nữ';
+    return gender;
   };
 
   if (loading || !teacher) {
@@ -60,8 +71,8 @@ export default function TeacherProfile() {
           <Descriptions.Item label="Họ và tên">{teacher.name}</Descriptions.Item>
           <Descriptions.Item label="Username">{teacher.username}</Descriptions.Item>
           <Descriptions.Item label="Email">{teacher.email}</Descriptions.Item>
-          <Descriptions.Item label="Giới tính">{teacher.gender}</Descriptions.Item>
-          <Descriptions.Item label="Ngày sinh">{teacher.dateOfBirth ? teacher.dateOfBirth.substring(0, 10) : ''}</Descriptions.Item>
+          <Descriptions.Item label="Giới tính">{translateGender(teacher.gender)}</Descriptions.Item>
+          <Descriptions.Item label="Ngày sinh">{teacher.dateOfBirth ? dayjs(teacher.dateOfBirth).format('DD-MM-YYYY') : ''}</Descriptions.Item>
           <Descriptions.Item label="Số điện thoại">{teacher.phone}</Descriptions.Item>
           <Descriptions.Item label="Địa chỉ">{teacher.address}</Descriptions.Item>
 

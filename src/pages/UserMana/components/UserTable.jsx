@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Tag, Button, Space, Input, Pagination, Avatar, Popconfirm, message } from 'antd';
+import { Table, Tag, Button, Space, Input, Pagination, Avatar, Popconfirm, message, Select, Modal } from 'antd';
 import { EyeOutlined, EditOutlined, DeleteOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { getUsers, deleteUser } from './userService';
 import { apiClient } from '../../../services/api';
+import * as XLSX from 'xlsx';
+import UserUpdate from './UserUpdate';
+
+const { Option } = Select;
 
 export default function UserTable({ filterRole }) {
   const [data, setData] = useState([]);
@@ -13,6 +17,11 @@ export default function UserTable({ filterRole }) {
   const [pageSize, setPageSize] = useState(5);
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [filterGrade, setFilterGrade] = useState('');
+  const [filterClass, setFilterClass] = useState('');
+
   const navigate = useNavigate();
 
   // --- Fetch dữ liệu từ API ---
@@ -49,6 +58,12 @@ export default function UserTable({ filterRole }) {
     if (filterRole) {
       list = list.filter((item) => item.role === filterRole);
     }
+    if (filterGrade) {
+      list = list.filter((item) => item.grade === filterGrade);
+    }
+    if (filterClass) {
+      list = list.filter((item) => item.className === filterClass);
+    }
     if (inputSearchText.trim()) {
       list = list.filter(
         (item) =>
@@ -74,6 +89,79 @@ export default function UserTable({ filterRole }) {
       console.warn('Delete failed', id, err);
       message.error('Xóa thất bại');
     }
+  };
+
+  const handleDeleteMultiple = async () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning('Vui lòng chọn ít nhất một người dùng để xóa');
+      return;
+    }
+
+    Modal.confirm({
+      title: 'Xác nhận xóa',
+      content: `Bạn có chắc muốn xóa ${selectedRowKeys.length} người dùng đã chọn?`,
+      okText: 'Xóa',
+      okType: 'danger',
+      cancelText: 'Hủy',
+      onOk: async () => {
+        try {
+          // Xóa từng người dùng (hoặc dùng API bulk delete nếu có)
+          // Vì API hiện tại chỉ hỗ trợ xóa từng người, ta dùng Promise.all
+          await Promise.all(
+            selectedRowKeys.map(async (key) => {
+              // Tìm record tương ứng để lấy ID chính xác nếu key không phải là ID
+              // Tuy nhiên rowKey được set là record.playerId || record._id || record.key
+              // Nên key chính là ID
+              await apiClient.delete(`/accounts/students/${key}`);
+            })
+          );
+          message.success('Đã xóa các người dùng đã chọn');
+          fetchPlayers();
+          setSelectedRowKeys([]);
+        } catch (err) {
+          console.error('Delete multiple failed', err);
+          message.error('Xóa thất bại một số bản ghi');
+          fetchPlayers(); // Refresh anyway
+        }
+      },
+    });
+  };
+
+  const handleEdit = (record) => {
+    setEditingUser(record);
+    setEditModalVisible(true);
+  };
+
+  const handleExport = () => {
+    const listToExport = filteredList();
+    if (listToExport.length === 0) {
+      message.warning('Không có dữ liệu để xuất Excel');
+      return;
+    }
+
+    // Map data to export format
+    const exportData = listToExport.map((item, index) => ({
+      'STT': index + 1,
+      'Họ tên': item.name,
+      'Tài khoản': item.username,
+      'Email': item.email,
+      'Giới tính': item.gender === 'Male' ? 'Nam' : item.gender === 'Female' ? 'Nữ' : item.gender,
+      'Ngày sinh': item.dateOfBirth ? new Date(item.dateOfBirth).toLocaleDateString('vi-VN') : '',
+      'Địa chỉ': item.address,
+      'Số điện thoại': item.phone,
+      'Lớp': item.className,
+      'Khối': item.grade,
+      'Ghi chú': item.notes,
+    }));
+
+    // Create worksheet and workbook
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sách học sinh');
+
+    // Write file
+    XLSX.writeFile(workbook, 'Danh_sach_hoc_sinh.xlsx');
+    message.success('Xuất Excel thành công');
   };
 
   const renderRole = (role) => (role === 'teacher' ? <Tag color="blue">Giáo viên</Tag> : <Tag color="green">Học sinh</Tag>);
@@ -105,7 +193,7 @@ export default function UserTable({ filterRole }) {
       render: (_, record) => (
         <Space>
           <EyeOutlined style={{ color: 'green', cursor: 'pointer' }} onClick={() => navigate(`/user-mana/view/${record.playerId || record._id || record.key}`)} />
-          {/* <EditOutlined style={{ color: 'blue', cursor: 'pointer' }} onClick={() => console.log('Sửa:', record)} /> */}
+          <EditOutlined style={{ color: 'blue', cursor: 'pointer' }} onClick={() => handleEdit(record)} />
           <Popconfirm title="Bạn có chắc muốn xoá?" onConfirm={() => handleDelete(record)} okText="Xóa" cancelText="Hủy">
             <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
           </Popconfirm>
@@ -117,11 +205,31 @@ export default function UserTable({ filterRole }) {
   // --- Slice dữ liệu theo phân trang frontend ---
   const paginatedData = filteredList().slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
+  // Get unique grades and classes for filter options
+  const uniqueGrades = [...new Set(data.map(item => item.grade).filter(Boolean))];
+  const uniqueClasses = [...new Set(data.map(item => item.className).filter(Boolean))];
+
   return (
     <div className="bg-white p-3">
       <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
         <Space.Compact className="w-full max-w-xl">
-          <Input placeholder="Nhập tìm kiếm..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 240 }} />
+          <Input placeholder="Nhập tìm kiếm..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 200 }} />
+          <Select 
+            placeholder="Lọc Khối" 
+            style={{ width: 120 }} 
+            allowClear 
+            onChange={(value) => setFilterGrade(value)}
+          >
+            {uniqueGrades.map(g => <Option key={g} value={g}>{g}</Option>)}
+          </Select>
+          <Select 
+            placeholder="Lọc Lớp" 
+            style={{ width: 120 }} 
+            allowClear 
+            onChange={(value) => setFilterClass(value)}
+          >
+             {uniqueClasses.map(c => <Option key={c} value={c}>{c}</Option>)}
+          </Select>
           <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }} onClick={() => setCurrentPage(1)}>
             Tìm
           </Button>
@@ -132,10 +240,10 @@ export default function UserTable({ filterRole }) {
           <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/user-mana/add')}>
             Thêm
           </Button>
-          <Button danger icon={<DeleteOutlined />}>
+          <Button danger icon={<DeleteOutlined />} onClick={handleDeleteMultiple}>
             Xóa
           </Button>
-          <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }}>
+          <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
             Xuất Excel
           </Button>
         </Space.Compact>
@@ -171,6 +279,13 @@ export default function UserTable({ filterRole }) {
           pageSizeOptions={['5', '10', '20', '50']}
         />
       </div>
+
+      <UserUpdate
+        open={editModalVisible}
+        onClose={() => setEditModalVisible(false)}
+        userData={editingUser}
+        onUpdated={fetchPlayers}
+      />
     </div>
   );
 }

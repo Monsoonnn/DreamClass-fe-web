@@ -58,6 +58,7 @@ export default function Header() {
 
   const username = user?.username || user?.name || '';
   const name = user?.name || '';
+  const userAvatar = user?.avatar || "https://www.svgrepo.com/show/446475/avatar.svg"; // Fallback default avatar
 
   return (
     <header className="h-12 flex items-center justify-between px-5 bg-white border-b border-gray-200 shadow text-[#23408e] font-bold tracking-wide uppercase">
@@ -66,7 +67,7 @@ export default function Header() {
       <div className="flex items-center space-x-4 text-base font-normal capitalize">
         <Dropdown menu={{ items: menuItems }} placement="bottomRight" arrow getPopupContainer={() => document.body}>
           <Button type="text" className="text-[#23408e] font-medium lowercase flex items-center">
-            <img src="https://www.svgrepo.com/show/446475/avatar.svg" className="w-10 h-10" alt="avatar" />
+            <img src={userAvatar} className="w-10 h-10 rounded-full object-cover" alt="avatar" />
             <span className="text-[#23408e] font-semibold capitalize">
               {capitalizeName(name)} | <i>{capitalizeName(username)}</i>
             </span>

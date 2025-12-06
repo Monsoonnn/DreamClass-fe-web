@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Space, Popconfirm, Input, Pagination, message, Tag } from 'antd';
-import { EyeOutlined, DeleteOutlined, SearchOutlined, FileExcelOutlined, PlusOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Popconfirm, Input, Pagination, message, Tag, Select, Modal } from 'antd';
+import { EyeOutlined, DeleteOutlined, SearchOutlined, FileExcelOutlined, PlusOutlined, EditOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../../services/api';
+import * as XLSX from 'xlsx';
+
+const { Option } = Select;
 
 export default function QuizzTable() {
   const [loading, setLoading] = useState(false);
@@ -11,20 +14,16 @@ export default function QuizzTable() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [filterSubject, setFilterSubject] = useState('all');
+  const [filterGrade, setFilterGrade] = useState('all');
 
   const navigate = useNavigate();
 
   // ================= GET API =================
-  const fetchData = async (subject, grade) => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await apiClient.get('/quizzes', {
-        params: {
-          ...(subject ? { subject } : {}),
-          ...(grade ? { grade } : {}),
-        },
-      });
-
+      const res = await apiClient.get('/quizzes'); // Fetch all quizzes for client-side filtering
       const quizzes = res.data?.data || [];
 
       const mapped = quizzes.map((q) => ({
@@ -47,11 +46,87 @@ export default function QuizzTable() {
   useEffect(() => {
     fetchData();
   }, []);
-  const filteredData = quizzList.filter((item) => item.name.toLowerCase().includes(inputSearchText.toLowerCase()));
 
-  const handleDelete = (id) => {
-    setQuizzList(quizzList.filter((item) => item.id !== id));
-    message.success('Xóa thành công');
+  const filteredData = () => {
+    let list = quizzList;
+
+    if (filterSubject !== 'all') {
+      list = list.filter(item => item.subject === filterSubject);
+    }
+
+    if (filterGrade !== 'all') {
+      list = list.filter(item => String(item.grade) === String(filterGrade));
+    }
+
+    if (inputSearchText.trim()) {
+      list = list.filter((item) => item.name.toLowerCase().includes(inputSearchText.toLowerCase()));
+    }
+    return list;
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await apiClient.delete(`/quizzes/${id}`);
+      message.success('Xóa quizz thành công!');
+      fetchData(); // Refresh data
+      setSelectedRowKeys([]);
+    } catch (err) {
+      console.error(err);
+      message.error('Xóa quizz thất bại!');
+    }
+  };
+
+  const handleDeleteMultiple = () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning('Vui lòng chọn ít nhất một quizz để xóa');
+      return;
+    }
+
+    Modal.confirm({
+      title: 'Xác nhận xóa',
+      content: `Bạn có chắc muốn xóa ${selectedRowKeys.length} quizz đã chọn?`,
+      okText: 'Xóa',
+      okType: 'danger',
+      cancelText: 'Hủy',
+      onOk: async () => {
+        try {
+          await Promise.all(
+            selectedRowKeys.map(id => apiClient.delete(`/quizzes/${id}`))
+          );
+          message.success('Đã xóa các quizz đã chọn');
+          fetchData();
+          setSelectedRowKeys([]);
+        } catch (err) {
+          console.error(err);
+          message.error('Có lỗi xảy ra khi xóa nhiều quizz');
+          fetchData();
+        }
+      },
+    });
+  };
+
+  const handleExport = () => {
+    const dataToExport = filteredData();
+    if (dataToExport.length === 0) {
+      message.warning('Không có dữ liệu để xuất Excel');
+      return;
+    }
+
+    const exportData = dataToExport.map((item, index) => ({
+      'STT': index + 1,
+      'Tên quizz': item.name,
+      'Khối': item.grade,
+      'Môn học': item.subject,
+      'Chương': item.chapter,
+      'Ghi chú': item.note,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sách quizz');
+
+    XLSX.writeFile(workbook, 'Danh_sach_quizz.xlsx');
+    message.success('Xuất Excel thành công');
   };
 
   const columns = [
@@ -92,7 +167,7 @@ export default function QuizzTable() {
       render: (_, record) => (
         <Space>
           <EyeOutlined style={{ color: 'green', cursor: 'pointer' }} onClick={() => navigate(`/quizz-mana/view/${record.id}`)} />
-
+          <EditOutlined style={{ color: 'blue', cursor: 'pointer' }} onClick={() => navigate(`/quizz-mana/update/${record.id}`)} />
           <Popconfirm title="Bạn chắc chắn muốn xóa?" okText="Xóa" cancelText="Hủy" onConfirm={() => handleDelete(record.id)}>
             <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
           </Popconfirm>
@@ -101,13 +176,32 @@ export default function QuizzTable() {
     },
   ];
 
+  const uniqueSubjects = [...new Set(quizzList.map(item => item.subject).filter(Boolean))];
+  const uniqueGrades = [...new Set(quizzList.map(item => item.grade).filter(Boolean))];
+
   // ================= RENDER =================
   return (
     <div className="p-2 bg-white shadow">
       {/* ======= Search + Add + Export ======= */}
       <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
         <Space.Compact className="w-full max-w-xl">
-          <Input placeholder="Nhập tìm kiếm..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 220 }} />
+          <Input placeholder="Nhập tìm kiếm..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 150 }} />
+          <Select 
+            defaultValue="all" 
+            style={{ width: 120 }} 
+            onChange={setFilterSubject}
+          >
+            <Option value="all">Tất cả môn</Option>
+            {uniqueSubjects.map(sub => <Option key={sub} value={sub}>{sub}</Option>)}
+          </Select>
+          <Select 
+            defaultValue="all" 
+            style={{ width: 120 }} 
+            onChange={setFilterGrade}
+          >
+            <Option value="all">Tất cả khối</Option>
+            {uniqueGrades.map(grade => <Option key={grade} value={grade}>{grade}</Option>)}
+          </Select>
           <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}>
             Tìm
           </Button>
@@ -117,7 +211,10 @@ export default function QuizzTable() {
           <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate(`/quizz-mana/add`)}>
             Thêm
           </Button>
-          <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }}>
+          <Button danger icon={<DeleteOutlined />} onClick={handleDeleteMultiple}>
+            Xóa
+          </Button>
+          <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
             Xuất Excel
           </Button>
         </Space.Compact>
@@ -126,7 +223,7 @@ export default function QuizzTable() {
       {/* ========= TABLE ========= */}
       <Table
         loading={loading}
-        dataSource={filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize)}
+        dataSource={filteredData().slice((currentPage - 1) * pageSize, currentPage * pageSize)}
         columns={columns}
         rowKey="id"
         bordered
@@ -146,7 +243,7 @@ export default function QuizzTable() {
         <Pagination
           current={currentPage}
           pageSize={pageSize}
-          total={filteredData.length}
+          total={filteredData().length}
           onChange={(page, size) => {
             setCurrentPage(page);
             setPageSize(size);

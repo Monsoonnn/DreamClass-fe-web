@@ -6,6 +6,8 @@ import dayjs from 'dayjs';
 
 export default function ProfileEdit({ visible, onClose, user, onUpdated }) {
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar || null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -16,43 +18,69 @@ export default function ProfileEdit({ visible, onClose, user, onUpdated }) {
         dateOfBirth: user.dateOfBirth ? dayjs(user.dateOfBirth) : null, // Format lại ngày sinh
       });
       setAvatarPreview(user.avatar); // Đặt ảnh đại diện mặc định
+      setSelectedFile(null); // Reset file đã chọn
     }
   }, [user, form]);
 
-  const handleAvatarChange = (info) => {
-    const file = info.file.originFileObj;
+  const handleBeforeUpload = (file) => {
+    // Tạo preview
     const preview = URL.createObjectURL(file);
     setAvatarPreview(preview);
-    form.setFieldValue('avatarFile', file);
+    // Lưu file vào state để gửi đi sau
+    setSelectedFile(file);
+    // Return false để chặn auto upload của Antd
+    return false;
   };
 
   const handleSubmit = async () => {
     try {
+      setSubmitting(true);
       const values = await form.validateFields();
+      const role = user?.role;
 
-      let avatarUrl = user.avatar;
-      if (values.avatarFile) {
-        avatarUrl = avatarPreview; // Nếu có thay đổi ảnh, dùng ảnh mới
+      // Determine base endpoint based on role
+      let baseEndpoint = '/auth/profile'; // Default
+      if (role === 'admin') {
+        baseEndpoint = '/accounts/profile';
+      } else if (role === 'teacher') {
+        baseEndpoint = '/teacher/profile';
+      } else if (role === 'student') {
+        baseEndpoint = '/players/profile';
       }
 
-      const updatedUser = {
-        ...user,
+      // 1. Update Profile Info (JSON)
+      const updateData = {
         ...values,
-        avatar: avatarUrl,
-        dateOfBirth: values.dateOfBirth.format('YYYY-MM-DD'), // Format lại ngày sinh
+        dateOfBirth: values.dateOfBirth ? values.dateOfBirth.format('YYYY-MM-DD') : null,
       };
+      
+      // Remove undefined keys if necessary, but usually Axios handles JSON fine.
+      await apiClient.put(baseEndpoint, updateData);
 
-      // Gửi API cập nhật thông tin
-      await apiClient.put(`/api/auth/profile`, updatedUser);
+      // 2. Update Avatar (FormData) if selected
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('avatar', selectedFile);
+        
+        await apiClient.put(`${baseEndpoint}/avatar`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+      }
 
       message.success('Cập nhật thông tin thành công!');
-      onUpdated(); // Reload lại dữ liệu sau khi cập nhật
-      onClose(); // Đóng modal
+      onUpdated();
+      onClose();
     } catch (err) {
       console.error('Validation Failed:', err);
-      message.error('Cập nhật thông tin thất bại!');
+      message.error('Cập nhật thông tin thất bại! ' + (err.response?.data?.message || err.message));
+    } finally {
+      setSubmitting(false);
     }
   };
+
+  const isStudent = user?.role === 'student';
 
   return (
     <Modal
@@ -62,6 +90,7 @@ export default function ProfileEdit({ visible, onClose, user, onUpdated }) {
       onOk={handleSubmit}
       okText="Lưu thay đổi"
       cancelText="Hủy"
+      confirmLoading={submitting}
       className="profile-edit-modal"
       width={600}
     >
@@ -69,14 +98,20 @@ export default function ProfileEdit({ visible, onClose, user, onUpdated }) {
         form={form}
         layout="vertical"
         initialValues={{
-          ...user, // Đảm bảo user có đầy đủ các trường ban đầu
-          dateOfBirth: user.dateOfBirth ? dayjs(user.dateOfBirth) : null, // Format ngày sinh
+          ...user, 
+          dateOfBirth: user.dateOfBirth ? dayjs(user.dateOfBirth) : null,
         }}
       >
         {/* Avatar */}
         <Form.Item label="Ảnh đại diện">
-          <Upload beforeUpload={() => false} onChange={handleAvatarChange} showUploadList={false}>
-            <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
+          <Upload 
+            beforeUpload={handleBeforeUpload} 
+            showUploadList={false}
+            accept="image/*"
+            maxCount={1}
+            disabled={submitting}
+          >
+            <Button icon={<UploadOutlined />} disabled={submitting}>Chọn ảnh</Button>
           </Upload>
 
           {avatarPreview && <img src={avatarPreview} alt="avatar" className="mt-3 w-24 h-24 rounded-full object-cover" />}
@@ -85,24 +120,29 @@ export default function ProfileEdit({ visible, onClose, user, onUpdated }) {
         {/* 2 CỘT */}
         <div className="grid grid-cols-2 gap-1">
           <Form.Item name="name" label="Họ và tên" rules={[{ required: true }]}>
-            <Input />
+            <Input disabled={submitting} />
           </Form.Item>
 
           <Form.Item name="username" label="Username" rules={[{ required: true }]}>
-            <Input />
+            <Input disabled={submitting} />
           </Form.Item>
 
           <Form.Item name="email" label="Email">
-            <Input />
+            <Input disabled={submitting} />
           </Form.Item>
+          
+          {/* Chỉ hiển thị Lớp và Khối nếu là Student */}
+          {isStudent && (
+            <>
+              <Form.Item name="className" label="Lớp">
+                <Input disabled={submitting} />
+              </Form.Item>
 
-          <Form.Item name="className" label="Lớp">
-            <Input />
-          </Form.Item>
-
-          <Form.Item name="grade" label="Khối">
-            <Input />
-          </Form.Item>
+              <Form.Item name="grade" label="Khối">
+                <Input disabled={submitting} />
+              </Form.Item>
+            </>
+          )}
 
           <Form.Item name="gender" label="Giới tính">
             <Select
@@ -111,23 +151,28 @@ export default function ProfileEdit({ visible, onClose, user, onUpdated }) {
                 { value: 'Female', label: 'Nữ' },
                 { value: 'Other', label: 'Khác' },
               ]}
+              disabled={submitting}
             />
           </Form.Item>
 
           <Form.Item name="dateOfBirth" label="Ngày sinh">
-            <DatePicker format="YYYY-MM-DD" className="w-full" />
+            <DatePicker format="DD/MM/YYYY" className="w-full" disabled={submitting} />
           </Form.Item>
 
           <Form.Item name="address" label="Địa chỉ">
-            <Input />
+            <Input disabled={submitting} />
+          </Form.Item>
+          
+          <Form.Item name="phone" label="Số điện thoại">
+            <Input disabled={submitting} />
           </Form.Item>
 
           <Form.Item name="notes" label="Ghi chú">
-            <Input.TextArea rows={1} />
+            <Input.TextArea rows={1} disabled={submitting} />
           </Form.Item>
 
           <Form.Item name="password" label="Mật khẩu mới">
-            <Input.Password placeholder="Nhập mật khẩu mới (nếu muốn đổi)" />
+            <Input.Password placeholder="Nhập mật khẩu mới (nếu muốn đổi)" disabled={submitting} />
           </Form.Item>
         </div>
       </Form>
