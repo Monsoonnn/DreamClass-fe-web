@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { message, Modal, Spin } from 'antd';
+import { message, Modal, Spin, Button } from 'antd';
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 
 export default function Login() {
@@ -11,6 +11,10 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Error Modal State
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Note: Redirection for already logged-in users is now handled by the PublicRoute wrapper in App.jsx
 
@@ -32,8 +36,9 @@ export default function Login() {
       navigate('/dashboard');
       
     } catch (err) {
-      message.error('Sai tài khoản hoặc mật khẩu!');
       console.error('Login error:', err);
+      setErrorMessage(err.response?.data?.message || 'Sai tài khoản hoặc mật khẩu! Vui lòng thử lại.');
+      setErrorModalVisible(true);
     } finally {
       setLoading(false);
     }
@@ -49,6 +54,22 @@ export default function Login() {
       <Modal open={loading} footer={null} closable={false} centered bodyStyle={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
         <Spin size="large" />
         <span>Đang đăng nhập...</span>
+      </Modal>
+
+      {/* Modal Error */}
+      <Modal
+        title="Đăng nhập thất bại"
+        open={errorModalVisible}
+        onOk={() => setErrorModalVisible(false)}
+        onCancel={() => setErrorModalVisible(false)}
+        centered
+        footer={[
+          <Button key="ok" type="primary" onClick={() => setErrorModalVisible(false)} danger>
+            Thử lại
+          </Button>
+        ]}
+      >
+        <p className="text-red-500">{errorMessage}</p>
       </Modal>
 
       {/* Form login */}
