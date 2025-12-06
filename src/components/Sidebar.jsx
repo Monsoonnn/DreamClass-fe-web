@@ -55,7 +55,7 @@ const adminMenu = [
 // MENU CHO HỌC SINH
 const StudentMenu = [
   { key: 'dashboard', label: 'Dashboard', icon: <DashboardOutlined style={{ fontSize: 18 }} />, path: '/dashboard' },
-
+  { key: 'study', label: 'Học tâp', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/student-study' },
   { key: 'quizz', label: 'Làm bài quizz', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/student-quizz-list' },
   {
     key: 'ranking',

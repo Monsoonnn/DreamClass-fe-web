@@ -12,7 +12,7 @@ export default function SpinMana() {
             className="mb-4 text-sm"
             items={[
               {
-                href: '/reward-mana',
+                href: '/spin-mana',
                 title: (
                   <>
                     <HomeOutlined />

@@ -1,89 +1,94 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Select, Card, Tooltip, Spin, message } from 'antd';
+import React, { useEffect, useState, useMemo } from 'react';
+import { Card, Select, Tooltip, Spin } from 'antd';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
-import { apiClient } from '../../../services/api';
+import apiClient from '../../../services/api';
 
-export default function StudentLearning({ student, playerId }) {
+export default function StudyHistory({ student }) {
+  const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState([]);
+  const [activity, setActivity] = useState(null);
+
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [subjects, setSubjects] = useState([]);
   const [subjectData, setSubjectData] = useState({});
-  const [loadingProgress, setLoadingProgress] = useState(false);
-
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [activityLogs, setActivityLogs] = useState([]);
   const [activityStats, setActivityStats] = useState({});
-  const [loadingActivity, setLoadingActivity] = useState(false);
 
   const yearOptions = [2022, 2023, 2024, 2025, 2026].map((y) => ({ value: y, label: y }));
   const COLORS = ['#52c41a', '#d9d9d9'];
 
-  // --- 1. Fetch Subject Progress ---
-  useEffect(() => {
-    const fetchProgress = async () => {
-      if (!playerId) return;
-      setLoadingProgress(true);
-      try {
-        const res = await apiClient.get(`/progress/subject/${playerId}`);
-        const data = res.data?.data || [];
+  // Fetch subject progress
+  const fetchProgress = async () => {
+    try {
+      const res = await apiClient.get('/progress/subject/my');
+      return res.data.data || [];
+    } catch (err) {
+      console.error('Error fetching progress:', err);
+      return [];
+    }
+  };
 
+  // Fetch activity log
+  const fetchActivity = async () => {
+    try {
+      const res = await apiClient.get('/progress/activity/my?days=365');
+      return res.data.data || null;
+    } catch (err) {
+      console.error('Error fetching activity:', err);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+
+      const [p1, p2] = await Promise.all([fetchProgress(), fetchActivity()]);
+
+      setProgress(p1);
+      setActivity(p2);
+
+      // Process subject data for pie chart
+      if (Array.isArray(p1)) {
         const mappedData = {};
         const subjectOptions = [];
 
-        if (Array.isArray(data)) {
-          data.forEach((item) => {
-            const subjName = item.subject || 'Unknown';
+        p1.forEach((item) => {
+          const subjName = item.subject || 'Unknown';
+          const pct =
+            item.completionPercentage !== undefined && item.completionPercentage !== null
+              ? item.completionPercentage
+              : (item.totalLessons || 0) + (item.totalExercises || 0) > 0
+              ? Math.round((((item.completedLessons || 0) + (item.completedExercises || 0)) / ((item.totalLessons || 0) + (item.totalExercises || 0))) * 100)
+              : 0;
 
-            const pct =
-              item.completionPercentage !== undefined && item.completionPercentage !== null
-                ? item.completionPercentage
-                : (item.totalLessons || 0) + (item.totalExercises || 0) > 0
-                ? Math.round((((item.completedLessons || 0) + (item.completedExercises || 0)) / ((item.totalLessons || 0) + (item.totalExercises || 0))) * 100)
-                : 0;
-
-            mappedData[subjName] = {
-              completed: pct,
-              remaining: 100 - pct,
-              raw: item,
-            };
-            subjectOptions.push({ value: subjName, label: subjName });
-          });
-        }
+          mappedData[subjName] = {
+            completed: pct,
+            remaining: 100 - pct,
+            raw: item,
+          };
+          subjectOptions.push({ value: subjName, label: subjName });
+        });
 
         setSubjectData(mappedData);
         setSubjects(subjectOptions);
-
-        if (subjectOptions.length > 0 && !selectedSubject) {
+        if (subjectOptions.length > 0) {
           setSelectedSubject(subjectOptions[0].value);
         }
-      } catch (err) {
-        console.error('Fetch subject progress failed', err);
-      } finally {
-        setLoadingProgress(false);
       }
+
+      // Process activity logs
+      if (p2) {
+        setActivityLogs(p2.logs || []);
+        setActivityStats(p2.statistics || {});
+      }
+
+      setLoading(false);
     };
 
-    fetchProgress();
-  }, [playerId]);
-
-  // --- 2. Fetch Activity Log ---
-  useEffect(() => {
-    const fetchActivity = async () => {
-      if (!playerId) return;
-      setLoadingActivity(true);
-      try {
-        const res = await apiClient.get(`/progress/activity/${playerId}?days=365`);
-        const { logs, statistics } = res.data?.data || { logs: [], statistics: {} };
-        setActivityLogs(logs || []);
-        setActivityStats(statistics || {});
-      } catch (err) {
-        console.error('Fetch activity failed', err);
-      } finally {
-        setLoadingActivity(false);
-      }
-    };
-
-    fetchActivity();
-  }, [playerId, selectedYear]);
+    loadData();
+  }, []);
 
   // --- Pie Data ---
   const currentProgress = selectedSubject && subjectData[selectedSubject] ? subjectData[selectedSubject] : { completed: 0, remaining: 100 };
@@ -96,7 +101,6 @@ export default function StudentLearning({ student, playerId }) {
   // --- Activity Heatmap Data ---
   const yearData = useMemo(() => {
     const loginMap = {};
-    // Use raw date string "YYYY-MM-DD" from API to avoid timezone issues
     activityLogs.forEach((log) => {
       if (log.date) {
         loginMap[log.date] = true;
@@ -118,12 +122,10 @@ export default function StudentLearning({ student, playerId }) {
       let week = Array(7).fill(null);
 
       daysInMonth.forEach((d) => {
-        // Manually format date to YYYY-MM-DD to match API
         const y = d.getFullYear();
         const m = String(d.getMonth() + 1).padStart(2, '0');
         const da = String(d.getDate()).padStart(2, '0');
         const dateStr = `${y}-${m}-${da}`;
-
         const dow = d.getDay();
 
         const dayData = {
@@ -154,19 +156,26 @@ export default function StudentLearning({ student, playerId }) {
   const getColor = (loggedIn) => (loggedIn ? '#40c463' : '#ebedf0');
   const dayLabels = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
-  // Helper to translate period strings
   const translatePeriod = (period) => {
-    if (!period) return '30 ngày gần nhất';
+    if (!period) return '365 ngày gần nhất';
     if (period.includes('30 days')) return '30 ngày gần nhất';
     if (period.includes('365 days')) return '365 ngày gần nhất';
     return period;
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
       {/* Tiến độ học */}
       <div className="lg:col-span-1">
-        <Card title="Tiến độ học tập" className="shadow-sm" loading={loadingProgress}>
+        <Card title="Tiến độ học tập" className="shadow-sm">
           <div className="flex flex-col items-center">
             {subjects.length > 0 ? (
               <>
@@ -203,7 +212,6 @@ export default function StudentLearning({ student, playerId }) {
         <Card
           title="Lịch sử hoạt động"
           className="shadow-sm"
-          loading={loadingActivity}
           extra={
             <div className="flex gap-2 items-center flex-wrap">
               <span className="text-sm text-gray-600">
@@ -216,14 +224,6 @@ export default function StudentLearning({ student, playerId }) {
           <div className="overflow-x-auto">
             <div className="inline-block min-w-full">
               <div className="flex mb-3">
-                {/* <div className="flex flex-col justify-around mr-3 text-xs text-gray-600 pt-6">
-                  {dayLabels.map((day, i) => (
-                    <div key={i} className="h-3 leading-3 text-right" style={{ minWidth: '20px' }}>
-                      {i % 2 === 1 ? day : ''}
-                    </div>
-                  ))}
-                </div> */}
-
                 <div className="flex flex-col gap-6">
                   {/* First row of 6 months */}
                   <div className="flex gap-4 justify-start flex-wrap">

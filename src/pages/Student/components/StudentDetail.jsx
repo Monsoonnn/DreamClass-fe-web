@@ -43,19 +43,12 @@ export default function StudentDetail() {
     fetchData();
   }, [id]);
 
-  // ================================
-  // ⏳ UI loading
-  // ================================
   if (loading)
     return (
       <div className="flex items-center justify-center min-h-[200px]">
         <Spin size="large" />
       </div>
     );
-
-  // ================================
-  // 🟩 Giao diện
-  // ================================
   return (
     <div className="p-2 bg-blue-50 min-h-screen">
       <Breadcrumb className="py-2 px-2 font-semibold text-[#23408e]" items={[{ href: '/student-mana', title: 'Danh sách học sinh' }, { title: 'Chi tiết học sinh' }]} />
