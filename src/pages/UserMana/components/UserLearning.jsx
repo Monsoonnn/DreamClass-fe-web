@@ -25,7 +25,7 @@ export default function UserLearning({ user, playerId }) {
       try {
         const res = await apiClient.get(`/progress/subject/${playerId}`);
         const data = res.data?.data || [];
-        
+
         const mappedData = {};
         const subjectOptions = [];
 
@@ -34,15 +34,14 @@ export default function UserLearning({ user, playerId }) {
             const subjName = item.subject || 'Unknown';
             const total = (item.totalLessons || 0) + (item.totalExercises || 0);
             const completed = (item.completedLessons || 0) + (item.completedExercises || 0);
-            
-            const pct = item.completionPercentage !== undefined && item.completionPercentage !== null
-              ? item.completionPercentage
-              : total > 0 ? Math.round((completed / total) * 100) : 0;
 
-            mappedData[subjName] = { 
-              completed: pct, 
+            const pct =
+              item.completionPercentage !== undefined && item.completionPercentage !== null ? item.completionPercentage : total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            mappedData[subjName] = {
+              completed: pct,
               remaining: 100 - pct,
-              raw: item 
+              raw: item,
             };
             subjectOptions.push({ value: subjName, label: subjName });
           });
@@ -50,7 +49,7 @@ export default function UserLearning({ user, playerId }) {
 
         setSubjectData(mappedData);
         setSubjects(subjectOptions);
-        
+
         if (subjectOptions.length > 0 && !selectedSubject) {
           setSelectedSubject(subjectOptions[0].value);
         }
@@ -85,9 +84,7 @@ export default function UserLearning({ user, playerId }) {
   }, [playerId, selectedYear]);
 
   // --- Pie Data ---
-  const currentProgress = selectedSubject && subjectData[selectedSubject] 
-    ? subjectData[selectedSubject] 
-    : { completed: 0, remaining: 100 };
+  const currentProgress = selectedSubject && subjectData[selectedSubject] ? subjectData[selectedSubject] : { completed: 0, remaining: 100 };
 
   const pieData = [
     { name: 'Đã hoàn thành', value: currentProgress.completed },
@@ -124,7 +121,7 @@ export default function UserLearning({ user, playerId }) {
         const m = String(d.getMonth() + 1).padStart(2, '0');
         const da = String(d.getDate()).padStart(2, '0');
         const dateStr = `${y}-${m}-${da}`;
-        
+
         const dow = d.getDay();
 
         const dayInfo = {
@@ -173,13 +170,7 @@ export default function UserLearning({ user, playerId }) {
               <>
                 <div className="mb-4 w-full px-4">
                   <label className="block text-sm font-medium mb-2 text-gray-700">Chọn môn học</label>
-                  <Select 
-                    value={selectedSubject} 
-                    onChange={setSelectedSubject} 
-                    options={subjects} 
-                    className="w-full" 
-                    size="middle" 
-                  />
+                  <Select value={selectedSubject} onChange={setSelectedSubject} options={subjects} className="w-full" size="middle" />
                 </div>
                 <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
@@ -193,13 +184,11 @@ export default function UserLearning({ user, playerId }) {
                 </ResponsiveContainer>
                 <div className="text-center mt-4">
                   <div className="text-4xl font-bold text-[#23408e]">{currentProgress.completed}%</div>
-                  <div className="text-gray-500 mt-1">
-                    Hoàn thành
-                  </div>
+                  <div className="text-gray-500 mt-1">Hoàn thành</div>
                 </div>
               </>
             ) : (
-               <div className="py-10 text-gray-400">Chưa có dữ liệu môn học</div>
+              <div className="py-10 text-gray-400">Chưa có dữ liệu môn học</div>
             )}
           </div>
         </Card>
@@ -216,7 +205,7 @@ export default function UserLearning({ user, playerId }) {
               <span className="text-sm text-gray-600">
                 <span className="font-semibold text-green-600">{activityStats.activeDays || 0}</span> ngày hoạt động trong {translatePeriod(activityStats.period)}
               </span>
-              <Select value={selectedYear} onChange={setSelectedYear} options={yearOptions} className="w-28" size='small'/>
+              <Select value={selectedYear} onChange={setSelectedYear} options={yearOptions} className="w-28" size="small" />
             </div>
           }
         >
@@ -238,24 +227,19 @@ export default function UserLearning({ user, playerId }) {
                       const monthGrid = yearData[monthIdx] || [];
                       return (
                         <div key={monthIdx} className="flex-shrink-0">
-                          <div className="text-xs font-semibold text-gray-700 mb-2 text-center">
-                            Tháng {monthIdx + 1}
-                          </div>
+                          <div className="text-xs font-semibold text-gray-700 mb-2 text-center">Tháng {monthIdx + 1}</div>
                           <div className="flex gap-1">
                             {monthGrid.length > 0 ? (
                               monthGrid.map((week, wIdx) => (
                                 <div key={wIdx} className="flex flex-col gap-1">
                                   {week.map((d, i) => (
-                                    <Tooltip 
-                                      key={i} 
-                                      title={d ? `${d.date}: ${d.loggedIn ? 'Có hoạt động' : 'Không hoạt động'}` : ''}
-                                    >
+                                    <Tooltip key={i} title={d ? `${d.date}: ${d.loggedIn ? 'Có hoạt động' : 'Không hoạt động'}` : ''}>
                                       <div
                                         className="w-3 h-3 rounded-sm hover:ring-2 hover:ring-blue-400 transition-all cursor-pointer"
-                                        style={{ 
+                                        style={{
                                           backgroundColor: d ? getColor(d.loggedIn) : 'transparent',
-                                          opacity: d ? 1 : 0
-                                        }} 
+                                          opacity: d ? 1 : 0,
+                                        }}
                                       />
                                     </Tooltip>
                                   ))}
@@ -269,7 +253,7 @@ export default function UserLearning({ user, playerId }) {
                       );
                     })}
                   </div>
-                  
+
                   {/* Second row of 6 months */}
                   <div className="flex gap-4 justify-start flex-wrap">
                     {Array.from({ length: 6 }).map((_, monthIdx) => {
@@ -277,24 +261,19 @@ export default function UserLearning({ user, playerId }) {
                       const monthGrid = yearData[actualMonthIdx] || [];
                       return (
                         <div key={actualMonthIdx} className="flex-shrink-0">
-                          <div className="text-xs font-semibold text-gray-700 mb-2 text-center">
-                            Tháng {actualMonthIdx + 1}
-                          </div>
+                          <div className="text-xs font-semibold text-gray-700 mb-2 text-center">Tháng {actualMonthIdx + 1}</div>
                           <div className="flex gap-1">
                             {monthGrid.length > 0 ? (
                               monthGrid.map((week, wIdx) => (
                                 <div key={wIdx} className="flex flex-col gap-1">
                                   {week.map((d, i) => (
-                                    <Tooltip 
-                                      key={i} 
-                                      title={d ? `${d.date}: ${d.loggedIn ? 'Có hoạt động' : 'Không hoạt động'}` : ''}
-                                    >
+                                    <Tooltip key={i} title={d ? `${d.date}: ${d.loggedIn ? 'Có hoạt động' : 'Không hoạt động'}` : ''}>
                                       <div
                                         className="w-3 h-3 rounded-sm hover:ring-2 hover:ring-blue-400 transition-all cursor-pointer"
-                                        style={{ 
+                                        style={{
                                           backgroundColor: d ? getColor(d.loggedIn) : 'transparent',
-                                          opacity: d ? 1 : 0
-                                        }} 
+                                          opacity: d ? 1 : 0,
+                                        }}
                                       />
                                     </Tooltip>
                                   ))}

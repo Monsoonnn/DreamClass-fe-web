@@ -13,9 +13,9 @@ export default function AddBook() {
   const [loading, setLoading] = useState(false);
 
   const beforeUpload = (file) => {
-    const isLt5M = file.size / 1024 / 1024 < 5;
-    if (!isLt5M) message.error('File phải nhỏ hơn 5MB!');
-    return isLt5M || Upload.LIST_IGNORE;
+    const isLt10M = file.size / 1024 / 1024 < 10; // < 10MB
+    if (!isLt10M) message.error('File phải nhỏ hơn 10MB!');
+    return isLt10M || Upload.LIST_IGNORE;
   };
 
   const handleSave = (values) => {

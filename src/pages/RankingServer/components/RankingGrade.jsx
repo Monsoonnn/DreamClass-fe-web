@@ -64,10 +64,10 @@ export default function RankingGrade() {
     }
 
     const exportData = listToExport.map((item) => ({
-      'Hạng': item.rank,
+      Hạng: item.rank,
       'Tên học sinh': item.name,
-      'Lớp': item.className,
-      'Khối': item.grade,
+      Lớp: item.className,
+      Khối: item.grade,
       'Tổng điểm': item.points,
       'Số bài đã làm': item.totalExercisesCompleted,
     }));
@@ -150,16 +150,12 @@ export default function RankingGrade() {
       {/* Nếu chưa tìm khối thì thôi (chỉ show input). Nếu đã tìm (grade != null) show kết quả (cả khi rỗng) */}
       {grade !== null && (
         <>
-          {/* <h2 className="text-lg font-semibold mb-3">
-            Kết quả khối: {grade} — Tổng: {data.length}
-          </h2> */}
-
-          {/* TOP 3 CARDS (giống ranking server). Nếu <3 thì hiển thị có bao nhiêu */}
+          {/* TOP 3 CARDS */}
           <div className="flex justify-center items-end gap-6 mb-8 mt-2 flex-wrap">
             {top3.length >= 1 && (
               <>
-                {/* Hạng 2 (nếu có >=2) */}
-                {top3[1] && (
+                {/* Hạng 2: Chỉ hiển thị nếu có đủ 3 người trở lên */}
+                {top3.length >= 3 && top3[1] && (
                   <Card
                     hoverable
                     className="w-56 text-center shadow-xl border-none transform transition-all duration-300 hover:scale-105 hover:shadow-2xl"
@@ -181,7 +177,7 @@ export default function RankingGrade() {
                   </Card>
                 )}
 
-                {/* Hạng 1 */}
+                {/* Hạng 1: Luôn hiển thị nếu có dữ liệu */}
                 <Card
                   hoverable
                   className="w-64 text-center shadow-2xl border-none transform transition-all duration-300 hover:scale-110 hover:shadow-3xl"
@@ -201,8 +197,8 @@ export default function RankingGrade() {
                   </div>
                 </Card>
 
-                {/* Hạng 3 (nếu có >=3) */}
-                {top3[2] && (
+                {/* Hạng 3: Chỉ hiển thị nếu có đủ 3 người trở lên */}
+                {top3.length >= 3 && top3[2] && (
                   <Card
                     hoverable
                     className="w-56 text-center shadow-xl border-none transform transition-all duration-300 hover:scale-105 hover:shadow-2xl"
@@ -225,7 +221,8 @@ export default function RankingGrade() {
                 )}
               </>
             )}
-            {/* Nếu không có top nào (dữ liệu rỗng) */}
+
+            {/* Thông báo nếu không có dữ liệu */}
             {top3.length === 0 && <div className="text-gray-500">Không có dữ liệu cho khối {grade}</div>}
           </div>
 
@@ -268,4 +265,3 @@ export default function RankingGrade() {
     </div>
   );
 }
-
