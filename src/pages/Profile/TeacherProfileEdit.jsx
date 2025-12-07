@@ -39,12 +39,24 @@ export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdate
       setSubmitting(true);
       const values = await form.validateFields();
       
-      // 1. Update Profile Info (JSON)
+      // 1. Update Profile Info (JSON) - Chỉ lấy các trường API cho phép
       const updateData = {
-        ...values,
-        dateOfBirth: values.dateOfBirth ? values.dateOfBirth.format('DD-MM-YYYY') : null,
+        name: values.name,
+        username: values.username,
+        email: values.email,
+        password: values.password,
+        gender: values.gender,
+        dateOfBirth: values.dateOfBirth ? values.dateOfBirth.format('YYYY-MM-DD') : null,
+        address: values.address,
+        phone: values.phone,
+        // notes, className, grade không được phép update qua API này
       };
       
+      // Nếu password rỗng (không đổi), xoá khỏi payload
+      if (!updateData.password) {
+        delete updateData.password;
+      }
+
       await apiClient.put(`/teacher/profile`, updateData);
 
       // 2. Update Avatar (FormData) if selected
@@ -149,7 +161,7 @@ export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdate
           </Form.Item>
 
           <Form.Item name="notes" label="Ghi chú">
-            <Input.TextArea rows={1} disabled={submitting} />
+            <Input.TextArea rows={1} disabled={true} />
           </Form.Item>
 
           <Form.Item name="password" label="Mật khẩu mới">
