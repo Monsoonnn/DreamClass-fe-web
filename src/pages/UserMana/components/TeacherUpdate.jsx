@@ -53,7 +53,7 @@ export default function TeacherUpdate({ open, onClose, teacherData, onUpdated })
       }
 
       const teacherId = teacherData.teacherId || teacherData._id;
-      
+
       // 1. Update Info
       const res = await apiClient.put(`/accounts/teachers/${teacherId}`, payload);
 
@@ -79,24 +79,12 @@ export default function TeacherUpdate({ open, onClose, teacherData, onUpdated })
   };
 
   return (
-    <Modal 
-      title="Cập nhật thông tin giáo viên" 
-      open={open} 
-      onCancel={onClose} 
-      footer={null} 
-      centered 
-      width={800}
-      confirmLoading={loading}
-    >
-      <Form layout="vertical" form={form}>
+    <Modal title="Cập nhật thông tin giáo viên" open={open} onCancel={onClose} footer={null} centered width={800} confirmLoading={loading}>
+      <Form className="custom-form" layout="vertical" form={form}>
         {/* Avatar */}
-        <div className="flex flex-col items-center mb-5">
+        <div className="flex flex-col items-center mb-2">
           <Avatar src={avatarPreview || '/avatar-default.png'} size={110} className="border shadow-md mb-3" />
-          <Upload
-            showUploadList={false}
-            beforeUpload={handleBeforeUpload}
-            accept="image/*"
-          >
+          <Upload showUploadList={false} beforeUpload={handleBeforeUpload} accept="image/*">
             <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
           </Upload>
         </div>
@@ -123,9 +111,6 @@ export default function TeacherUpdate({ open, onClose, teacherData, onUpdated })
             <Form.Item label="Địa chỉ" name="address">
               <Input />
             </Form.Item>
-             <Form.Item label="Mật khẩu mới" name="password">
-              <Input.Password placeholder="Để trống nếu không đổi" />
-            </Form.Item>
           </Col>
 
           <Col span={12}>
@@ -139,6 +124,9 @@ export default function TeacherUpdate({ open, onClose, teacherData, onUpdated })
 
             <Form.Item label="Tên đăng nhập" name="username">
               <Input />
+            </Form.Item>
+            <Form.Item label="Mật khẩu mới" name="password">
+              <Input.Password placeholder="Để trống nếu không đổi" />
             </Form.Item>
           </Col>
         </Row>

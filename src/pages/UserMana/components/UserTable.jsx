@@ -141,16 +141,16 @@ export default function UserTable({ filterRole }) {
 
     // Map data to export format
     const exportData = listToExport.map((item, index) => ({
-      'STT': index + 1,
+      STT: index + 1,
       'Họ tên': item.name,
       'Tài khoản': item.username,
-      'Email': item.email,
+      Email: item.email,
       'Giới tính': item.gender === 'Male' ? 'Nam' : item.gender === 'Female' ? 'Nữ' : item.gender,
       'Ngày sinh': item.dateOfBirth ? new Date(item.dateOfBirth).toLocaleDateString('vi-VN') : '',
       'Địa chỉ': item.address,
       'Số điện thoại': item.phone,
-      'Lớp': item.className,
-      'Khối': item.grade,
+      Lớp: item.className,
+      Khối: item.grade,
       'Ghi chú': item.notes,
     }));
 
@@ -182,7 +182,20 @@ export default function UserTable({ filterRole }) {
         return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
       },
     },
-    { title: 'Địa chỉ', dataIndex: 'address', key: 'address', align: 'center' },
+    {
+      title: 'Giới tính',
+      dataIndex: 'gender',
+      key: 'gender',
+      align: 'center',
+      render: (gender) => {
+        if (!gender) return '-';
+        const g = gender.toLowerCase();
+        if (g === 'male') return 'Nam';
+        if (g === 'female') return 'Nữ';
+        return gender;
+      },
+    },
+
     { title: 'Tài khoản', dataIndex: 'username', key: 'username', align: 'center' },
     { title: 'Phân loại', dataIndex: 'role', key: 'role', align: 'center', render: renderRole },
     { title: 'Ghi chú', dataIndex: 'notes', key: 'notes', ellipsis: true, align: 'center' },
@@ -206,29 +219,27 @@ export default function UserTable({ filterRole }) {
   const paginatedData = filteredList().slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   // Get unique grades and classes for filter options
-  const uniqueGrades = [...new Set(data.map(item => item.grade).filter(Boolean))];
-  const uniqueClasses = [...new Set(data.map(item => item.className).filter(Boolean))];
+  const uniqueGrades = [...new Set(data.map((item) => item.grade).filter(Boolean))];
+  const uniqueClasses = [...new Set(data.map((item) => item.className).filter(Boolean))];
 
   return (
     <div className="bg-white p-3">
       <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
         <Space.Compact className="w-full max-w-xl">
           <Input placeholder="Nhập tìm kiếm..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 200 }} />
-          <Select 
-            placeholder="Lọc Khối" 
-            style={{ width: 120 }} 
-            allowClear 
-            onChange={(value) => setFilterGrade(value)}
-          >
-            {uniqueGrades.map(g => <Option key={g} value={g}>{g}</Option>)}
+          <Select placeholder="Lọc Khối" style={{ width: 120 }} allowClear onChange={(value) => setFilterGrade(value)}>
+            {uniqueGrades.map((g) => (
+              <Option key={g} value={g}>
+                {g}
+              </Option>
+            ))}
           </Select>
-          <Select 
-            placeholder="Lọc Lớp" 
-            style={{ width: 120 }} 
-            allowClear 
-            onChange={(value) => setFilterClass(value)}
-          >
-             {uniqueClasses.map(c => <Option key={c} value={c}>{c}</Option>)}
+          <Select placeholder="Lọc Lớp" style={{ width: 120 }} allowClear onChange={(value) => setFilterClass(value)}>
+            {uniqueClasses.map((c) => (
+              <Option key={c} value={c}>
+                {c}
+              </Option>
+            ))}
           </Select>
           <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }} onClick={() => setCurrentPage(1)}>
             Tìm
@@ -280,12 +291,7 @@ export default function UserTable({ filterRole }) {
         />
       </div>
 
-      <UserUpdate
-        open={editModalVisible}
-        onClose={() => setEditModalVisible(false)}
-        userData={editingUser}
-        onUpdated={fetchPlayers}
-      />
+      <UserUpdate open={editModalVisible} onClose={() => setEditModalVisible(false)} userData={editingUser} onUpdated={fetchPlayers} />
     </div>
   );
 }

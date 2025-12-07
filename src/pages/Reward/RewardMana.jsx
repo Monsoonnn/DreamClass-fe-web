@@ -12,7 +12,7 @@ export default function RewardMana() {
             className="mb-4 text-sm"
             items={[
               {
-                href: '/reward-mana',
+                href: '/item-mana',
                 title: (
                   <>
                     <HomeOutlined />

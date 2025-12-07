@@ -45,10 +45,10 @@ export default function StudentTable() {
     }
 
     const exportData = filteredStudents.map((item, index) => ({
-      'STT': index + 1,
+      STT: index + 1,
       'Họ tên': item.name,
-      'Khối': item.grade,
-      'Lớp': item.className,
+      Khối: item.grade,
+      Lớp: item.className,
       'Ngày sinh': item.dateOfBirth ? new Date(item.dateOfBirth).toLocaleDateString('vi-VN') : '',
       'Giới tính': item.gender,
       'Địa chỉ': item.address,
@@ -99,8 +99,17 @@ export default function StudentTable() {
     {
       title: 'Giới tính',
       dataIndex: 'gender',
+      key: 'gender',
       align: 'center',
+      render: (gender) => {
+        if (!gender) return '-';
+        const g = gender.toLowerCase();
+        if (g === 'male') return 'Nam';
+        if (g === 'female') return 'Nữ';
+        return gender;
+      },
     },
+
     {
       title: 'Địa chỉ',
       dataIndex: 'address',
