@@ -51,7 +51,8 @@ export default function StudentInfo({ student }) {
             }}
           >
             <Descriptions.Item label="Giới tính">{student.gender}</Descriptions.Item>
-            <Descriptions.Item label="Ngày sinh">{student.dateOfBirth}</Descriptions.Item>
+            <Descriptions.Item label="Ngày sinh">{student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString('vi-VN') : '—'}</Descriptions.Item>
+
             <Descriptions.Item label="Địa chỉ">{student.address}</Descriptions.Item>
             <Descriptions.Item label="Khối">{student.grade || '—'}</Descriptions.Item>
             <Descriptions.Item label="Lớp">{student.className || '—'}</Descriptions.Item>

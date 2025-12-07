@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Tag, Button, Space, Input, Pagination, Popconfirm, Spin, message, Select, Modal } from 'antd';
-import { EyeOutlined, FileExcelOutlined, SearchOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { Table, Tag, Button, Space, Input, Pagination, Popconfirm, Spin, message, Select, Modal, Breadcrumb } from 'antd';
+import { EyeOutlined, FileExcelOutlined, SearchOutlined, DeleteOutlined, EditOutlined, ReadOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import TeacherMissionEdit from './TeacherMissionEdit';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../../services/api';
@@ -44,9 +44,9 @@ export default function TeacherMissionTable() {
 
   const filteredMissions = () => {
     let list = missions;
-    
+
     if (filterType !== 'all') {
-      list = list.filter(m => m.dailyQuestType === filterType);
+      list = list.filter((m) => m.dailyQuestType === filterType);
     }
 
     if (inputSearchText.trim()) {
@@ -63,12 +63,12 @@ export default function TeacherMissionTable() {
     }
 
     const exportData = listToExport.map((item, index) => ({
-      'STT': index + 1,
+      STT: index + 1,
       'Mã nhiệm vụ': item.questId,
       'Tên nhiệm vụ': item.name,
       'Ngày tạo': item.createdAt ? new Date(item.createdAt).toLocaleDateString('vi-VN') : '—',
       'Loại quest': item.dailyQuestType,
-      'Vàng': item.rewardGold,
+      Vàng: item.rewardGold,
       'Điểm thưởng': item.point,
     }));
 
@@ -81,7 +81,7 @@ export default function TeacherMissionTable() {
   };
 
   const handleDelete = async (record) => {
-    const previousMissions = [...missions]; 
+    const previousMissions = [...missions];
     try {
       const newMissions = missions.filter((m) => m.questId !== record.questId);
       setMissions(newMissions);
@@ -92,20 +92,17 @@ export default function TeacherMissionTable() {
         setCurrentPage(totalPages > 0 ? totalPages : 1);
       }
 
-      // Try teacher endpoint, if fails fall back to logic
       await apiClient.delete(`/teacher/quest-templates/${record.questId}`);
       message.success('Xóa nhiệm vụ thành công!');
     } catch (err) {
       console.error('Xóa thất bại:', err);
-      // If 404, maybe it's already deleted? If 403, permission denied.
-      // Assuming optimistic update: if API fails, we revert.
       setMissions(previousMissions);
       message.error('Xóa nhiệm vụ thất bại! (Có thể do quyền hạn)');
     }
   };
 
   const handleDeleteMultiple = () => {
-     if (selectedRowKeys.length === 0) {
+    if (selectedRowKeys.length === 0) {
       message.warning('Vui lòng chọn ít nhất một nhiệm vụ để xóa');
       return;
     }
@@ -118,9 +115,7 @@ export default function TeacherMissionTable() {
       cancelText: 'Hủy',
       onOk: async () => {
         try {
-          await Promise.all(
-             selectedRowKeys.map(id => apiClient.delete(`/teacher/quest-templates/${id}`))
-          );
+          await Promise.all(selectedRowKeys.map((id) => apiClient.delete(`/teacher/quest-templates/${id}`)));
           message.success('Đã xóa các nhiệm vụ đã chọn');
           fetchQuests();
           setSelectedRowKeys([]);
@@ -131,7 +126,7 @@ export default function TeacherMissionTable() {
         }
       },
     });
-  }
+  };
 
   const refreshMissions = () => {
     fetchQuests();
@@ -151,7 +146,22 @@ export default function TeacherMissionTable() {
     { title: 'Mã nhiệm vụ', dataIndex: 'questId', align: 'center' },
     { title: 'Tên nhiệm vụ', dataIndex: 'name' },
     { title: 'Ngày tạo', dataIndex: 'createdAt', align: 'center', render: (createdAt) => formatDate(createdAt) },
-    { title: 'Loại quest', dataIndex: 'dailyQuestType', align: 'center' },
+    {
+      title: 'Loại quest',
+      dataIndex: 'dailyQuestType',
+      align: 'center',
+      render: (type) => {
+        if (!type) return '—';
+        switch (type) {
+          case 'NPC_INTERACTION':
+            return 'Tương tác NPC';
+          case 'DAILY_TASK':
+            return 'Tự động';
+          default:
+            return type; // fallback nếu API trả về loại khác
+        }
+      },
+    },
     { title: 'Vàng', dataIndex: 'rewardGold', align: 'center', render: (rewardGold) => <Tag color="gold">{rewardGold}</Tag> },
     { title: 'Điểm thưởng', dataIndex: 'point', align: 'center', render: (point) => <Tag color="blue">{point}</Tag> },
     {
@@ -185,17 +195,35 @@ export default function TeacherMissionTable() {
       {!loading && (
         <>
           {/* Thanh công cụ */}
+          <Breadcrumb
+            className="mb-4 text-sm"
+            items={[
+              {
+                href: '/teacher-mission-mana',
+                title: (
+                  <>
+                    <ReadOutlined />
+                    <span>Quản lý nhiệm vụ</span>
+                  </>
+                ),
+              },
+              {
+                title: (
+                  <>
+                    <UnorderedListOutlined />
+                    <span className="font-semibold text-[#23408e]">Danh sách nhiệm vụ</span>
+                  </>
+                ),
+              },
+            ]}
+          />
           <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
             <Space.Compact className="w-full max-w-xl">
               <Input placeholder="Nhập tìm kiếm..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 220 }} />
-              <Select 
-                defaultValue="all" 
-                style={{ width: 160 }} 
-                onChange={setFilterType}
-              >
-                 <Option value="all">Tất cả loại</Option>
-                 <Option value="NPC_INTERACTION">NPC_INTERACTION</Option>
-                 <Option value="DAILY_TASK">DAILY_TASK</Option>
+              <Select defaultValue="all" style={{ width: 160 }} onChange={setFilterType}>
+                <Option value="all">Tất cả loại</Option>
+                <Option value="NPC_INTERACTION">Tương tác NPC</Option>
+                <Option value="DAILY_TASK">Tự động</Option>
               </Select>
               <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }} onClick={() => setCurrentPage(1)}>
                 Tìm

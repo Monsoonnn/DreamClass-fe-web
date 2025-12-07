@@ -50,9 +50,9 @@ export default function MissionTable() {
 
   const filteredMissions = () => {
     let list = missions;
-    
+
     if (filterType !== 'all') {
-      list = list.filter(m => m.dailyQuestType === filterType);
+      list = list.filter((m) => m.dailyQuestType === filterType);
     }
 
     if (inputSearchText.trim()) {
@@ -69,12 +69,12 @@ export default function MissionTable() {
     }
 
     const exportData = listToExport.map((item, index) => ({
-      'STT': index + 1,
+      STT: index + 1,
       'Mã nhiệm vụ': item.questId,
       'Tên nhiệm vụ': item.name,
       'Ngày tạo': item.createdAt ? new Date(item.createdAt).toLocaleDateString('vi-VN') : '—',
       'Loại quest': item.dailyQuestType,
-      'Vàng': item.rewardGold,
+      Vàng: item.rewardGold,
       'Điểm thưởng': item.point,
     }));
 
@@ -121,9 +121,7 @@ export default function MissionTable() {
       cancelText: 'Hủy',
       onOk: async () => {
         try {
-          await Promise.all(
-             selectedRowKeys.map(id => apiClient.delete(`/quests/admin/templates/${id}`))
-          );
+          await Promise.all(selectedRowKeys.map((id) => apiClient.delete(`/quests/admin/templates/${id}`)));
           message.success('Đã xóa các nhiệm vụ đã chọn');
           fetchQuests();
           setSelectedRowKeys([]);
@@ -154,7 +152,22 @@ export default function MissionTable() {
     { title: 'Mã nhiệm vụ', dataIndex: 'questId', align: 'center' },
     { title: 'Tên nhiệm vụ', dataIndex: 'name' },
     { title: 'Ngày tạo', dataIndex: 'createdAt', align: 'center', render: (createdAt) => formatDate(createdAt) },
-    { title: 'Loại quest', dataIndex: 'dailyQuestType', align: 'center' },
+    {
+      title: 'Loại quest',
+      dataIndex: 'dailyQuestType',
+      align: 'center',
+      render: (type) => {
+        if (!type) return '—';
+        switch (type) {
+          case 'NPC_INTERACTION':
+            return 'Tương tác NPC';
+          case 'DAILY_TASK':
+            return 'Tự động';
+          default:
+            return type; // fallback nếu API trả về loại khác
+        }
+      },
+    },
     { title: 'Vàng', dataIndex: 'rewardGold', align: 'center', render: (rewardGold) => <Tag color="gold">{rewardGold}</Tag> },
     { title: 'Điểm thưởng', dataIndex: 'point', align: 'center', render: (point) => <Tag color="blue">{point}</Tag> },
     {
@@ -190,14 +203,10 @@ export default function MissionTable() {
           <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
             <Space.Compact className="w-full max-w-xl">
               <Input placeholder="Nhập tìm kiếm..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 200 }} />
-              <Select 
-                defaultValue="all" 
-                style={{ width: 160 }} 
-                onChange={setFilterType}
-              >
-                 <Option value="all">Tất cả loại</Option>
-                 <Option value="NPC_INTERACTION">NPC_INTERACTION</Option>
-                 <Option value="DAILY_TASK">DAILY_TASK</Option>
+              <Select defaultValue="all" style={{ width: 160 }} onChange={setFilterType}>
+                <Option value="all">Tất cả loại</Option>
+                <Option value="NPC_INTERACTION">Tương tác NPC</Option>
+                <Option value="DAILY_TASK">Tự động</Option>
               </Select>
               <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }} onClick={() => setCurrentPage(1)}>
                 Tìm
