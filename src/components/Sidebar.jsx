@@ -123,10 +123,12 @@ export default function Sidebar() {
       {/* HEADER */}
       <div className={`flex items-center h-14 px-3 bg-[#23408E] border-b border-[#1a2e6c] ${open ? 'justify-between' : 'justify-center'}`}>
         <div className="flex items-center">
-          <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow">
-            <span className="text-[#23408E] font-bold text-base">DC</span>
+          {/* LOGO */}
+          <div className="w-10 h-10 rounded-full overflow-hidden shadow flex items-center justify-center">
+            <img src="/images/logodcl.png" alt="DreamClass Logo" className="w-full h-full object-cover" />
           </div>
-          {open && <span className="font-bold text-lg ml-2 tracking-wide">DreamClass</span>}
+
+          {open && <span className="font-bold text-lg ml-2 tracking-wide">Dream Class</span>}
         </div>
 
         {open && (

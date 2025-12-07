@@ -143,7 +143,10 @@ export default function UserDetail() {
                 }}
                 className="rounded-lg"
               >
-                <Descriptions.Item label="Giới tính">{user.gender}</Descriptions.Item>
+                <Descriptions.Item label="Giới tính">
+                  {user.gender ? (user.gender.toLowerCase() === 'male' ? 'Nam' : user.gender.toLowerCase() === 'female' ? 'Nữ' : user.gender) : '—'}
+                </Descriptions.Item>
+
                 <Descriptions.Item label="Ngày sinh">{user.dob}</Descriptions.Item>
                 <Descriptions.Item label="Địa chỉ">{user.address}</Descriptions.Item>
                 <Descriptions.Item label="Khối">{user.level || '—'}</Descriptions.Item>
