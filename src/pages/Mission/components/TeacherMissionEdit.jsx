@@ -88,8 +88,8 @@ export default function TeacherMissionEdit({ visible, onClose, missionData, refr
         {isDailyQuest && (
           <Form.Item label="Loại nhiệm vụ hàng ngày" name="dailyQuestType">
             <Select placeholder="Chọn loại Daily Quest">
-              <Select.Option value="NPC_INTERACTION">NPC_INTERACTION</Select.Option>
-              <Select.Option value="DAILY_TASK">DAILY_TASK</Select.Option>
+              <Select.Option value="NPC_INTERACTION">Tương tác NPC</Select.Option>
+              <Select.Option value="DAILY_TASK">Tự động</Select.Option>
             </Select>
           </Form.Item>
         )}

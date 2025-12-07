@@ -79,24 +79,12 @@ export default function UserUpdate({ open, onClose, userData, onUpdated }) {
   };
 
   return (
-    <Modal 
-      title="Cập nhật thông tin người dùng" 
-      open={open} 
-      onCancel={onClose} 
-      footer={null} 
-      centered 
-      width={800}
-      confirmLoading={loading}
-    >
-      <Form layout="vertical" form={form}>
+    <Modal title="Cập nhật thông tin người dùng" open={open} onCancel={onClose} footer={null} centered width={800} confirmLoading={loading}>
+      <Form className="custom-form" layout="vertical" form={form}>
         {/* Avatar */}
-        <div className="flex flex-col items-center mb-5">
+        <div className="flex flex-col items-center mb-2">
           <Avatar src={avatarPreview || '/avatar-default.png'} size={110} className="border shadow-md mb-3" />
-          <Upload
-            showUploadList={false}
-            beforeUpload={handleBeforeUpload}
-            accept="image/*"
-          >
+          <Upload showUploadList={false} beforeUpload={handleBeforeUpload} accept="image/*">
             <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
           </Upload>
         </div>
@@ -126,9 +114,6 @@ export default function UserUpdate({ open, onClose, userData, onUpdated }) {
             <Form.Item label="Khối" name="level">
               <Input />
             </Form.Item>
-             <Form.Item label="Mật khẩu mới" name="password">
-              <Input.Password placeholder="Để trống nếu không đổi" />
-            </Form.Item>
           </Col>
 
           <Col span={12}>
@@ -146,6 +131,9 @@ export default function UserUpdate({ open, onClose, userData, onUpdated }) {
 
             <Form.Item label="Lớp" name="class">
               <Input />
+            </Form.Item>
+            <Form.Item label="Mật khẩu mới" name="password">
+              <Input.Password placeholder="Để trống nếu không đổi" />
             </Form.Item>
           </Col>
         </Row>

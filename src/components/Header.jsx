@@ -55,14 +55,15 @@ export default function Header() {
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(' ');
   };
+  const headerTitle = user?.role === 'student' ? 'HỆ THỐNG HỌC TẬP' : 'HỆ THỐNG QUẢN LÝ';
 
   const username = user?.username || user?.name || '';
   const name = user?.name || '';
-  const userAvatar = user?.avatar || "https://www.svgrepo.com/show/446475/avatar.svg"; // Fallback default avatar
+  const userAvatar = user?.avatar || 'https://www.svgrepo.com/show/446475/avatar.svg'; // Fallback default avatar
 
   return (
     <header className="h-12 flex items-center justify-between px-5 bg-white border-b border-gray-200 shadow text-[#23408e] font-bold tracking-wide uppercase">
-      <span className="ml-2">HỆ THỐNG QUẢN LÝ</span>
+      <span className="ml-2">{headerTitle}</span>
 
       <div className="flex items-center space-x-4 text-base font-normal capitalize">
         <Dropdown menu={{ items: menuItems }} placement="bottomRight" arrow getPopupContainer={() => document.body}>

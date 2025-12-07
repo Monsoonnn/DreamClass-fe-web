@@ -64,7 +64,7 @@ export default function EditMissionModal({ visible, onClose, missionData, refres
 
   return (
     <Modal title="Chỉnh sửa nhiệm vụ" open={visible} onCancel={onClose} footer={null} width={800} destroyOnClose>
-      <Form layout="vertical" form={form} onFinish={handleSubmit}>
+      <Form className="custom-form" layout="vertical" form={form} onFinish={handleSubmit}>
         <h3 className="font-semibold">I. Thông tin nhiệm vụ</h3>
         {/* Quest ID */}
         <Form.Item label="Quest ID" name="questId">
@@ -94,8 +94,8 @@ export default function EditMissionModal({ visible, onClose, missionData, refres
         {/* Daily Type */}
         <Form.Item label="Cách nhận quest" name="dailyQuestType" rules={[{ required: isDailyQuest, message: 'Chọn loại Daily Quest' }]}>
           <Select disabled={!isDailyQuest} placeholder="Chọn loại Daily Quest">
-            <Select.Option value="NPC_INTERACTION">NPC_INTERACTION</Select.Option>
-            <Select.Option value="DAILY_TASK">DAILY_TASK</Select.Option>
+            <Select.Option value="NPC_INTERACTION">Tương tác NPC</Select.Option>
+            <Select.Option value="DAILY_TASK">Tự động</Select.Option>
           </Select>
         </Form.Item>
 

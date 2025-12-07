@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Breadcrumb, Spin, message, Descriptions, Tag, Space } from 'antd';
-import { ReadOutlined, UnorderedListOutlined, EditOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { Button, Breadcrumb, Spin, message } from 'antd'; // Bỏ Descriptions, Tag, Card, Space vì không dùng nữa
+import { ReadOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import TeacherMissionEdit from './TeacherMissionEdit';
 import { apiClient } from '../../../services/api';
 
@@ -22,7 +22,8 @@ export default function TeacherMissionDetail() {
   const fetchMissionDetail = async () => {
     setLoading(true);
     try {
-      const res = await apiClient.get(`/teacher/quest-templates/${questId}`); // Assuming teacher can access their quest detail
+      // Assuming teacher can access their quest detail
+      const res = await apiClient.get(`/quests/admin/templates/${questId}`);
       const missionData = res.data?.data || null;
       if (!missionData) {
         message.error('Không tìm thấy nhiệm vụ');
@@ -97,50 +98,74 @@ export default function TeacherMissionDetail() {
           },
         ]}
       />
-      
+      <h2 className="text-xl font-semibold mb-4">Thông tin nhiệm vụ</h2>
+
       <div className="bg-gray-200 p-2 rounded-md flex justify-center">
         <div className="bg-white p-4 rounded shadow-md w-full max-w-3xl">
-          <h2 className="text-xl font-semibold mb-4">Chi tiết nhiệm vụ: {mission.name}</h2>
-          
-          <Descriptions bordered column={1} labelStyle={{ fontWeight: 'bold' }} contentStyle={{ width: '100%' }}>
-            <Descriptions.Item label="Mã nhiệm vụ">{mission.questId}</Descriptions.Item>
-            <Descriptions.Item label="Tên nhiệm vụ">{mission.name}</Descriptions.Item>
-            <Descriptions.Item label="Mô tả">{mission.description}</Descriptions.Item>
-            <Descriptions.Item label="Cách nhận quest">{mission.dailyQuestType}</Descriptions.Item>
-            <Descriptions.Item label="Điều kiện tiên quyết">
-              {mission.prerequisiteQuestIds?.length > 0 ? (
-                mission.prerequisiteQuestIds.map(id => <Tag key={id}>{id}</Tag>)
-              ) : (
-                'Không'
-              )}
-            </Descriptions.Item>
-            <Descriptions.Item label="Vàng">{mission.rewardGold}</Descriptions.Item>
-            <Descriptions.Item label="Điểm thưởng">{mission.point}</Descriptions.Item>
-            <Descriptions.Item label="Là nhiệm vụ hàng ngày?">
-              {mission.isDailyQuest ? <Tag color="green">Có</Tag> : <Tag color="red">Không</Tag>}
-            </Descriptions.Item>
-            <Descriptions.Item label="Ngày tạo">{formatDate(mission.createdAt)}</Descriptions.Item>
-            <Descriptions.Item label="Ngày cập nhật">{formatDate(mission.updatedAt)}</Descriptions.Item>
-          </Descriptions>
+          <h3 className="text-lg font-semibold mb-4">Thông tin quest</h3>
 
-          <Space direction="vertical" className="w-full mt-4">
-            <h3 className="text-lg font-semibold mt-4 mb-2">Các bước thực hiện</h3>
-            {mission.steps?.length > 0 ? (
-              mission.steps.map((step, index) => (
-                <Card key={step.stepId} size="small" title={`Bước ${index + 1}: ${step.stepId}`}>
-                  <p><strong>Mô tả:</strong> {step.description}</p>
-                </Card>
-              ))
-            ) : (
-              <p>Không có bước thực hiện nào.</p>
-            )}
-          </Space>
+          {/* Layout Grid giống MissionDetail.jsx */}
+          <div className="grid grid-cols-2 gap-y-2 text-sm">
+            <p>
+              <strong>Mã nhiệm vụ:</strong> {mission.questId}
+            </p>
+            <p>
+              <strong>Tên nhiệm vụ:</strong> {mission.name}
+            </p>
+            <p>
+              <strong>Mô tả:</strong> {mission.description}
+            </p>
+            <p>
+              <strong>Cách nhận quest:</strong> {mission.dailyQuestType}
+            </p>
+            <p>
+              <strong>Điều kiện tiên quyết:</strong> {mission.prerequisiteQuestIds?.length > 0 ? mission.prerequisiteQuestIds.join(', ') : 'Không'}
+            </p>
+
+            <p>
+              <strong>Vàng:</strong> {mission.rewardGold}
+            </p>
+            <p>
+              <strong>Điểm thưởng:</strong> {mission.point}
+            </p>
+            <p>
+              <strong>Có phải quest hàng ngày không:</strong> {mission.isDailyQuest ? 'Có' : 'Không'}
+            </p>
+            <p>
+              <strong>Ngày tạo:</strong> {formatDate(mission.createdAt)}
+            </p>
+            <p>
+              <strong>Ngày cập nhật:</strong> {formatDate(mission.updatedAt)}
+            </p>
+          </div>
+
+          <hr className="my-5" />
+
+          <h3 className="text-lg font-semibold mb-2">Các bước thực hiện</h3>
+          {mission.steps?.length > 0 ? (
+            mission.steps.map((step, index) => (
+              <div key={step.stepId} className="mb-3 text-sm">
+                <p>
+                  <strong>{index + 1}.</strong>
+                </p>
+                <p>
+                  <strong>StepID:</strong> {step.stepId}
+                </p>
+                <p>
+                  <strong>Mô tả:</strong> {step.description}
+                </p>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm">Không có bước thực hiện nào.</p>
+          )}
 
           <div className="flex gap-3 mt-6">
-            <Button type="primary" icon={<EditOutlined />} style={{ backgroundColor: '#1677ff' }} onClick={() => setEditModalVisible(true)}>
+            <Button type="primary" style={{ backgroundColor: '#1677ff' }} onClick={() => setEditModalVisible(true)}>
               Chỉnh sửa
             </Button>
-            <Button type="default" icon={<ArrowLeftOutlined />} onClick={() => navigate('/teacher-mission-mana')}>
+
+            <Button danger onClick={() => navigate('/teacher-mission-mana')}>
               Quay lại
             </Button>
           </div>

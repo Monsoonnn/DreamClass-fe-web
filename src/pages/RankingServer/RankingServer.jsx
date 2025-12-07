@@ -16,7 +16,7 @@ export default function RankingServer() {
                 title: (
                   <>
                     <TeamOutlined />
-                    <span> Quản lý Ranking Server</span>
+                    <span> Xếp hạng máy chủ</span>
                   </>
                 ),
               },

@@ -33,17 +33,17 @@ export default function StudentQuizList() {
   const getTotalQuestions = (quiz) => quiz.chapters?.reduce((sum, ch) => sum + ch.questions.length, 0) || 0;
 
   return (
-    <div className="min-h-screen bg-gray-50  md:p-10 font-sans text-slate-800">
+    <div className="min-h-screen bg-blue-50  md:p-10 font-sans text-slate-800">
       <div className=" ">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-1">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-2 gap-1">
           <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">Danh sách quizz</h1>
+            <h1 className="text-lg md:text-2xl font-extrabold text-slate-900 tracking-tight">Danh sách quizz</h1>
           </div>
         </div>
 
         {/* Filters Section */}
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-2 flex flex-col sm:flex-row gap-2 items-center">
+        <div className="bg-white max-w-xl p-2 rounded-xl shadow-sm border border-gray-100 mb-2 flex flex-col sm:flex-row gap-2 items-center">
           <div className="relative w-full sm:w-80">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               {/* Search Icon SVG */}
@@ -90,7 +90,7 @@ export default function StudentQuizList() {
                 <p className="text-gray-500 text-lg">Không tìm thấy bài thi nào phù hợp.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                 {filtered.map((quiz) => (
                   <div
                     key={quiz._id}
@@ -99,7 +99,7 @@ export default function StudentQuizList() {
                     {/* Decorative Top Bar */}
                     <div className="h-2 w-full bg-gradient-to-r from-blue-500 to-indigo-500"></div>
 
-                    <div className="p-6 flex-1 flex flex-col">
+                    <div className="p-4 flex-1 flex flex-col">
                       <div className="flex justify-between items-start mb-4">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">{quiz.subject}</span>
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Khối {quiz.grade}</span>
@@ -107,7 +107,7 @@ export default function StudentQuizList() {
 
                       <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">{quiz.name}</h3>
 
-                      <div className="mt-auto pt-4 flex items-center text-gray-500 text-sm">
+                      <div className="mt-auto pt-2 flex items-center text-gray-500 text-sm">
                         {/* Question Icon */}
                         <svg className="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path

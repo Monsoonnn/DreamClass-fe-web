@@ -12,11 +12,11 @@ export default function StoreMana() {
             className="mb-4 text-sm"
             items={[
               {
-                href: '/student-mana',
+                href: '/book-mana',
                 title: (
                   <>
                     <UserOutlined />
-                    <span>Quản lý cửa hàng</span>
+                    <span>Quản lý sách</span>
                   </>
                 ),
               },
@@ -24,7 +24,7 @@ export default function StoreMana() {
                 title: (
                   <>
                     <UnorderedListOutlined />
-                    <span className="font-semibold text-[#23408e]">Danh sách vật phẩm</span>
+                    <span className="font-semibold text-[#23408e]">Danh sách sách</span>
                   </>
                 ),
               },

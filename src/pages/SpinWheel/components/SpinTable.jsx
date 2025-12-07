@@ -48,7 +48,7 @@ export default function SpinTable() {
 
   const filteredData = () => {
     let list = data;
-    
+
     // Filter by Status
     if (filterStatus !== 'all') {
       const isActive = filterStatus === 'active';
@@ -59,7 +59,7 @@ export default function SpinTable() {
     if (inputSearchText.trim()) {
       list = list.filter((item) => item.name.toLowerCase().includes(inputSearchText.toLowerCase()) || item.description.toLowerCase().includes(inputSearchText.toLowerCase()));
     }
-    
+
     return list;
   };
 
@@ -92,9 +92,7 @@ export default function SpinTable() {
       cancelText: 'Hủy',
       onOk: async () => {
         try {
-          await Promise.all(
-            selectedRowKeys.map((key) => apiClient.delete(`/spin-wheels/${key}`))
-          );
+          await Promise.all(selectedRowKeys.map((key) => apiClient.delete(`/spin-wheels/${key}`)));
           message.success('Đã xóa các vòng quay đã chọn');
           setSelectedRowKeys([]);
           fetchData();
@@ -115,7 +113,7 @@ export default function SpinTable() {
     }
 
     const exportData = listToExport.map((item, index) => ({
-      'STT': index + 1,
+      STT: index + 1,
       'Tên vòng quay': item.name,
       'Mô tả': item.description,
       'Giá quay': item.price,
@@ -171,11 +169,11 @@ export default function SpinTable() {
       render: (t) => new Date(t).toLocaleString('vi-VN'),
     },
     {
-      title: 'Số lượng item',
+      title: 'Số phần thưởng',
       dataIndex: 'itemCount',
       align: 'center',
       width: 130,
-      render: (count) => <Tag color="blue">{count} items</Tag>,
+      render: (count) => <Tag color="blue">{count}</Tag>,
     },
     {
       title: 'Trạng thái',
@@ -205,11 +203,7 @@ export default function SpinTable() {
       <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
         <Space.Compact className="w-full max-w-xl">
           <Input placeholder="Nhập tên vòng quay..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 200 }} />
-          <Select 
-            defaultValue="all" 
-            style={{ width: 150 }} 
-            onChange={setFilterStatus}
-          >
+          <Select defaultValue="all" style={{ width: 150 }} onChange={setFilterStatus}>
             <Option value="all">Tất cả trạng thái</Option>
             <Option value="active">Đang hoạt động</Option>
             <Option value="inactive">Ngừng hoạt động</Option>

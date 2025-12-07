@@ -47,7 +47,12 @@ import StudentBook from './pages/BookMana/components/StudentBook';
 import SpinMana from './pages/SpinWheel/SpinMana';
 import AddSpin from './pages/SpinWheel/components/AddSpin';
 import SpinDetail from './pages/SpinWheel/components/SpinDetail';
+import SpinUpdate from './pages/SpinWheel/components/SpinUpdate';
 import StudentQuizDetail from './pages/Quizz/components/StudentQuizzDetail';
+import StudentQuizResult from './pages/Quizz/components/StudentQuizResult';
+import StudyMana from './pages/StudentStudy/StudyMana';
+import StudyHistory from './pages/StudentStudy/components/StudyHistory';
+import StudyAchievements from './pages/StudentStudy/components/StudyAchievements';
 function App() {
   return (
     <AuthProvider>
@@ -87,6 +92,7 @@ function App() {
               </RoleRoute>
             }
           />
+          <Route path="/student-quizz-result/:id" element={<StudentQuizResult />} />
           {/* Layout + bảo vệ đăng nhập */}
           <Route
             element={
@@ -143,6 +149,30 @@ function App() {
               element={
                 <RoleRoute allowedRoles={['student']}>
                   <StudentRankingServer />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/student-study"
+              element={
+                <RoleRoute allowedRoles={['student']}>
+                  <StudyMana />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/student-study-history"
+              element={
+                <RoleRoute allowedRoles={['student']}>
+                  <StudyHistory />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/student-study-achievement"
+              element={
+                <RoleRoute allowedRoles={['student']}>
+                  <StudyAchievements />
                 </RoleRoute>
               }
             />
@@ -330,6 +360,14 @@ function App() {
               element={
                 <RoleRoute allowedRoles={['admin']}>
                   <SpinDetail />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/spin-mana/edit/:id"
+              element={
+                <RoleRoute allowedRoles={['admin']}>
+                  <SpinUpdate />
                 </RoleRoute>
               }
             />

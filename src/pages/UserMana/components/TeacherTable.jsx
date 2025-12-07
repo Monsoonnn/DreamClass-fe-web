@@ -36,7 +36,7 @@ export default function TeacherTable() {
       // Let's keep server pagination but pass search.
       // If "Missing filter data" means visual filter, I'll implement client side filter on the FETCHED data? No, that's wrong.
       // I'll try to fetch all (limit=1000) to be consistent with UserTable and avoid "incomplete list" issues.
-      
+
       const response = await apiClient.get('/accounts/teachers', {
         params: {
           page: 1,
@@ -67,14 +67,11 @@ export default function TeacherTable() {
   const filteredData = () => {
     let list = data;
     if (filterGender) {
-       list = list.filter(t => t.gender === filterGender);
+      list = list.filter((t) => t.gender === filterGender);
     }
     // Search is already handled by API but we can double check or refined filter
     if (inputSearchText) {
-         list = list.filter((item) =>
-          item.name.toLowerCase().includes(inputSearchText.toLowerCase()) ||
-          item.username?.toLowerCase().includes(inputSearchText.toLowerCase())
-      );
+      list = list.filter((item) => item.name.toLowerCase().includes(inputSearchText.toLowerCase()) || item.username?.toLowerCase().includes(inputSearchText.toLowerCase()));
     }
     return list;
   };
@@ -117,7 +114,7 @@ export default function TeacherTable() {
         try {
           await Promise.all(
             selectedRowKeys.map(async (key) => {
-               await apiClient.delete(`/accounts/teachers/${key}`);
+              await apiClient.delete(`/accounts/teachers/${key}`);
             })
           );
           message.success('Đã xóa các giáo viên đã chọn');
@@ -138,7 +135,7 @@ export default function TeacherTable() {
   };
 
   const handleExport = () => {
-    const listToExport = filteredData(); 
+    const listToExport = filteredData();
 
     if (listToExport.length === 0) {
       message.warning('Không có dữ liệu để xuất Excel');
@@ -146,15 +143,15 @@ export default function TeacherTable() {
     }
 
     const exportData = listToExport.map((item, index) => ({
-      'STT': index + 1,
+      STT: index + 1,
       'Họ tên': item.name,
       'Tài khoản': item.username,
-      'Email': item.email,
+      Email: item.email,
       'Giới tính': item.gender === 'Male' ? 'Nam' : item.gender === 'Female' ? 'Nữ' : item.gender,
       'Ngày sinh': item.dateOfBirth ? new Date(item.dateOfBirth).toLocaleDateString('vi-VN') : '',
       'Địa chỉ': item.address,
       'Số điện thoại': item.phone,
-      'Lớp dạy': item.assignedClasses ? item.assignedClasses.map(c => c.className).join(', ') : '',
+      'Lớp dạy': item.assignedClasses ? item.assignedClasses.map((c) => c.className).join(', ') : '',
       'Ghi chú': item.notes,
     }));
 
@@ -182,7 +179,20 @@ export default function TeacherTable() {
     },
 
     { title: 'Họ tên', dataIndex: 'name', key: 'name', align: 'center' },
-    { title: 'Giới tính', dataIndex: 'gender', key: 'gender', align: 'center' },
+    {
+      title: 'Giới tính',
+      dataIndex: 'gender',
+      key: 'gender',
+      align: 'center',
+      render: (gender) => {
+        if (!gender) return '-';
+        const g = gender.toLowerCase();
+        if (g === 'male') return 'Nam';
+        if (g === 'female') return 'Nữ';
+        return gender;
+      },
+    },
+
     {
       title: 'Ngày sinh',
       dataIndex: 'dateOfBirth',
@@ -221,12 +231,7 @@ export default function TeacherTable() {
       <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
         <Space.Compact className="w-full max-w-xl">
           <Input placeholder="Nhập tìm kiếm..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 240 }} />
-          <Select
-            placeholder="Lọc giới tính"
-            style={{ width: 120 }}
-            allowClear
-            onChange={(value) => setFilterGender(value)}
-          >
+          <Select placeholder="Lọc giới tính" style={{ width: 120 }} allowClear onChange={(value) => setFilterGender(value)}>
             <Option value="Male">Nam</Option>
             <Option value="Female">Nữ</Option>
           </Select>
@@ -280,12 +285,7 @@ export default function TeacherTable() {
         />
       </div>
 
-      <TeacherUpdate
-        open={editModalVisible}
-        onClose={() => setEditModalVisible(false)}
-        teacherData={editingTeacher}
-        onUpdated={fetchTeachers}
-      />
+      <TeacherUpdate open={editModalVisible} onClose={() => setEditModalVisible(false)} teacherData={editingTeacher} onUpdated={fetchTeachers} />
     </div>
   );
 }
