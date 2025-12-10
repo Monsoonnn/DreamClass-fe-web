@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { checkAuthAPI, loginAPI, logoutAPI } from '../services/authService';
+import apiClient from '../services/api';
 import Cookies from 'js-cookie';
 
 const AuthContext = createContext();
@@ -7,6 +8,16 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Helper to fetch full profile based on role
+  const fetchFullProfile = async (role) => {
+    let endpoint = '/auth/profile'; // Default/Admin
+    if (role === 'student') endpoint = '/players/profile';
+    else if (role === 'teacher') endpoint = '/teacher/profile';
+    
+    const res = await apiClient.get(endpoint);
+    return res.data?.data || res.data;
+  };
 
   // Check authentication status on mount
   useEffect(() => {
@@ -34,12 +45,26 @@ export function AuthProvider({ children }) {
 
       try {
         console.log('Đang verify user với token:', token);
+        // 1. Get Basic Info (Role)
         const response = await checkAuthAPI();
-        const userData = response.data?.data || response.data;
+        const basicData = response.data?.data || response.data;
 
-        // Cập nhật lại user mới nhất từ server
-        setUser(userData);
-        Cookies.set('user_data', JSON.stringify(userData), { expires: 7 });
+        // 2. Fetch Full Profile
+        if (basicData && basicData.role) {
+           try {
+             const fullData = await fetchFullProfile(basicData.role);
+             setUser(fullData);
+             Cookies.set('user_data', JSON.stringify(fullData), { expires: 7 });
+           } catch (profileErr) {
+             console.warn('Failed to fetch full profile, using basic data:', profileErr);
+             setUser(basicData);
+             Cookies.set('user_data', JSON.stringify(basicData), { expires: 7 });
+           }
+        } else {
+           setUser(basicData);
+           Cookies.set('user_data', JSON.stringify(basicData), { expires: 7 });
+        }
+
       } catch (error) {
         console.log('Verify failed - Token có thể hết hạn hoặc server từ chối Header');
         // Nếu API báo lỗi 401, lúc đó mới logout hẳn
@@ -57,24 +82,51 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (username, password) => {
+    // 1. Login to get Token
     const response = await loginAPI(username, password);
-
     const data = response.data;
-    const userData = data?.data || data;
+    
+    // Extract token
+    const token = data?.token || data?.accessToken || data?.data?.token || data?.data?.accessToken;
 
-    // Tìm token ở nhiều vị trí có thể
-    const token = data?.token || data?.accessToken || userData?.token || userData?.accessToken;
-
-    if (token) {
-      Cookies.set('token', token, { expires: 7 });
+    if (!token) {
+      throw new Error('Không tìm thấy token trong phản hồi đăng nhập');
     }
 
-    if (userData) {
-      Cookies.set('user_data', JSON.stringify(userData), { expires: 7 });
-    }
+    // 2. Save Token
+    Cookies.set('token', token, { expires: 7 });
 
-    setUser(userData);
-    return userData;
+    // 3. Get Role via checkAuthAPI (or use data from login if reliable)
+    // We use checkAuthAPI to be safe and consistent
+    let basicData = data?.data || data; // Try to use login response first
+    
+    try {
+      if (!basicData?.role) {
+         const meRes = await checkAuthAPI();
+         basicData = meRes.data?.data || meRes.data;
+      }
+
+      // 4. Fetch Full Profile
+      if (basicData?.role) {
+        const fullData = await fetchFullProfile(basicData.role);
+        setUser(fullData);
+        Cookies.set('user_data', JSON.stringify(fullData), { expires: 7 });
+        return fullData;
+      } else {
+        // Fallback
+        setUser(basicData);
+        Cookies.set('user_data', JSON.stringify(basicData), { expires: 7 });
+        return basicData;
+      }
+    } catch (err) {
+      console.error('Error fetching full profile during login:', err);
+      // Fallback to basic data
+      if (basicData) {
+        setUser(basicData);
+        Cookies.set('user_data', JSON.stringify(basicData), { expires: 7 });
+      }
+      return basicData;
+    }
   };
 
   const logout = async () => {
@@ -95,9 +147,16 @@ export function AuthProvider({ children }) {
 
     try {
       const response = await checkAuthAPI();
-      const userData = response.data?.data || response.data;
-      setUser(userData);
-      Cookies.set('user_data', JSON.stringify(userData), { expires: 7 });
+      const basicData = response.data?.data || response.data;
+      
+      if (basicData?.role) {
+        const fullData = await fetchFullProfile(basicData.role);
+        setUser(fullData);
+        Cookies.set('user_data', JSON.stringify(fullData), { expires: 7 });
+      } else {
+        setUser(basicData);
+        Cookies.set('user_data', JSON.stringify(basicData), { expires: 7 });
+      }
     } catch (error) {
       console.error('Refresh user failed', error);
     }

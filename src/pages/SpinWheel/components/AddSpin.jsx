@@ -124,7 +124,7 @@ export default function AddSpin() {
           </Form.Item>
 
           <Form.Item label="Thời gian sự kiện" name="timeRange" rules={[{ required: true, message: 'Chọn thời gian!' }]}>
-            <RangePicker showTime className="w-full" format="DD-MM-YYYY HH:mm:ss" placeholder={['Bắt đầu', 'Kết thúc']} />
+            <RangePicker showTime className="w-full" format="DD/MM/YYYY HH:mm:ss" placeholder={['Bắt đầu', 'Kết thúc']} />
           </Form.Item>
 
           <Divider orientation="left">

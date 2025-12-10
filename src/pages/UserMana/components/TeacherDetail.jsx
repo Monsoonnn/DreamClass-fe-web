@@ -4,6 +4,7 @@ import { Card, Descriptions, Tag, Button, Spin, message, Breadcrumb } from 'antd
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import TeacherUpdate from './TeacherUpdate';
 import { apiClient } from '../../../services/api';
+import { formatDate } from '../../../utils/dateUtil';
 
 export default function TeacherDetail() {
   const { teacherId } = useParams();
@@ -38,7 +39,7 @@ export default function TeacherDetail() {
           avatar: payload.avatar,
           gender: payload.gender,
           dateOfBirth: payload.dateOfBirth,
-          dob: payload.dateOfBirth ? new Date(payload.dateOfBirth).toLocaleDateString() : null,
+          dob: formatDate(payload.dateOfBirth),
           address: payload.address,
           phone: payload.phone,
           note: payload.notes,

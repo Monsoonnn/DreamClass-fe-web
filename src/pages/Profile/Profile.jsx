@@ -4,7 +4,7 @@ import { UserOutlined, EditOutlined } from '@ant-design/icons';
 import { apiClient } from '../../services/api';
 import ProfileEdit from './ProfileEdit';
 import { useAuth } from '../../context/AuthContext';
-import dayjs from 'dayjs';
+import { formatDate } from '../../utils/dateUtil';
 
 export default function Profile() {
   const [profile, setProfile] = useState(null);
@@ -84,7 +84,7 @@ export default function Profile() {
         {/* Info List */}
         <Descriptions bordered column={1} size="middle">
           <Descriptions.Item label="Họ và tên">{profile.name}</Descriptions.Item>
-          <Descriptions.Item label="Username">{profile.username}</Descriptions.Item>
+          <Descriptions.Item label="Tài khoản">{profile.username}</Descriptions.Item>
           <Descriptions.Item label="Email">{profile.email}</Descriptions.Item>
 
           {/* Nếu là học sinh thì có className, grade */}
@@ -96,7 +96,7 @@ export default function Profile() {
           )}
 
           <Descriptions.Item label="Giới tính">{translateGender(profile.gender)}</Descriptions.Item>
-          <Descriptions.Item label="Ngày sinh">{profile.dateOfBirth ? dayjs(profile.dateOfBirth).format('DD-MM-YYYY') : ''}</Descriptions.Item>
+          <Descriptions.Item label="Ngày sinh">{formatDate(profile.dateOfBirth)}</Descriptions.Item>
           {/* <Descriptions.Item label="Địa chỉ">{profile.address}</Descriptions.Item> */}
           <Descriptions.Item label="Số điện thoại">{profile.phone}</Descriptions.Item>
           {/* <Descriptions.Item label="Ghi chú">{profile.notes}</Descriptions.Item> */}

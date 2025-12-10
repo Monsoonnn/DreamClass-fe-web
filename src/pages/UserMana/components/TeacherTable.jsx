@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../../services/api';
 import * as XLSX from 'xlsx';
 import TeacherUpdate from './TeacherUpdate';
+import { formatDate } from '../../../utils/dateUtil';
 
 const { Option } = Select;
 
@@ -148,7 +149,7 @@ export default function TeacherTable() {
       'Tài khoản': item.username,
       Email: item.email,
       'Giới tính': item.gender === 'Male' ? 'Nam' : item.gender === 'Female' ? 'Nữ' : item.gender,
-      'Ngày sinh': item.dateOfBirth ? new Date(item.dateOfBirth).toLocaleDateString('vi-VN') : '',
+      'Ngày sinh': formatDate(item.dateOfBirth),
       'Địa chỉ': item.address,
       'Số điện thoại': item.phone,
       'Lớp dạy': item.assignedClasses ? item.assignedClasses.map((c) => c.className).join(', ') : '',
@@ -198,11 +199,7 @@ export default function TeacherTable() {
       dataIndex: 'dateOfBirth',
       key: 'dateOfBirth',
       align: 'center',
-      render: (date) => {
-        if (!date) return '-';
-        const d = new Date(date);
-        return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-      },
+      render: (date) => formatDate(date),
     },
     { title: 'Địa chỉ', dataIndex: 'address', key: 'address', align: 'center' },
     { title: 'Tài khoản', dataIndex: 'username', key: 'username', align: 'center' },

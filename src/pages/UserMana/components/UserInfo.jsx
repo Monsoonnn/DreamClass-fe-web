@@ -1,14 +1,9 @@
 // UserInfo.jsx
 import React from 'react';
 import { Descriptions, Tag, Card } from 'antd';
+import { formatDate } from '../../../utils/dateUtil';
 
 export default function UserInfo({ user }) {
-  // Helper format ngày tháng
-  const formatDate = (dateString) => {
-    if (!dateString) return '—';
-    return new Date(dateString).toLocaleDateString('vi-VN');
-  };
-
   // Helper dịch giới tính
   const translateGender = (gender) => {
     if (gender === 'Male') return 'Nam';

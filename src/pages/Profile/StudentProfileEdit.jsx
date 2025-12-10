@@ -36,7 +36,7 @@ export default function StudentProfileEdit({ visible, onClose, student, onUpdate
       // 1. Update Profile Info (JSON)
       const payload = {
         ...values,
-        dateOfBirth: values.dateOfBirth ? values.dateOfBirth.format('DD-MM-YYYY') : student.dateOfBirth,
+        dateOfBirth: values.dateOfBirth ? values.dateOfBirth.format('YYYY-MM-DD') : student.dateOfBirth,
       };
 
       await apiClient.put(`/players/profile`, payload);
@@ -86,8 +86,8 @@ export default function StudentProfileEdit({ visible, onClose, student, onUpdate
             <Input disabled={submitting} />
           </Form.Item>
 
-          <Form.Item name="username" label="Username" rules={[{ required: true }]}>
-            <Input disabled={submitting} />
+          <Form.Item name="username" label="Tài khoản" rules={[{ required: true }]}>
+            <Input disabled={true} />
           </Form.Item>
 
           <Form.Item name="email" label="Email">
@@ -95,11 +95,11 @@ export default function StudentProfileEdit({ visible, onClose, student, onUpdate
           </Form.Item>
 
           <Form.Item name="className" label="Lớp">
-            <Input disabled={submitting} />
+            <Input disabled={true} />
           </Form.Item>
 
           <Form.Item name="grade" label="Khối">
-            <Input disabled={submitting} />
+            <Input disabled={true} />
           </Form.Item>
 
           <Form.Item name="gender" label="Giới tính">
@@ -114,7 +114,7 @@ export default function StudentProfileEdit({ visible, onClose, student, onUpdate
           </Form.Item>
 
           <Form.Item name="dateOfBirth" label="Ngày sinh">
-            <DatePicker format="DD-MM-YYYY" className="w-full" disabled={submitting} />
+            <DatePicker format="DD/MM/YYYY" className="w-full" disabled={submitting} />
           </Form.Item>
 
           <Form.Item name="phone" label="Số điện thoại">
