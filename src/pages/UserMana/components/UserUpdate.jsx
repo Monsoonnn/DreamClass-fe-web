@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Select, Button, Upload, Avatar, Row, Col, message } from 'antd';
+import { Modal, Form, Input, Select, Button, Upload, Avatar, Row, Col, message, DatePicker } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { apiClient } from '../../../services/api';
+import dayjs from 'dayjs';
 
 const { Option } = Select;
 
@@ -15,7 +16,7 @@ export default function UserUpdate({ open, onClose, userData, onUpdated }) {
     if (open && userData) {
       form.setFieldsValue({
         ...userData,
-        dob: userData.dateOfBirth?.split('T')[0] || userData.dob,
+        dob: userData.dateOfBirth ? dayjs(userData.dateOfBirth) : null,
         password: '', // Reset password field
       });
       setAvatarPreview(userData.avatar);
@@ -43,7 +44,7 @@ export default function UserUpdate({ open, onClose, userData, onUpdated }) {
         className: values.class || values.className || '',
         grade: values.level || values.grade || '',
         gender: values.gender,
-        dateOfBirth: values.dob || values.dateOfBirth,
+        dateOfBirth: values.dob ? values.dob.format('YYYY-MM-DD') : values.dateOfBirth,
         address: values.address || '',
         phone: values.phone || '',
         notes: values.note || values.notes || '',
@@ -55,13 +56,13 @@ export default function UserUpdate({ open, onClose, userData, onUpdated }) {
 
       const identifier = userData.playerId || userData._id;
       // 1. Update Info
-      const res = await apiClient.put(`/players/admin/players/${identifier}`, payload);
+      const res = await apiClient.put(`/accounts/students/${identifier}`, payload);
 
       // 2. Update Avatar if selected
       if (selectedFile) {
         const formData = new FormData();
         formData.append('avatar', selectedFile);
-        await apiClient.put(`/players/admin/players/${identifier}/avatar`, formData, {
+        await apiClient.put(`/accounts/students/${identifier}/avatar`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       }
@@ -97,7 +98,7 @@ export default function UserUpdate({ open, onClose, userData, onUpdated }) {
             </Form.Item>
 
             <Form.Item label="Ngày sinh" name="dob" rules={[{ required: true }]}>
-              <Input type="date" />
+              <DatePicker format="DD/MM/YYYY" className="w-full" />
             </Form.Item>
 
             <Form.Item label="Giới tính" name="gender" rules={[{ required: true }]}>

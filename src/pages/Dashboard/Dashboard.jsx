@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Statistic, Table, Tag, Avatar } from 'antd';
 import { UserOutlined, ReadOutlined, RocketOutlined, TrophyOutlined, TeamOutlined } from '@ant-design/icons';
+import { formatDate } from '../../utils/dateUtil';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 // Import services to get mock data
@@ -102,7 +103,7 @@ export default function Dashboard() {
       {/* 1. Header & Title */}
       <div className="shrink-0 flex justify-between items-center px-1">
         <h2 className="text-lg font-bold text-[#23408e] m-0">Dashboard</h2>
-        <span className="text-xs text-gray-500">{new Date().toLocaleDateString('vi-VN')}</span>
+        <span className="text-xs text-gray-500">{formatDate(new Date())}</span>
       </div>
       
       {/* 2. Statistics (Compact) */}

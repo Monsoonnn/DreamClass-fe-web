@@ -182,19 +182,7 @@ export default function UserTable({ filterRole }) {
         return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
       },
     },
-    {
-      title: 'Giới tính',
-      dataIndex: 'gender',
-      key: 'gender',
-      align: 'center',
-      render: (gender) => {
-        if (!gender) return '-';
-        const g = gender.toLowerCase();
-        if (g === 'male') return 'Nam';
-        if (g === 'female') return 'Nữ';
-        return gender;
-      },
-    },
+
 
     { title: 'Tài khoản', dataIndex: 'username', key: 'username', align: 'center' },
     { title: 'Phân loại', dataIndex: 'role', key: 'role', align: 'center', render: renderRole },

@@ -3,6 +3,7 @@ import { Upload, Button, Table, Space, message, Divider } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { apiClient } from '../../../services/api';
 import { useNavigate } from 'react-router-dom';
+import { formatDate } from '../../../utils/dateUtil';
 
 export default function ImportStudent() {
   const [file, setFile] = useState(null);
@@ -50,7 +51,7 @@ export default function ImportStudent() {
         stt: index + 1,
         name: item.name,
         gender: item.gender,
-        dateOfBirth: item.dateOfBirth ? new Date(item.dateOfBirth).toLocaleDateString() : '',
+        dateOfBirth: formatDate(item.dateOfBirth),
         grade: item.grade || '',
         className: item.className || '',
         address: item.address || '',
@@ -100,7 +101,7 @@ export default function ImportStudent() {
   // Columns cho bảng bỏ qua
   const skippedColumns = [
     { title: 'STT', dataIndex: 'stt', key: 'stt', align: 'center' },
-    { title: 'Username', dataIndex: 'username', key: 'username' },
+    { title: 'Tài khoản', dataIndex: 'username', key: 'username' },
     { title: 'Email', dataIndex: 'email', key: 'email' },
     { title: 'Lý do', dataIndex: 'reason', key: 'reason' },
   ];

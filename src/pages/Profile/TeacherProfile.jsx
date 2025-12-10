@@ -4,7 +4,7 @@ import { UserOutlined, EditOutlined } from '@ant-design/icons';
 import { apiClient } from '../../services/api';
 import TeacherProfileEdit from './TeacherProfileEdit';
 import { useAuth } from '../../context/AuthContext';
-import dayjs from 'dayjs';
+import { formatDate } from '../../utils/dateUtil';
 
 export default function TeacherProfile() {
   const [teacher, setTeacher] = useState(null);
@@ -69,10 +69,10 @@ export default function TeacherProfile() {
         {/* Info List */}
         <Descriptions bordered column={1} size="middle">
           <Descriptions.Item label="Họ và tên">{teacher.name}</Descriptions.Item>
-          <Descriptions.Item label="Username">{teacher.username}</Descriptions.Item>
+          <Descriptions.Item label="Tài khoản">{teacher.username}</Descriptions.Item>
           <Descriptions.Item label="Email">{teacher.email}</Descriptions.Item>
           <Descriptions.Item label="Giới tính">{translateGender(teacher.gender)}</Descriptions.Item>
-          <Descriptions.Item label="Ngày sinh">{teacher.dateOfBirth ? dayjs(teacher.dateOfBirth).format('DD-MM-YYYY') : ''}</Descriptions.Item>
+          <Descriptions.Item label="Ngày sinh">{formatDate(teacher.dateOfBirth)}</Descriptions.Item>
           <Descriptions.Item label="Số điện thoại">{teacher.phone}</Descriptions.Item>
           <Descriptions.Item label="Địa chỉ">{teacher.address}</Descriptions.Item>
 

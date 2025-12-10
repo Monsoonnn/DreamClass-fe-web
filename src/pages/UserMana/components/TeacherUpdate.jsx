@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Select, Button, Upload, Avatar, Row, Col, message } from 'antd';
+import { Modal, Form, Input, Select, Button, Upload, Avatar, Row, Col, message, DatePicker } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { apiClient } from '../../../services/api';
+import dayjs from 'dayjs';
 
 const { Option } = Select;
 
@@ -15,7 +16,7 @@ export default function TeacherUpdate({ open, onClose, teacherData, onUpdated })
     if (open && teacherData) {
       form.setFieldsValue({
         ...teacherData,
-        dob: teacherData.dateOfBirth?.split('T')[0] || teacherData.dob,
+        dob: teacherData.dateOfBirth ? dayjs(teacherData.dateOfBirth) : null,
         password: '', // Reset password
       });
 
@@ -42,7 +43,7 @@ export default function TeacherUpdate({ open, onClose, teacherData, onUpdated })
         email: values.email,
         // avatar: avatarPreview || teacherData.avatar || null, // Don't send avatar in JSON
         gender: values.gender,
-        dateOfBirth: values.dob || values.dateOfBirth,
+        dateOfBirth: values.dob ? values.dob.format('YYYY-MM-DD') : values.dateOfBirth,
         address: values.address || '',
         phone: values.phone || '',
         notes: values.note || teacherData.notes || '',
@@ -97,7 +98,7 @@ export default function TeacherUpdate({ open, onClose, teacherData, onUpdated })
             </Form.Item>
 
             <Form.Item label="Ngày sinh" name="dob" rules={[{ required: true }]}>
-              <Input type="date" />
+              <DatePicker format="DD/MM/YYYY" className="w-full" />
             </Form.Item>
 
             <Form.Item label="Giới tính" name="gender" rules={[{ required: true }]}>

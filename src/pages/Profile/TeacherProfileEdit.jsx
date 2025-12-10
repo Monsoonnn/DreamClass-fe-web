@@ -149,7 +149,7 @@ export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdate
           </Form.Item>
 
           <Form.Item name="dateOfBirth" label="Ngày sinh">
-            <DatePicker format="DD-MM-YYYY" className="w-full" disabled={submitting} />
+            <DatePicker format="DD/MM/YYYY" className="w-full" disabled={submitting} />
           </Form.Item>
 
           <Form.Item name="address" label="Địa chỉ">

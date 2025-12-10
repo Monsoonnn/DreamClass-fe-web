@@ -5,6 +5,7 @@ import { ArrowLeftOutlined, HomeOutlined } from '@ant-design/icons';
 // import { getUsers } from './userService';
 import UserUpdate from './UserUpdate';
 import { apiClient } from '../../../services/api';
+import { formatDate } from '../../../utils/dateUtil';
 
 export default function UserDetail() {
   const { id } = useParams();
@@ -44,7 +45,7 @@ export default function UserDetail() {
           address: payload.address,
           class: payload.className || payload.class,
           level: payload.grade || payload.level,
-          dob: payload.dateOfBirth ? new Date(payload.dateOfBirth).toLocaleDateString() : payload.dateOfBirth,
+          dob: formatDate(payload.dateOfBirth),
           dateOfBirth: payload.dateOfBirth,
           gender: payload.gender,
           note: payload.notes || payload.note,
