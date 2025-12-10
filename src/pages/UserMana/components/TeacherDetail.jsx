@@ -108,7 +108,9 @@ export default function TeacherDetail() {
               contentStyle={{ background: '#fff', fontSize: 13, padding: 6 }}
               className="rounded-lg"
             >
-              <Descriptions.Item label="Giới tính">{teacher.gender}</Descriptions.Item>
+              <Descriptions.Item label="Giới tính">
+                {teacher.gender ? (teacher.gender.toLowerCase() === 'male' ? 'Nam' : teacher.gender.toLowerCase() === 'female' ? 'Nữ' : user.gender) : '—'}
+              </Descriptions.Item>
               <Descriptions.Item label="Ngày sinh">{teacher.dob}</Descriptions.Item>
               <Descriptions.Item label="Địa chỉ">{teacher.address}</Descriptions.Item>
               <Descriptions.Item label="Số điện thoại">{teacher.phone}</Descriptions.Item>

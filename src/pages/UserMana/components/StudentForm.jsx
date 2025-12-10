@@ -44,7 +44,7 @@ export default function StudentForm() {
   };
 
   return (
-    <Form form={form} layout="vertical" className="bg-white p-6 rounded-lg shadow-md max-w-4xl mx-auto">
+    <Form form={form} layout="vertical" className="bg-white p-4 custom-form rounded-lg shadow-md max-w-4xl mx-auto">
       <Row gutter={16}>
         <Col xs={24} md={12}>
           <Form.Item label="Họ và tên" name="name" rules={[{ required: true, message: 'Nhập họ và tên' }]}>

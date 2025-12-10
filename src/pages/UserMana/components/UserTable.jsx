@@ -75,12 +75,9 @@ export default function UserTable({ filterRole }) {
     return list;
   };
 
-  // --- Delete ---
-  // Hàm xóa người dùng (học sinh)
   const handleDelete = async (record) => {
     const id = record.playerId || record._id || record.key;
     try {
-      // Gửi yêu cầu DELETE đến API để xóa học sinh theo playerId
       await apiClient.delete(`/accounts/students/${id}`);
       message.success('Xóa thành công');
       fetchPlayers(); // Refresh data từ API
@@ -105,13 +102,8 @@ export default function UserTable({ filterRole }) {
       cancelText: 'Hủy',
       onOk: async () => {
         try {
-          // Xóa từng người dùng (hoặc dùng API bulk delete nếu có)
-          // Vì API hiện tại chỉ hỗ trợ xóa từng người, ta dùng Promise.all
           await Promise.all(
             selectedRowKeys.map(async (key) => {
-              // Tìm record tương ứng để lấy ID chính xác nếu key không phải là ID
-              // Tuy nhiên rowKey được set là record.playerId || record._id || record.key
-              // Nên key chính là ID
               await apiClient.delete(`/accounts/students/${key}`);
             })
           );
@@ -138,8 +130,6 @@ export default function UserTable({ filterRole }) {
       message.warning('Không có dữ liệu để xuất Excel');
       return;
     }
-
-    // Map data to export format
     const exportData = listToExport.map((item, index) => ({
       STT: index + 1,
       'Họ tên': item.name,
@@ -154,12 +144,10 @@ export default function UserTable({ filterRole }) {
       'Ghi chú': item.notes,
     }));
 
-    // Create worksheet and workbook
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sách học sinh');
 
-    // Write file
     XLSX.writeFile(workbook, 'Danh_sach_hoc_sinh.xlsx');
     message.success('Xuất Excel thành công');
   };
@@ -183,6 +171,19 @@ export default function UserTable({ filterRole }) {
       },
     },
 
+
+    {
+      title: 'Ngày sinh',
+      dataIndex: 'dateOfBirth',
+      key: 'dateOfBirth',
+      align: 'center',
+      render: (date) => {
+        if (!date) return '-';
+        const d = new Date(date);
+        return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+      },
+    },
+    { title: 'Địa chỉ', dataIndex: 'address', key: 'address', align: 'center' },
 
     { title: 'Tài khoản', dataIndex: 'username', key: 'username', align: 'center' },
     { title: 'Phân loại', dataIndex: 'role', key: 'role', align: 'center', render: renderRole },
@@ -232,7 +233,7 @@ export default function UserTable({ filterRole }) {
           <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }} onClick={() => setCurrentPage(1)}>
             Tìm
           </Button>
-          <Button type="primary" icon={<FilterOutlined />} style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }} />
+          {/* <Button type="primary" icon={<FilterOutlined />} style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }} /> */}
         </Space.Compact>
 
         <Space.Compact>

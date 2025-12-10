@@ -56,10 +56,10 @@ export default function RankingServerTable() {
     }
 
     const exportData = listToExport.map((item) => ({
-      'Hạng': item.rank,
+      Hạng: item.rank,
       'Tên học sinh': item.name,
-      'Lớp': item.className,
-      'Khối': item.grade,
+      Lớp: item.className,
+      Khối: item.grade,
       'Tổng điểm': item.points,
       'Số bài đã làm': item.totalExercisesCompleted,
     }));
@@ -203,7 +203,7 @@ export default function RankingServerTable() {
           <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}>
             Tìm
           </Button>
-          <Button type="primary" icon={<FilterOutlined />} style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }} />
+          {/* <Button type="primary" icon={<FilterOutlined />} style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }} /> */}
         </Space.Compact>
 
         <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
