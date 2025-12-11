@@ -89,34 +89,17 @@ export default function UserTable({ filterRole }) {
   };
 
   const handleDeleteMultiple = async () => {
-    if (selectedRowKeys.length === 0) {
-      message.warning('Vui lòng chọn ít nhất một người dùng để xóa');
-      return;
-    }
+    try {
+      await Promise.all(selectedRowKeys.map((key) => apiClient.delete(`/accounts/students/${key}`)));
 
-    Modal.confirm({
-      title: 'Xác nhận xóa',
-      content: `Bạn có chắc muốn xóa ${selectedRowKeys.length} người dùng đã chọn?`,
-      okText: 'Xóa',
-      okType: 'danger',
-      cancelText: 'Hủy',
-      onOk: async () => {
-        try {
-          await Promise.all(
-            selectedRowKeys.map(async (key) => {
-              await apiClient.delete(`/accounts/students/${key}`);
-            })
-          );
-          message.success('Đã xóa các người dùng đã chọn');
-          fetchPlayers();
-          setSelectedRowKeys([]);
-        } catch (err) {
-          console.error('Delete multiple failed', err);
-          message.error('Xóa thất bại một số bản ghi');
-          fetchPlayers(); // Refresh anyway
-        }
-      },
-    });
+      message.success('Đã xóa các người dùng đã chọn');
+      fetchPlayers();
+      setSelectedRowKeys([]);
+    } catch (err) {
+      console.error(err);
+      message.error('Xóa một số bản ghi thất bại');
+      fetchPlayers();
+    }
   };
 
   const handleEdit = (record) => {
@@ -240,9 +223,27 @@ export default function UserTable({ filterRole }) {
           <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/user-mana/add')}>
             Thêm
           </Button>
-          <Button danger icon={<DeleteOutlined />} onClick={handleDeleteMultiple}>
-            Xóa
-          </Button>
+          <Popconfirm
+            title="Xác nhận xóa"
+            description={`Bạn có chắc muốn xóa ${selectedRowKeys.length} người dùng đã chọn?`}
+            okText="Xóa"
+            cancelText="Hủy"
+            onConfirm={handleDeleteMultiple}
+            disabled={selectedRowKeys.length === 0}
+          >
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              disabled={selectedRowKeys.length === 0}
+              style={{
+                opacity: selectedRowKeys.length === 0 ? 0.4 : 1,
+                cursor: selectedRowKeys.length === 0 ? 'not-allowed' : 'pointer',
+              }}
+            >
+              Xóa
+            </Button>
+          </Popconfirm>
+
           <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
             Xuất Excel
           </Button>

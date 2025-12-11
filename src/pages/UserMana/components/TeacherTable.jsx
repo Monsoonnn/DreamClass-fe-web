@@ -100,34 +100,21 @@ export default function TeacherTable() {
   };
 
   const handleDeleteMultiple = async () => {
-    if (selectedRowKeys.length === 0) {
-      message.warning('Vui lòng chọn ít nhất một giáo viên để xóa');
-      return;
-    }
+    try {
+      await Promise.all(
+        selectedRowKeys.map(async (key) => {
+          await apiClient.delete(`/accounts/teachers/${key}`);
+        })
+      );
 
-    Modal.confirm({
-      title: 'Xác nhận xóa',
-      content: `Bạn có chắc muốn xóa ${selectedRowKeys.length} giáo viên đã chọn?`,
-      okText: 'Xóa',
-      okType: 'danger',
-      cancelText: 'Hủy',
-      onOk: async () => {
-        try {
-          await Promise.all(
-            selectedRowKeys.map(async (key) => {
-              await apiClient.delete(`/accounts/teachers/${key}`);
-            })
-          );
-          message.success('Đã xóa các giáo viên đã chọn');
-          fetchTeachers();
-          setSelectedRowKeys([]);
-        } catch (err) {
-          console.error('Delete multiple failed', err);
-          message.error('Xóa thất bại một số bản ghi');
-          fetchTeachers();
-        }
-      },
-    });
+      message.success('Đã xóa các bản ghi đã chọn');
+      fetchTeachers();
+      setSelectedRowKeys([]);
+    } catch (err) {
+      console.error('Delete multiple failed', err);
+      message.error('Xóa thất bại một số bản ghi');
+      fetchTeachers();
+    }
   };
 
   const handleEdit = (record) => {
@@ -242,9 +229,19 @@ export default function TeacherTable() {
           <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/user-mana/add')}>
             Thêm
           </Button>
-          <Button danger icon={<DeleteOutlined />} onClick={handleDeleteMultiple}>
-            Xóa
-          </Button>
+          <Popconfirm
+            title={`Xác nhận xóa ${selectedRowKeys.length} bản ghi?`}
+            okText="Xóa"
+            okType="danger"
+            cancelText="Hủy"
+            onConfirm={handleDeleteMultiple}
+            disabled={selectedRowKeys.length === 0}
+          >
+            <Button danger={selectedRowKeys.length > 0} disabled={selectedRowKeys.length === 0} icon={<DeleteOutlined />}>
+              Xóa
+            </Button>
+          </Popconfirm>
+
           <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
             Xuất Excel
           </Button>
