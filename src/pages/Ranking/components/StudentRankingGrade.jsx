@@ -1,9 +1,10 @@
 // src/pages/ranking/RankingGrade.jsx
 import React, { useState } from 'react';
-import { Table, Tag, Button, Space, Input, Pagination, Card, Avatar, Image, message } from 'antd';
-import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, TrophyOutlined } from '@ant-design/icons';
+import { Table, Tag, Button, Space, Input, Pagination, Card, Avatar, Image } from 'antd';
+import { SearchOutlined, TrophyOutlined } from '@ant-design/icons';
 import { apiClient } from '../../../services/api';
 import { useNavigate } from 'react-router-dom';
+import { showError } from '../../../utils/swalUtils';
 
 export default function StudentRankingGrade() {
   const [gradeInput, setGradeInput] = useState('');
@@ -20,7 +21,7 @@ export default function StudentRankingGrade() {
   const handleFetch = async () => {
     const g = (gradeInput || '').trim();
     if (!g) {
-      return message.warning('Vui lòng nhập tên khối (ví dụ: 6, 7, 10...)');
+      return showError('Vui lòng nhập tên khối (ví dụ: 6, 7, 10...)');
     }
 
     setLoading(true);
@@ -34,7 +35,7 @@ export default function StudentRankingGrade() {
       // nếu API hiển thị pagination bạn có thể set thêm pagination từ res.data.pagination
     } catch (err) {
       console.error(err);
-      message.error('Không thể tải bảng xếp hạng theo khối');
+      showError('Không thể tải bảng xếp hạng theo khối');
       setGrade(null);
     } finally {
       setLoading(false);

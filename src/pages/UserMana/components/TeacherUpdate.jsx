@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Select, Button, Upload, Avatar, Row, Col, message, DatePicker } from 'antd';
+import { Modal, Form, Input, Select, Button, Upload, Avatar, Row, Col, DatePicker } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { apiClient } from '../../../services/api';
 import dayjs from 'dayjs';
+import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
 
 const { Option } = Select;
 
@@ -34,8 +35,10 @@ export default function TeacherUpdate({ open, onClose, teacherData, onUpdated })
 
   const handleUpdate = async () => {
     try {
-      setLoading(true);
       const values = await form.validateFields();
+      
+      showLoading();
+      setLoading(true);
 
       const payload = {
         name: values.name,
@@ -67,13 +70,15 @@ export default function TeacherUpdate({ open, onClose, teacherData, onUpdated })
         });
       }
 
-      message.success('Cập nhật giáo viên thành công!');
+      closeLoading();
+      showSuccess('Cập nhật giáo viên thành công!');
 
       onUpdated(res.data?.data || payload);
       onClose();
     } catch (err) {
       console.error('Update error:', err.response?.data || err.message || err);
-      message.error('Cập nhật thất bại! ' + (err.response?.data?.message || err.message));
+      closeLoading();
+      showError('Cập nhật thất bại! ' + (err.response?.data?.message || err.message));
     } finally {
       setLoading(false);
     }

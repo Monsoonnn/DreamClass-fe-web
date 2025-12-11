@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Tag, Button, Space, Input, Pagination, message, Popconfirm, Select, Modal } from 'antd';
-import { EyeOutlined, FileExcelOutlined, SearchOutlined, DeleteOutlined, PlusOutlined, FilterOutlined } from '@ant-design/icons';
+import { Table, Tag, Button, Space, Input, Pagination, Select } from 'antd';
+import { EyeOutlined, FileExcelOutlined, SearchOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../../../services/api';
 import * as XLSX from 'xlsx';
+import { showLoading, closeLoading, showSuccess, showError, showConfirm } from '../../../utils/swalUtils';
 
 const { Option } = Select;
 
@@ -14,10 +15,12 @@ export default function SpinTable() {
   const [pageSize, setPageSize] = useState(5);
   const [data, setData] = useState([]);
   const [filterStatus, setFilterStatus] = useState('all'); // 'all', 'active', 'inactive'
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const fetchData = async () => {
+    setLoading(true);
     try {
       const res = await apiClient.get('/spin-wheels');
       const apiData = res.data.data;
@@ -38,7 +41,10 @@ export default function SpinTable() {
       setData(mapped);
     } catch (err) {
       console.error(err);
-      message.error('Không thể tải danh sách vòng quay!');
+      // showError('Không thể tải danh sách vòng quay!'); 
+      // Optional: uncomment if strict error popup needed on load
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -67,48 +73,49 @@ export default function SpinTable() {
     navigate(`/spin-mana/detail/${record.key}`);
   };
 
-  const handleDeleteSpin = async (spinId) => {
-    try {
-      await apiClient.delete(`/spin-wheels/${spinId}`);
-      message.success('Đã xóa vòng quay!');
-      fetchData();
-    } catch (err) {
-      console.log(err);
-      message.error('Xóa thất bại!');
-    }
+  const handleDeleteSpin = (spinId) => {
+    showConfirm('Bạn chắc chắn muốn xóa vòng quay này?', async () => {
+      showLoading();
+      try {
+        await apiClient.delete(`/spin-wheels/${spinId}`);
+        closeLoading();
+        showSuccess('Đã xóa vòng quay!');
+        fetchData();
+      } catch (err) {
+        console.log(err);
+        closeLoading();
+        showError('Xóa thất bại!');
+      }
+    });
   };
 
   const handleDeleteMultiple = () => {
     if (selectedRowKeys.length === 0) {
-      message.warning('Vui lòng chọn ít nhất một vòng quay để xóa');
+      showError('Vui lòng chọn ít nhất một vòng quay để xóa');
       return;
     }
 
-    Modal.confirm({
-      title: 'Xác nhận xóa',
-      content: `Bạn có chắc muốn xóa ${selectedRowKeys.length} vòng quay đã chọn?`,
-      okText: 'Xóa',
-      okType: 'danger',
-      cancelText: 'Hủy',
-      onOk: async () => {
-        try {
-          await Promise.all(selectedRowKeys.map((key) => apiClient.delete(`/spin-wheels/${key}`)));
-          message.success('Đã xóa các vòng quay đã chọn');
-          setSelectedRowKeys([]);
-          fetchData();
-        } catch (err) {
-          console.error(err);
-          message.error('Có lỗi xảy ra khi xóa nhiều vòng quay');
-          fetchData(); // Refresh anyway
-        }
-      },
+    showConfirm(`Bạn có chắc muốn xóa ${selectedRowKeys.length} vòng quay đã chọn?`, async () => {
+      showLoading();
+      try {
+        await Promise.all(selectedRowKeys.map((key) => apiClient.delete(`/spin-wheels/${key}`)));
+        closeLoading();
+        showSuccess('Đã xóa các vòng quay đã chọn');
+        setSelectedRowKeys([]);
+        fetchData();
+      } catch (err) {
+        console.error(err);
+        closeLoading();
+        showError('Có lỗi xảy ra khi xóa nhiều vòng quay');
+        fetchData(); // Refresh anyway
+      }
     });
   };
 
   const handleExport = () => {
     const listToExport = filteredData();
     if (listToExport.length === 0) {
-      message.warning('Không có dữ liệu để xuất Excel');
+      showError('Không có dữ liệu để xuất Excel');
       return;
     }
 
@@ -129,7 +136,7 @@ export default function SpinTable() {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sách vòng quay');
 
     XLSX.writeFile(workbook, 'Danh_sach_vong_quay.xlsx');
-    message.success('Xuất Excel thành công');
+    showSuccess('Xuất Excel thành công');
   };
 
   const columns = [
@@ -189,10 +196,7 @@ export default function SpinTable() {
       render: (_, record) => (
         <Space>
           <EyeOutlined style={{ color: '#1890ff', fontSize: 16, cursor: 'pointer' }} onClick={() => handleViewDetail(record)} />
-
-          <Popconfirm title="Xóa vòng quay này?" okText="Xóa" cancelText="Hủy" onConfirm={() => handleDeleteSpin(record.key)}>
-            <DeleteOutlined style={{ color: '#ff4d4f', fontSize: 16, cursor: 'pointer' }} />
-          </Popconfirm>
+          <DeleteOutlined style={{ color: '#ff4d4f', fontSize: 16, cursor: 'pointer' }} onClick={() => handleDeleteSpin(record.key)} />
         </Space>
       ),
     },
@@ -227,6 +231,7 @@ export default function SpinTable() {
       </div>
 
       <Table
+        loading={loading}
         dataSource={filteredData().slice((currentPage - 1) * pageSize, currentPage * pageSize)}
         columns={columns}
         pagination={false}

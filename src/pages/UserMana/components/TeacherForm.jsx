@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Select, message, Row, Col } from 'antd';
+import { Form, Input, Button, Select, Row, Col } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../../services/api';
+import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
 
 const { Option } = Select;
 
@@ -12,8 +13,10 @@ export default function TeacherForm() {
 
   const handleSave = async () => {
     try {
-      setLoading(true);
       const values = await form.validateFields();
+      
+      showLoading();
+      setLoading(true);
 
       // ===== PAYLOAD CHUẨN THEO API =====
       const payload = {
@@ -38,13 +41,15 @@ export default function TeacherForm() {
 
       await apiClient.post('/accounts/teachers/create', payload);
 
-      message.success('Thêm giáo viên thành công!');
+      closeLoading();
+      await showSuccess('Thêm giáo viên thành công!');
+      
       form.resetFields();
-
-      setTimeout(() => navigate('/user-mana'), 800);
+      navigate('/user-mana');
     } catch (err) {
       console.error('Error creating teacher:', err.response?.data || err.message);
-      message.error(err.response?.data?.message || 'Không thể thêm giáo viên.');
+      closeLoading();
+      showError(err.response?.data?.message || 'Không thể thêm giáo viên.');
     } finally {
       setLoading(false);
     }

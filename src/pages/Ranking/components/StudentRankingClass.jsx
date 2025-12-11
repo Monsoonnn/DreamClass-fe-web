@@ -1,9 +1,10 @@
 // src/pages/ranking/RankingClass.jsx
 import React, { useState } from 'react';
-import { Table, Tag, Button, Space, Input, Pagination, Card, Avatar, Image, message } from 'antd';
-import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, TrophyOutlined } from '@ant-design/icons';
+import { Table, Tag, Button, Space, Input, Pagination, Card, Avatar, Image } from 'antd';
+import { SearchOutlined, TrophyOutlined } from '@ant-design/icons';
 import { apiClient } from '../../../services/api';
 import { useNavigate } from 'react-router-dom';
+import { showError } from '../../../utils/swalUtils';
 
 export default function StudentRankingClass() {
   const [classInput, setClassInput] = useState('');
@@ -19,7 +20,7 @@ export default function StudentRankingClass() {
   // Fetch API ranking theo lớp
   const handleFetch = async () => {
     const cls = (classInput || '').trim();
-    if (!cls) return message.warning('Vui lòng nhập tên lớp (ví dụ: 10A1, 17A1...)');
+    if (!cls) return showError('Vui lòng nhập tên lớp (ví dụ: 10A1, 17A1...)');
 
     setLoading(true);
     setData([]);
@@ -31,7 +32,7 @@ export default function StudentRankingClass() {
       setClassName(cls);
     } catch (err) {
       console.error(err);
-      message.error('Không thể tải bảng xếp hạng theo lớp');
+      showError('Không thể tải bảng xếp hạng theo lớp');
       setClassName(null);
     } finally {
       setLoading(false);

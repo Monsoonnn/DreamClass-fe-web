@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Input, Button, Select, Switch, Space, Form, message, Breadcrumb, Spin } from 'antd';
+import { Input, Button, Select, Switch, Form, Breadcrumb, Spin } from 'antd';
 import { ReadOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { getMissions } from './MissionService';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { apiClient } from '../../../services/api';
+import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
 
 const { TextArea } = Input;
 
@@ -40,6 +41,7 @@ export default function AddMission() {
 
   const handleSubmit = async (values) => {
     setSubmitting(true);
+    showLoading();
     try {
       const payload = {
         questId: values.questId,
@@ -59,8 +61,7 @@ export default function AddMission() {
       const createdQuest = res.data?.data;
 
       console.log('Quest created successfully:', createdQuest);
-      message.success('Thêm nhiệm vụ thành công!');
-
+      
       // Step 2: Assign quest to all players
       if (createdQuest?.questId) {
         console.log('Assigning quest to all players:', createdQuest.questId);
@@ -74,23 +75,31 @@ export default function AddMission() {
           const assignData = assignRes.data?.data;
           if (assignData) {
             const totalPlayers = assignData.totalPlayers || 0;
-            const totalQuests = assignData.totalQuests || 0;
             const successCount = assignData.assignments?.[0]?.success?.length || 0;
             const failedCount = assignData.assignments?.[0]?.failed?.length || 0;
 
-            message.success(`Gán nhiệm vụ cho ${totalPlayers} người dùng thành công! (Thành công: ${successCount}, Thất bại: ${failedCount})`);
+            closeLoading();
+            await showSuccess(`Thêm thành công! Gán cho ${totalPlayers} người dùng (Thành công: ${successCount}, Thất bại: ${failedCount})`);
+          } else {
+             closeLoading();
+             await showSuccess('Thêm nhiệm vụ thành công!');
           }
         } catch (assignErr) {
           console.warn('Quest assignment failed (non-critical):', assignErr.message);
-          message.warning('Thêm nhiệm vụ thành công, nhưng gán cho người dùng thất bại. Vui lòng gán thủ công.');
+          closeLoading();
+          showError('Thêm nhiệm vụ thành công, nhưng gán cho người dùng thất bại. Vui lòng gán thủ công.');
         }
+      } else {
+          closeLoading();
+          await showSuccess('Thêm nhiệm vụ thành công!');
       }
 
       form.resetFields();
-      setTimeout(() => navigate('/mission-mana'), 1500);
+      navigate('/mission-mana');
     } catch (err) {
       console.error('Error creating quest:', err.response?.status, err.message);
-      message.error(err.response?.data?.message || 'Lỗi khi thêm nhiệm vụ');
+      closeLoading();
+      showError(err.response?.data?.message || 'Lỗi khi thêm nhiệm vụ');
     } finally {
       setSubmitting(false);
     }
@@ -155,7 +164,7 @@ export default function AddMission() {
               <Form.Item label="Cách nhận quest" name="dailyQuestType" rules={[{ required: isDailyQuest }]}>
                 <Select placeholder="Chọn loại cách nhận quest" disabled={!isDailyQuest}>
                   <Select.Option value="NPC_INTERACTION">Tương tác NPC</Select.Option>
-                  <Select.Option value="DAILY_TASK">Tự động</Select.Option>
+                  <Select.Option value="AUTO_ASSIGN">Tự động</Select.Option>
                 </Select>
               </Form.Item>
 

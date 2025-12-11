@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, Button, Space, Input, Pagination, message } from 'antd';
+import { Table, Button, Space, Input, Pagination } from 'antd';
 import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined } from '@ant-design/icons';
 import apiClient from '../../../services/api'; // đường dẫn đến api.js của bạn
 import * as XLSX from 'xlsx';
+import { showSuccess, showError } from '../../../utils/swalUtils';
 
 export default function StudentTable() {
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ export default function StudentTable() {
         setStudents(res.data.data || []); // backend trả {data: [...]}
       } catch (error) {
         console.error(error);
-        message.error('Không thể tải danh sách học sinh!');
+        showError('Không thể tải danh sách học sinh!');
       } finally {
         setLoading(false);
       }
@@ -40,7 +41,7 @@ export default function StudentTable() {
 
   const handleExport = () => {
     if (filteredStudents.length === 0) {
-      message.warning('Không có dữ liệu để xuất Excel');
+      showError('Không có dữ liệu để xuất Excel');
       return;
     }
 
@@ -60,7 +61,7 @@ export default function StudentTable() {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sách học sinh');
 
     XLSX.writeFile(workbook, 'Danh_sach_hoc_sinh.xlsx');
-    message.success('Xuất Excel thành công');
+    showSuccess('Xuất Excel thành công');
   };
 
   const columns = [

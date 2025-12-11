@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Select, Upload, message, Breadcrumb, Spin } from 'antd';
+import { Form, Input, Button, Select, Upload, Breadcrumb } from 'antd';
 import { UploadOutlined, UserOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../../services/api';
+import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
 
 const { Option } = Select;
 
@@ -14,14 +15,14 @@ export default function AddBook() {
 
   const beforeUpload = (file) => {
     const isLt10M = file.size / 1024 / 1024 < 10; // < 10MB
-    if (!isLt10M) message.error('File phải nhỏ hơn 10MB!');
+    if (!isLt10M) showError('File phải nhỏ hơn 10MB!');
     return isLt10M || Upload.LIST_IGNORE;
   };
 
   const handleSave = (values) => {
     // Kiểm tra xem đã chọn file không
     if (fileList.length === 0) {
-      message.error('Vui lòng tải lên file sách');
+      showError('Vui lòng tải lên file sách');
       return;
     }
 
@@ -29,6 +30,7 @@ export default function AddBook() {
   };
 
   const uploadBook = async (values) => {
+    showLoading();
     setLoading(true);
     try {
       // Tạo FormData để gửi file và dữ liệu
@@ -42,22 +44,22 @@ export default function AddBook() {
       formData.append('category', values.category);
 
       // Gửi request POST
-      const response = await apiClient.post('/pdfs/upload', formData, {
+      await apiClient.post('/pdfs/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      message.success('Thêm sách thành công!');
+      closeLoading();
+      await showSuccess('Thêm sách thành công!');
+      
       form.resetFields();
       setFileList([]);
-      // Quay lại trang quản lý sách sau 1.5s
-      setTimeout(() => {
-        navigate('/book-mana');
-      }, 1500);
+      navigate('/book-mana');
     } catch (err) {
       console.error('Upload failed:', err);
-      message.error(err.response?.data?.message || 'Thêm sách thất bại!');
+      closeLoading();
+      showError(err.response?.data?.message || 'Thêm sách thất bại!');
     } finally {
       setLoading(false);
     }
@@ -93,7 +95,6 @@ export default function AddBook() {
       </div>
       <div className="bg-white shadow-lg p-2 max-w-2xl mx-auto">
         <h2 className="text-xl font-semibold mb-4">Thêm sách mới</h2>
-        <Spin spinning={loading}>
           <Form form={form} className="custom-form" layout="vertical" onFinish={handleSave}>
             <Form.Item label="Tên sách" name="name" rules={[{ required: true, message: 'Nhập tên sách' }]}>
               <Input placeholder="Nhập tên sách" />
@@ -137,7 +138,6 @@ export default function AddBook() {
               </Button>
             </Form.Item>
           </Form>
-        </Spin>
       </div>
     </div>
   );

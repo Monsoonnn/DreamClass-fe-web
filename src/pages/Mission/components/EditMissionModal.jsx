@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Input, Button, Select, Switch, Form, message } from 'antd';
+import { Modal, Input, Button, Select, Switch, Form } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { apiClient } from '../../../services/api';
+import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
 
 const { TextArea } = Input;
 
@@ -32,6 +33,7 @@ export default function EditMissionModal({ visible, onClose, missionData, refres
 
   const handleSubmit = async (values) => {
     setSubmitting(true);
+    showLoading();
     try {
       const payload = {
         questId: values.questId,
@@ -50,13 +52,15 @@ export default function EditMissionModal({ visible, onClose, missionData, refres
       const res = await apiClient.put(`/quests/admin/templates/${oldQuestId}`, payload);
 
       console.log('Quest updated successfully:', res.data);
-      message.success('Cập nhật nhiệm vụ thành công!');
+      closeLoading();
+      await showSuccess('Cập nhật nhiệm vụ thành công!');
 
       refreshMissions?.();
       onClose();
     } catch (err) {
       console.error('Error updating quest:', err.response?.status, err.message);
-      message.error(err.response?.data?.message || 'Lỗi khi cập nhật nhiệm vụ');
+      closeLoading();
+      showError(err.response?.data?.message || 'Lỗi khi cập nhật nhiệm vụ');
     } finally {
       setSubmitting(false);
     }
@@ -95,7 +99,7 @@ export default function EditMissionModal({ visible, onClose, missionData, refres
         <Form.Item label="Cách nhận quest" name="dailyQuestType" rules={[{ required: isDailyQuest, message: 'Chọn loại Daily Quest' }]}>
           <Select disabled={!isDailyQuest} placeholder="Chọn loại Daily Quest">
             <Select.Option value="NPC_INTERACTION">Tương tác NPC</Select.Option>
-            <Select.Option value="DAILY_TASK">Tự động</Select.Option>
+            <Select.Option value="AUTO_ASSIGN">Tự động</Select.Option>
           </Select>
         </Form.Item>
 

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Button, Card, Input, Select, Space, Form, message, Tag, Breadcrumb } from 'antd';
+import { Button, Card, Input, Select, Space, Form, Tag, Breadcrumb } from 'antd';
 import { PlusOutlined, DeleteOutlined, UserOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../../services/api';
+import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
 
 export default function AddQuizz() {
   const navigate = useNavigate();
@@ -68,7 +69,7 @@ export default function AddQuizz() {
       // Validate that each question has at least one correct answer
       for (const q of questions) {
         if (!q.answers.some(a => a.isCorrect)) {
-          message.error('Mỗi câu hỏi phải có ít nhất một đáp án đúng được chọn!');
+          showError('Mỗi câu hỏi phải có ít nhất một đáp án đúng được chọn!');
           return;
         }
       }
@@ -103,13 +104,16 @@ export default function AddQuizz() {
       };
 
       // CALL API
+      showLoading();
       await apiClient.post('/quizzes', payload);
 
-      message.success('Thêm quizz thành công!');
+      closeLoading();
+      await showSuccess('Thêm quizz thành công!');
       navigate('/quizz-mana');
     } catch (err) {
       console.error(err);
-      message.error('Thêm quizz thất bại!');
+      closeLoading();
+      showError('Thêm quizz thất bại!');
     }
   };
 

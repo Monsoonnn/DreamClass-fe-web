@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Tag, Button, Space, Input, Pagination, Avatar, Popconfirm, message, Select, Modal } from 'antd';
-import { EyeOutlined, EditOutlined, DeleteOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, PlusOutlined } from '@ant-design/icons';
+import { Table, Tag, Button, Space, Input, Pagination, Avatar, Select } from 'antd';
+import { EyeOutlined, EditOutlined, DeleteOutlined, FileExcelOutlined, SearchOutlined, PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { getUsers, deleteUser } from './userService';
+import { getUsers } from './userService';
 import { apiClient } from '../../../services/api';
 import * as XLSX from 'xlsx';
 import UserUpdate from './UserUpdate';
+import { showLoading, closeLoading, showSuccess, showError, showConfirm } from '../../../utils/swalUtils';
 
 const { Option } = Select;
 
@@ -41,8 +42,8 @@ export default function UserTable({ filterRole }) {
       setData(response.data.data || response.data);
     } catch (error) {
       console.error('Error fetching players:', error);
-      message.error('Không thể tải dữ liệu từ server. Sử dụng dữ liệu tạm thời.');
-      setData(getUsers());
+      // showError('Không thể tải dữ liệu từ server. Đã chuyển sang dữ liệu tạm thời.');
+       setData(getUsers()); 
     } finally {
       setLoading(false);
     }
@@ -75,31 +76,49 @@ export default function UserTable({ filterRole }) {
     return list;
   };
 
-  const handleDelete = async (record) => {
+  const handleDelete = (record) => {
     const id = record.playerId || record._id || record.key;
-    try {
-      await apiClient.delete(`/accounts/students/${id}`);
-      message.success('Xóa thành công');
-      fetchPlayers(); // Refresh data từ API
-      setSelectedRowKeys([]); // Reset selected rows
-    } catch (err) {
-      console.warn('Delete failed', id, err);
-      message.error('Xóa thất bại');
-    }
+    showConfirm('Bạn có chắc muốn xoá người dùng này?', async () => {
+      showLoading();
+      try {
+        await apiClient.delete(`/accounts/students/${id}`);
+        closeLoading();
+        showSuccess('Xóa thành công');
+        fetchPlayers(); // Refresh data từ API
+        setSelectedRowKeys([]); // Reset selected rows
+      } catch (err) {
+        console.warn('Delete failed', id, err);
+        closeLoading();
+        showError('Xóa thất bại');
+      }
+    });
   };
 
-  const handleDeleteMultiple = async () => {
-    try {
-      await Promise.all(selectedRowKeys.map((key) => apiClient.delete(`/accounts/students/${key}`)));
-
-      message.success('Đã xóa các người dùng đã chọn');
-      fetchPlayers();
-      setSelectedRowKeys([]);
-    } catch (err) {
-      console.error(err);
-      message.error('Xóa một số bản ghi thất bại');
-      fetchPlayers();
+  const handleDeleteMultiple = () => {
+    if (selectedRowKeys.length === 0) {
+      showError('Vui lòng chọn ít nhất một người dùng để xóa');
+      return;
     }
+
+    showConfirm(`Bạn có chắc muốn xóa ${selectedRowKeys.length} người dùng đã chọn?`, async () => {
+      showLoading();
+      try {
+        await Promise.all(
+          selectedRowKeys.map(async (key) => {
+            await apiClient.delete(`/accounts/students/${key}`);
+          })
+        );
+        closeLoading();
+        showSuccess('Đã xóa các người dùng đã chọn');
+        fetchPlayers();
+        setSelectedRowKeys([]);
+      } catch (err) {
+        console.error('Delete multiple failed', err);
+        closeLoading();
+        showError('Xóa thất bại một số bản ghi');
+        fetchPlayers(); // Refresh anyway
+      }
+    });
   };
 
   const handleEdit = (record) => {
@@ -110,7 +129,7 @@ export default function UserTable({ filterRole }) {
   const handleExport = () => {
     const listToExport = filteredList();
     if (listToExport.length === 0) {
-      message.warning('Không có dữ liệu để xuất Excel');
+      showError('Không có dữ liệu để xuất Excel');
       return;
     }
     const exportData = listToExport.map((item, index) => ({
@@ -132,7 +151,7 @@ export default function UserTable({ filterRole }) {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sách học sinh');
 
     XLSX.writeFile(workbook, 'Danh_sach_hoc_sinh.xlsx');
-    message.success('Xuất Excel thành công');
+    showSuccess('Xuất Excel thành công');
   };
 
   const renderRole = (role) => (role === 'teacher' ? <Tag color="blue">Giáo viên</Tag> : <Tag color="green">Học sinh</Tag>);
@@ -179,9 +198,7 @@ export default function UserTable({ filterRole }) {
         <Space>
           <EyeOutlined style={{ color: 'green', cursor: 'pointer' }} onClick={() => navigate(`/user-mana/view/${record.playerId || record._id || record.key}`)} />
           <EditOutlined style={{ color: 'blue', cursor: 'pointer' }} onClick={() => handleEdit(record)} />
-          <Popconfirm title="Bạn có chắc muốn xoá?" onConfirm={() => handleDelete(record)} okText="Xóa" cancelText="Hủy">
-            <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-          </Popconfirm>
+          <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} onClick={() => handleDelete(record)} />
         </Space>
       ),
     },
@@ -223,27 +240,14 @@ export default function UserTable({ filterRole }) {
           <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/user-mana/add')}>
             Thêm
           </Button>
-          <Popconfirm
-            title="Xác nhận xóa"
-            description={`Bạn có chắc muốn xóa ${selectedRowKeys.length} người dùng đã chọn?`}
-            okText="Xóa"
-            cancelText="Hủy"
-            onConfirm={handleDeleteMultiple}
+          <Button
+            danger
+            icon={<DeleteOutlined />}
+            onClick={handleDeleteMultiple}
             disabled={selectedRowKeys.length === 0}
           >
-            <Button
-              danger
-              icon={<DeleteOutlined />}
-              disabled={selectedRowKeys.length === 0}
-              style={{
-                opacity: selectedRowKeys.length === 0 ? 0.4 : 1,
-                cursor: selectedRowKeys.length === 0 ? 'not-allowed' : 'pointer',
-              }}
-            >
-              Xóa
-            </Button>
-          </Popconfirm>
-
+            Xóa
+          </Button>
           <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
             Xuất Excel
           </Button>

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Input, InputNumber, Button, DatePicker, Select, Space, Card, Divider, message, Breadcrumb, Spin } from 'antd';
+import { Form, Input, InputNumber, Button, DatePicker, Select, Space, Card, Divider, Breadcrumb, Spin } from 'antd';
 import { SaveOutlined, DeleteOutlined, HomeOutlined, UnorderedListOutlined, PlusOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import apiClient from '../../../services/api';
 import dayjs from 'dayjs';
+import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -42,7 +43,7 @@ export default function SpinUpdate() {
         }
       } catch (error) {
         console.error('Error fetching spin detail:', error);
-        message.error('Không thể tải thông tin vòng quay!');
+        showError('Không thể tải thông tin vòng quay!');
       } finally {
         setLoading(false);
       }
@@ -74,14 +75,14 @@ export default function SpinUpdate() {
     try {
       // Validate items
       if (items.length === 0 || items.some((item) => !item.itemId)) {
-        message.error('Vui lòng điền đầy đủ thông tin các item!');
+        showError('Vui lòng điền đầy đủ thông tin các item!');
         return;
       }
 
       // Validate tổng rate
       const totalRate = items.reduce((sum, item) => sum + Number(item.rate), 0);
       if (Math.abs(totalRate - 1) > 0.01) {
-        message.error(`Tổng tỉ lệ phải bằng 1 (hiện tại: ${totalRate.toFixed(2)})`);
+        showError(`Tổng tỉ lệ phải bằng 1 (hiện tại: ${totalRate.toFixed(2)})`);
         return;
       }
 
@@ -101,15 +102,18 @@ export default function SpinUpdate() {
         })),
       };
 
+      showLoading();
       await apiClient.put(`/spin-wheels/${id}`, payload);
 
-      message.success('Cập nhật vòng quay thành công!');
+      closeLoading();
+      await showSuccess('Cập nhật vòng quay thành công!');
 
       // ===> THAY ĐỔI Ở ĐÂY: Chuyển hướng về trang Detail <===
       navigate(`/spin-mana/detail/${id}`);
     } catch (err) {
       console.error('Error details:', err.response?.data || err.message);
-      message.error(err.response?.data?.message || 'Lỗi cập nhật vòng quay!');
+      closeLoading();
+      showError(err.response?.data?.message || 'Lỗi cập nhật vòng quay!');
     }
   };
 

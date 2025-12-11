@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Card, Input, Select, Form, message, Tag, Breadcrumb, Spin } from 'antd';
+import { Button, Card, Input, Select, Form, Tag, Breadcrumb, Spin } from 'antd';
 import { PlusOutlined, DeleteOutlined, UserOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import apiClient from '../../../services/api';
+import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
 
 export default function QuizzUpdate() {
   const navigate = useNavigate();
@@ -46,7 +47,7 @@ export default function QuizzUpdate() {
       setLoading(false);
     } catch (err) {
       console.error(err);
-      message.error('Không thể tải thông tin quizz');
+      showError('Không thể tải thông tin quizz');
       navigate('/quizz-mana');
     }
   };
@@ -107,7 +108,7 @@ export default function QuizzUpdate() {
     // Validate that each question has at least one correct answer
     for (const q of questions) {
       if (!q.answers.some(a => a.isCorrect)) {
-        message.error('Mỗi câu hỏi phải có ít nhất một đáp án đúng được chọn!');
+        showError('Mỗi câu hỏi phải có ít nhất một đáp án đúng được chọn!');
         return;
       }
     }
@@ -133,13 +134,16 @@ export default function QuizzUpdate() {
       ],
     };
 
+    showLoading();
     try {
       await apiClient.put(`/quizzes/${quizzId}`, body);
-      message.success('Cập nhật quizz thành công!');
+      closeLoading();
+      await showSuccess('Cập nhật quizz thành công!');
       navigate('/quizz-mana');
     } catch (err) {
       console.error(err);
-      message.error('Lỗi khi cập nhật quizz!');
+      closeLoading();
+      showError('Lỗi khi cập nhật quizz!');
     }
   };
 

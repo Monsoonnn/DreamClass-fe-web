@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { message, Modal, Spin, Button } from 'antd';
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
+import { showLoading, closeLoading, showSuccess, showError } from '../../utils/swalUtils';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -10,27 +10,23 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  // Error Modal State
-  const [errorModalVisible, setErrorModalVisible] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
 
   // Note: Redirection for already logged-in users is now handled by the PublicRoute wrapper in App.jsx
 
   const handleLogin = async () => {
     if (!email || !password) {
-      message.warning('Vui lòng nhập tài khoản và mật khẩu!');
+      showError('Vui lòng nhập tài khoản và mật khẩu!');
       return;
     }
 
-    setLoading(true);
+    showLoading();
 
     try {
       // login() trong AuthContext trả về fullData gồm role
       const user = await login(email, password);
 
-      message.success('Đăng nhập thành công!');
+      closeLoading();
+      await showSuccess('Đăng nhập thành công!');
 
       // Điều hướng theo role
       if (user?.role === 'student') {
@@ -40,41 +36,20 @@ export default function Login() {
       }
     } catch (err) {
       console.error('Login error:', err);
-      setErrorMessage(err.response?.data?.message || 'Sai tài khoản hoặc mật khẩu! Vui lòng thử lại.');
-      setErrorModalVisible(true);
-    } finally {
-      setLoading(false);
+      closeLoading();
+      showError(err.response?.data?.message || 'Sai tài khoản hoặc mật khẩu! Vui lòng thử lại.');
     }
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter') handleLogin();
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleLogin();
+    }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-cover bg-center" style={{ backgroundImage: "url('/images/background_login.jpg')" }}>
-      {/* Modal loading */}
-      <Modal open={loading} footer={null} closable={false} centered bodyStyle={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-        <Spin size="large" />
-        <span>Đang đăng nhập...</span>
-      </Modal>
-
-      {/* Modal Error */}
-      <Modal
-        title="Đăng nhập thất bại"
-        open={errorModalVisible}
-        onOk={() => setErrorModalVisible(false)}
-        onCancel={() => setErrorModalVisible(false)}
-        centered
-        footer={[
-          <Button key="ok" type="primary" onClick={() => setErrorModalVisible(false)} danger>
-            Thử lại
-          </Button>,
-        ]}
-      >
-        <p className="text-red-500">{errorMessage}</p>
-      </Modal>
-
       {/* Form login */}
       <div className="bg-white/90 shadow-2xl rounded-2xl p-10 w-[400px] max-w-[90%] backdrop-blur-sm">
         <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">ĐĂNG NHẬP</h1>

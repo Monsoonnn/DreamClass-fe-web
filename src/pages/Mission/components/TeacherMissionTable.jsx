@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Tag, Button, Space, Input, Pagination, Popconfirm, Spin, message, Select, Modal, Breadcrumb } from 'antd';
+import { Table, Tag, Button, Space, Input, Pagination, Select, Breadcrumb } from 'antd';
 import { EyeOutlined, FileExcelOutlined, SearchOutlined, DeleteOutlined, EditOutlined, ReadOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import TeacherMissionEdit from './TeacherMissionEdit';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../../services/api';
 import * as XLSX from 'xlsx';
+import { showLoading, closeLoading, showSuccess, showError, showConfirm } from '../../../utils/swalUtils';
 
 const { Option } = Select;
 
@@ -32,10 +33,9 @@ export default function TeacherMissionTable() {
       const res = await apiClient.get('/quests/admin/templates'); // Or /teacher/quest-templates if available
       const questsData = res.data?.data || [];
       setMissions(questsData);
-      message.success(`Đã tải ${questsData.length} nhiệm vụ`);
     } catch (err) {
       console.error('Error fetching quests:', err.response?.status, err.message);
-      message.error('Lỗi khi tải danh sách nhiệm vụ');
+      showError('Lỗi khi tải danh sách nhiệm vụ');
       setMissions([]);
     } finally {
       setLoading(false);
@@ -58,7 +58,7 @@ export default function TeacherMissionTable() {
   const handleExport = () => {
     const listToExport = filteredMissions();
     if (listToExport.length === 0) {
-      message.warning('Không có dữ liệu để xuất Excel');
+      showError('Không có dữ liệu để xuất Excel');
       return;
     }
 
@@ -77,54 +77,57 @@ export default function TeacherMissionTable() {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sách nhiệm vụ');
 
     XLSX.writeFile(workbook, 'Danh_sach_nhiem_vu_giao_vien.xlsx');
-    message.success('Xuất Excel thành công');
+    showSuccess('Xuất Excel thành công');
   };
 
-  const handleDelete = async (record) => {
-    const previousMissions = [...missions];
-    try {
-      const newMissions = missions.filter((m) => m.questId !== record.questId);
-      setMissions(newMissions);
-      setSelectedRowKeys((keys) => keys.filter((k) => k !== record.questId));
+  const handleDelete = (record) => {
+    showConfirm('Bạn có chắc muốn xoá nhiệm vụ này?', async () => {
+      showLoading();
+      try {
+        await apiClient.delete(`/teacher/quest-templates/${record.questId}`);
+        
+        // Optimistic update
+        const newMissions = missions.filter((m) => m.questId !== record.questId);
+        setMissions(newMissions);
+        setSelectedRowKeys((keys) => keys.filter((k) => k !== record.questId));
 
-      const totalPages = Math.ceil(newMissions.length / pageSize);
-      if (currentPage > totalPages) {
-        setCurrentPage(totalPages > 0 ? totalPages : 1);
+        const totalPages = Math.ceil(newMissions.length / pageSize);
+        if (currentPage > totalPages) {
+          setCurrentPage(totalPages > 0 ? totalPages : 1);
+        }
+
+        closeLoading();
+        showSuccess('Xóa nhiệm vụ thành công!');
+      } catch (err) {
+        console.error('Xóa thất bại:', err);
+        closeLoading();
+        showError('Xóa nhiệm vụ thất bại! (Có thể do quyền hạn)');
+        // Refresh to revert optimistic update if needed, or just let error stay
+        fetchQuests();
       }
-
-      await apiClient.delete(`/teacher/quest-templates/${record.questId}`);
-      message.success('Xóa nhiệm vụ thành công!');
-    } catch (err) {
-      console.error('Xóa thất bại:', err);
-      setMissions(previousMissions);
-      message.error('Xóa nhiệm vụ thất bại! (Có thể do quyền hạn)');
-    }
+    });
   };
 
   const handleDeleteMultiple = () => {
     if (selectedRowKeys.length === 0) {
-      message.warning('Vui lòng chọn ít nhất một nhiệm vụ để xóa');
+      showError('Vui lòng chọn ít nhất một nhiệm vụ để xóa');
       return;
     }
 
-    Modal.confirm({
-      title: 'Xác nhận xóa',
-      content: `Bạn có chắc muốn xóa ${selectedRowKeys.length} nhiệm vụ đã chọn?`,
-      okText: 'Xóa',
-      okType: 'danger',
-      cancelText: 'Hủy',
-      onOk: async () => {
-        try {
-          await Promise.all(selectedRowKeys.map((id) => apiClient.delete(`/teacher/quest-templates/${id}`)));
-          message.success('Đã xóa các nhiệm vụ đã chọn');
-          fetchQuests();
-          setSelectedRowKeys([]);
-        } catch (err) {
-          console.error(err);
-          message.error('Có lỗi xảy ra khi xóa nhiều nhiệm vụ');
-          fetchQuests();
-        }
-      },
+    showConfirm(`Bạn có chắc muốn xóa ${selectedRowKeys.length} nhiệm vụ đã chọn?`, async () => {
+      showLoading();
+      try {
+        await Promise.all(selectedRowKeys.map((id) => apiClient.delete(`/teacher/quest-templates/${id}`)));
+        closeLoading();
+        showSuccess('Đã xóa các nhiệm vụ đã chọn');
+        fetchQuests();
+        setSelectedRowKeys([]);
+      } catch (err) {
+        console.error(err);
+        closeLoading();
+        showError('Có lỗi xảy ra khi xóa nhiều nhiệm vụ');
+        fetchQuests();
+      }
     });
   };
 
@@ -155,7 +158,7 @@ export default function TeacherMissionTable() {
         switch (type) {
           case 'NPC_INTERACTION':
             return 'Tương tác NPC';
-          case 'DAILY_TASK':
+          case 'AUTO_ASSIGN':
             return 'Tự động';
           default:
             return type; // fallback nếu API trả về loại khác
@@ -177,9 +180,7 @@ export default function TeacherMissionTable() {
               setEditModalVisible(true);
             }}
           />
-          <Popconfirm title="Bạn có chắc muốn xoá?" onConfirm={() => handleDelete(record)} okText="Xóa" cancelText="Hủy">
-            <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-          </Popconfirm>
+          <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} onClick={() => handleDelete(record)} />
         </Space>
       ),
     },
@@ -187,12 +188,6 @@ export default function TeacherMissionTable() {
 
   return (
     <div className="bg-white shadow-lg p-2">
-      {loading && (
-        <div className="flex justify-center items-center min-h-[200px]">
-          <Spin size="large" />
-        </div>
-      )}
-      {!loading && (
         <>
           {/* Thanh công cụ */}
           <Breadcrumb
@@ -223,7 +218,7 @@ export default function TeacherMissionTable() {
               <Select defaultValue="all" style={{ width: 160 }} onChange={setFilterType}>
                 <Option value="all">Tất cả loại</Option>
                 <Option value="NPC_INTERACTION">Tương tác NPC</Option>
-                <Option value="DAILY_TASK">Tự động</Option>
+                <Option value="AUTO_ASSIGN">Tự động</Option>
               </Select>
               <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }} onClick={() => setCurrentPage(1)}>
                 Tìm
@@ -250,6 +245,7 @@ export default function TeacherMissionTable() {
             scroll={{ x: 'max-content' }}
             size="small"
             bordered
+            loading={loading}
           />
 
           {/* Phân trang & Thông tin chọn */}
@@ -280,7 +276,6 @@ export default function TeacherMissionTable() {
             />
           )}
         </>
-      )}
     </div>
   );
 }

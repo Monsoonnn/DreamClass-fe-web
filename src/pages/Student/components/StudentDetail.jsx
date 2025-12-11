@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Tabs, Spin, Breadcrumb, message } from 'antd';
+import { Tabs, Spin, Breadcrumb } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
 import StudentInfo from './StudentInfo';
 import StudentLearning from './StudentLearning';
 import StudentAchievements from './StudentAchievements';
 import apiClient from '../../../services/api';
+import { showError } from '../../../utils/swalUtils';
 
 export default function StudentDetail() {
   const { id } = useParams();
@@ -30,7 +31,7 @@ export default function StudentDetail() {
       const found = await getStudentById(id);
 
       if (!found) {
-        message.error('Không tìm thấy thông tin học sinh!');
+        showError('Không tìm thấy thông tin học sinh!');
         navigate('/student-mana');
         setLoading(false);
         return;

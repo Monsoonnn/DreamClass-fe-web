@@ -44,7 +44,7 @@ export default function QuizzDetail() {
 
   if (loading || !quizz) {
     return (
-      <div className="p-6 flex justify-center">
+      <div className="flex justify-center items-center min-h-[400px]">
         <Spin size="large" />
       </div>
     );

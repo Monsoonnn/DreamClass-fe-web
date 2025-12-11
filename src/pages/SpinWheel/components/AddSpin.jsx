@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Form, Input, InputNumber, Button, DatePicker, Select, Space, Card, Divider, message, Switch, Breadcrumb } from 'antd';
+import { Form, Input, InputNumber, Button, DatePicker, Select, Space, Card, Divider, Switch, Breadcrumb } from 'antd';
 import { PlusOutlined, DeleteOutlined, HomeOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../../../services/api';
 import dayjs from 'dayjs';
+import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -33,14 +34,14 @@ export default function AddSpin() {
     try {
       // Validate items
       if (items.length === 0 || items.some((item) => !item.itemId || !item.rate)) {
-        message.error('Vui lòng điền đầy đủ thông tin các item!');
+        showError('Vui lòng điền đầy đủ thông tin các item!');
         return;
       }
 
       // Validate tổng rate = 1
       const totalRate = items.reduce((sum, item) => sum + Number(item.rate), 0);
       if (Math.abs(totalRate - 1) > 0.01) {
-        message.error(`Tổng tỉ lệ phải bằng 1 (hiện tại: ${totalRate.toFixed(2)})`);
+        showError(`Tổng tỉ lệ phải bằng 1 (hiện tại: ${totalRate.toFixed(2)})`);
         return;
       }
 
@@ -62,16 +63,20 @@ export default function AddSpin() {
 
       console.log('PAYLOAD SEND:', payload);
 
+      showLoading();
       const response = await apiClient.post('/spin-wheels', payload);
       console.log('API Response:', response.data);
 
-      message.success('Tạo vòng quay thành công!');
+      closeLoading();
+      await showSuccess('Tạo vòng quay thành công!');
+      
       form.resetFields();
       setItems([{ itemId: '', rate: 0, isRare: false }]);
       navigate('/spin-mana');
     } catch (err) {
       console.error('Error details:', err.response?.data || err.message);
-      message.error(err.response?.data?.message || 'Lỗi tạo vòng quay!');
+      closeLoading();
+      showError(err.response?.data?.message || 'Lỗi tạo vòng quay!');
     }
   };
 
