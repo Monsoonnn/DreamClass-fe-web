@@ -158,19 +158,19 @@ export default function UserTable({ filterRole }) {
     { title: 'STT', key: 'index', align: 'center', render: (_, __, index) => (currentPage - 1) * pageSize + index + 1 },
     { title: 'Avatar', dataIndex: 'avatar', key: 'avatar', align: 'center', render: (avatar) => <Avatar src={avatar} className="w-10 h-10 rounded-full" /> },
     { title: 'Họ tên', dataIndex: 'name', key: 'name', align: 'center' },
-    { title: 'Giới tính', dataIndex: 'gender', key: 'gender', align: 'center' },
     {
-      title: 'Ngày sinh',
-      dataIndex: 'dateOfBirth',
-      key: 'dateOfBirth',
+      title: 'Giới tính',
+      dataIndex: 'gender',
+      key: 'gender',
       align: 'center',
-      render: (date) => {
-        if (!date) return '-';
-        const d = new Date(date);
-        return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+      render: (gender) => {
+        if (!gender) return '-';
+        const g = gender.toLowerCase();
+        if (g === 'male') return 'Nam';
+        if (g === 'female') return 'Nữ';
+        return gender;
       },
     },
-
 
     {
       title: 'Ngày sinh',

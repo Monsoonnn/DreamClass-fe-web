@@ -27,14 +27,17 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // Use context login which handles state update
-      await login(email, password);
+      // login() trong AuthContext trả về fullData gồm role
+      const user = await login(email, password);
 
       message.success('Đăng nhập thành công!');
-      
-      // Prompt requested explicit redirect to /dashboard
-      navigate('/dashboard');
-      
+
+      // Điều hướng theo role
+      if (user?.role === 'student') {
+        navigate('/student-study');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       console.error('Login error:', err);
       setErrorMessage(err.response?.data?.message || 'Sai tài khoản hoặc mật khẩu! Vui lòng thử lại.');
@@ -66,7 +69,7 @@ export default function Login() {
         footer={[
           <Button key="ok" type="primary" onClick={() => setErrorModalVisible(false)} danger>
             Thử lại
-          </Button>
+          </Button>,
         ]}
       >
         <p className="text-red-500">{errorMessage}</p>
