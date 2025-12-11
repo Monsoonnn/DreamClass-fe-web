@@ -1,12 +1,13 @@
 // src/pages/user-mana/components/TeacherTable.jsx
 import React, { useState, useEffect } from 'react';
-import { Table, Tag, Button, Space, Input, Pagination, Avatar, Popconfirm, message, Select, Modal } from 'antd';
-import { EyeOutlined, EditOutlined, DeleteOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, PlusOutlined } from '@ant-design/icons';
+import { Table, Tag, Button, Space, Input, Pagination, Avatar, Select } from 'antd';
+import { EyeOutlined, EditOutlined, DeleteOutlined, FileExcelOutlined, SearchOutlined, PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../../services/api';
 import * as XLSX from 'xlsx';
 import TeacherUpdate from './TeacherUpdate';
 import { formatDate } from '../../../utils/dateUtil';
+import { showLoading, closeLoading, showSuccess, showError, showConfirm } from '../../../utils/swalUtils';
 
 const { Option } = Select;
 
@@ -51,7 +52,7 @@ export default function TeacherTable() {
       setTotal(teachers.length);
     } catch (error) {
       console.error('Error fetching teachers:', error);
-      message.error('Không thể tải dữ liệu từ server.');
+      // showError('Không thể tải dữ liệu từ server.'); // Optional silent fail for fetch
       setData([]);
       setTotal(0);
     } finally {
@@ -78,43 +79,57 @@ export default function TeacherTable() {
   };
 
   // --- Delete ---
-  const handleDelete = async (record) => {
+  const handleDelete = (record) => {
     const id = record.teacherId || record._id || record.key;
-    try {
-      // optimistic UI: remove locally first
-      setData((prev) => prev.filter((t) => (t.teacherId || t._id || t.key) !== id));
-      setSelectedRowKeys([]);
+    showConfirm('Bạn có chắc muốn xóa giáo viên này?', async () => {
+      showLoading();
+      try {
+        await apiClient.delete(`/accounts/teachers/${id}`);
+        
+        // optimistic UI: remove locally first
+        setData((prev) => prev.filter((t) => (t.teacherId || t._id || t.key) !== id));
+        setSelectedRowKeys([]);
+        
+        closeLoading();
+        showSuccess('Xóa thành công');
 
-      const res = await apiClient.delete(`/accounts/teachers/${id}`);
-      console.log('Delete teacher response:', res.data);
-      message.success('Xóa thành công');
-
-      // fetch fresh list from server to sync
-      fetchTeachers();
-    } catch (err) {
-      console.warn('Delete failed', id, err);
-      message.error('Xóa thất bại');
-      // refresh to restore
-      fetchTeachers();
-    }
+        // fetch fresh list from server to sync
+        fetchTeachers();
+      } catch (err) {
+        console.warn('Delete failed', id, err);
+        closeLoading();
+        showError('Xóa thất bại');
+        // refresh to restore
+        fetchTeachers();
+      }
+    });
   };
 
-  const handleDeleteMultiple = async () => {
-    try {
-      await Promise.all(
-        selectedRowKeys.map(async (key) => {
-          await apiClient.delete(`/accounts/teachers/${key}`);
-        })
-      );
-
-      message.success('Đã xóa các bản ghi đã chọn');
-      fetchTeachers();
-      setSelectedRowKeys([]);
-    } catch (err) {
-      console.error('Delete multiple failed', err);
-      message.error('Xóa thất bại một số bản ghi');
-      fetchTeachers();
+  const handleDeleteMultiple = () => {
+    if (selectedRowKeys.length === 0) {
+      showError('Vui lòng chọn ít nhất một giáo viên để xóa');
+      return;
     }
+
+    showConfirm(`Bạn có chắc muốn xóa ${selectedRowKeys.length} giáo viên đã chọn?`, async () => {
+      showLoading();
+      try {
+        await Promise.all(
+          selectedRowKeys.map(async (key) => {
+            await apiClient.delete(`/accounts/teachers/${key}`);
+          })
+        );
+        closeLoading();
+        showSuccess('Đã xóa các giáo viên đã chọn');
+        fetchTeachers();
+        setSelectedRowKeys([]);
+      } catch (err) {
+        console.error('Delete multiple failed', err);
+        closeLoading();
+        showError('Xóa thất bại một số bản ghi');
+        fetchTeachers();
+      }
+    });
   };
 
   const handleEdit = (record) => {
@@ -126,7 +141,7 @@ export default function TeacherTable() {
     const listToExport = filteredData();
 
     if (listToExport.length === 0) {
-      message.warning('Không có dữ liệu để xuất Excel');
+      showError('Không có dữ liệu để xuất Excel');
       return;
     }
 
@@ -148,7 +163,7 @@ export default function TeacherTable() {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sách giáo viên');
 
     XLSX.writeFile(workbook, 'Danh_sach_giao_vien.xlsx');
-    message.success('Xuất Excel thành công');
+    showSuccess('Xuất Excel thành công');
   };
 
   const renderRole = () => <Tag color="blue">Giáo viên</Tag>;
@@ -200,9 +215,7 @@ export default function TeacherTable() {
         <Space>
           <EyeOutlined style={{ color: 'green', cursor: 'pointer' }} onClick={() => navigate(`/user-mana/view-teacher/${record.teacherId || record._id || record.key}`)} />
           <EditOutlined style={{ color: 'blue', cursor: 'pointer' }} onClick={() => handleEdit(record)} />
-          <Popconfirm title="Bạn có chắc muốn xoá?" onConfirm={() => handleDelete(record)} okText="Xóa" cancelText="Hủy">
-            <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-          </Popconfirm>
+          <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} onClick={() => handleDelete(record)} />
         </Space>
       ),
     },
@@ -229,19 +242,14 @@ export default function TeacherTable() {
           <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/user-mana/add')}>
             Thêm
           </Button>
-          <Popconfirm
-            title={`Xác nhận xóa ${selectedRowKeys.length} bản ghi?`}
-            okText="Xóa"
-            okType="danger"
-            cancelText="Hủy"
-            onConfirm={handleDeleteMultiple}
+          <Button 
+            danger 
+            icon={<DeleteOutlined />} 
+            onClick={handleDeleteMultiple} 
             disabled={selectedRowKeys.length === 0}
           >
-            <Button danger={selectedRowKeys.length > 0} disabled={selectedRowKeys.length === 0} icon={<DeleteOutlined />}>
-              Xóa
-            </Button>
-          </Popconfirm>
-
+            Xóa
+          </Button>
           <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
             Xuất Excel
           </Button>

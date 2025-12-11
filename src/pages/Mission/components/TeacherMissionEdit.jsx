@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Button, Select, Switch, message, InputNumber } from 'antd';
+import { Modal, Form, Input, Button, Select, Switch, InputNumber } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { apiClient } from '../../../services/api';
+import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
 
 const { TextArea } = Input;
 
@@ -31,6 +32,7 @@ export default function TeacherMissionEdit({ visible, onClose, missionData, refr
   const handleSubmit = async (values) => {
     try {
       setSubmitting(true);
+      showLoading();
 
       const payload = {
         name: values.name,
@@ -41,14 +43,16 @@ export default function TeacherMissionEdit({ visible, onClose, missionData, refr
         dailyQuestType: values.isDailyQuest ? values.dailyQuestType : null, // Only send if it's a daily quest
       };
 
-      const res = await apiClient.put(`/teacher/quest-templates/${missionData.questId}`, payload);
+      await apiClient.put(`/teacher/quest-templates/${missionData.questId}`, payload);
 
-      message.success('Cập nhật thành công!');
+      closeLoading();
+      showSuccess('Cập nhật thành công!');
       refreshMissions();
       onClose();
     } catch (err) {
       console.error(err);
-      message.error('Không thể cập nhật nhiệm vụ: ' + (err.response?.data?.message || err.message));
+      closeLoading();
+      showError('Không thể cập nhật nhiệm vụ: ' + (err.response?.data?.message || err.message));
     } finally {
       setSubmitting(false);
     }
@@ -89,7 +93,7 @@ export default function TeacherMissionEdit({ visible, onClose, missionData, refr
           <Form.Item label="Loại nhiệm vụ hàng ngày" name="dailyQuestType">
             <Select placeholder="Chọn loại Daily Quest">
               <Select.Option value="NPC_INTERACTION">Tương tác NPC</Select.Option>
-              <Select.Option value="DAILY_TASK">Tự động</Select.Option>
+              <Select.Option value="AUTO_ASSIGN">Tự động</Select.Option>
             </Select>
           </Form.Item>
         )}

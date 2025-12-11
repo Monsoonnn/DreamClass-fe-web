@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Select, Button, Upload, Avatar, Row, Col, message, DatePicker } from 'antd';
+import { Modal, Form, Input, Select, Button, Upload, Avatar, Row, Col, DatePicker } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { apiClient } from '../../../services/api';
 import dayjs from 'dayjs';
+import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
 
 const { Option } = Select;
 
@@ -33,8 +34,10 @@ export default function UserUpdate({ open, onClose, userData, onUpdated }) {
 
   const handleUpdate = async () => {
     try {
-      setLoading(true);
       const values = await form.validateFields();
+      
+      showLoading();
+      setLoading(true);
 
       const payload = {
         name: values.name,
@@ -67,13 +70,15 @@ export default function UserUpdate({ open, onClose, userData, onUpdated }) {
         });
       }
 
-      message.success('Cập nhật thành công!');
+      closeLoading();
+      showSuccess('Cập nhật thành công!');
 
       onUpdated(res.data?.data || payload);
       onClose();
     } catch (err) {
       console.error(err);
-      message.error('Cập nhật thất bại!');
+      closeLoading();
+      showError('Cập nhật thất bại!');
     } finally {
       setLoading(false);
     }

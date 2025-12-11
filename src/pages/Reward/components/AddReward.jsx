@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Select, Upload, message, InputNumber, Row, Col } from 'antd';
+import { Form, Input, Button, Select, Upload, InputNumber, Row, Col } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../../../services/api';
+import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
 
 const { Option } = Select;
 
@@ -19,7 +20,7 @@ export default function AddReward() {
     if (!currentFile) return;
 
     if (currentFile.size / 1024 / 1024 > maxSizeMB) {
-      message.error(`Dung lượng tối đa là ${maxSizeMB}MB`);
+      showError(`Dung lượng tối đa là ${maxSizeMB}MB`);
       return;
     }
     setFileList(fileList);
@@ -30,7 +31,7 @@ export default function AddReward() {
 
   const onFinish = async (values) => {
     if (fileList.length === 0) {
-      message.error('Vui lòng tải lên ảnh phần thưởng');
+      showError('Vui lòng tải lên ảnh phần thưởng');
       return;
     }
 
@@ -46,6 +47,7 @@ export default function AddReward() {
 
     formData.append('description', values.condition || 'Mô tả phần thưởng');
 
+    showLoading();
     try {
       await apiClient.post('/items/admin', formData, {
         headers: {
@@ -53,15 +55,18 @@ export default function AddReward() {
         },
       });
 
-      message.success('Thêm phần thưởng thành công!');
+      closeLoading();
+      await showSuccess('Thêm phần thưởng thành công!');
+      
       form.resetFields();
       setPreviewImage(null);
       setFileList([]);
       navigate('/item-mana');
     } catch (error) {
       console.error('Add Reward Error:', error);
+      closeLoading();
       const errorMsg = error.response?.data?.message || 'Lỗi hệ thống (500)';
-      message.error(errorMsg);
+      showError(errorMsg);
     }
   };
 

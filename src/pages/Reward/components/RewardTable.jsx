@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Tag, Button, Space, Input, Pagination, Image, message, Popconfirm, Select } from 'antd';
-import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, DeleteOutlined, PlusOutlined, EditOutlined } from '@ant-design/icons';
+import { Table, Tag, Button, Space, Input, Pagination, Image, Select } from 'antd';
+import { EyeOutlined, FileExcelOutlined, SearchOutlined, DeleteOutlined, PlusOutlined, EditOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../../../services/api';
 import * as XLSX from 'xlsx';
 import RewardEditModal from './RewardEditModal';
+import { showLoading, closeLoading, showSuccess, showError, showConfirm } from '../../../utils/swalUtils';
 
 const { Option } = Select;
 
@@ -17,10 +18,12 @@ export default function RewardTable() {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [filterCategory, setFilterCategory] = useState('all');
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const fetchData = async () => {
+    setLoading(true);
     try {
       const res = await apiClient.get('/items/admin');
       const apiData = res.data.data;
@@ -39,7 +42,10 @@ export default function RewardTable() {
       setData(mapped);
     } catch (err) {
       console.error(err);
-      message.error('Không thể tải danh sách phần thưởng!');
+      // showError('Không thể tải danh sách phần thưởng!'); 
+      // Optional: uncomment if you want loud errors on fetch
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -65,7 +71,7 @@ export default function RewardTable() {
   const handleExport = () => {
     const listToExport = filteredRewards();
     if (listToExport.length === 0) {
-      message.warning('Không có dữ liệu để xuất Excel');
+      showError('Không có dữ liệu để xuất Excel');
       return;
     }
 
@@ -84,22 +90,27 @@ export default function RewardTable() {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sách phần thưởng');
 
     XLSX.writeFile(workbook, 'Danh_sach_phan_thuong.xlsx');
-    message.success('Xuất Excel thành công');
+    showSuccess('Xuất Excel thành công');
   };
 
   const handleViewDetail = (record) => {
     navigate(`/item-mana/detail/${record.rewardCode}`);
   };
 
-  const handleDeleteItem = async (itemId) => {
-    try {
-      await apiClient.delete(`/items/admin/${itemId}`);
-      message.success('Đã xóa vật phẩm!');
-      fetchData();
-    } catch (err) {
-      console.log(err);
-      message.error('Xóa thất bại!');
-    }
+  const handleDeleteItem = (itemId) => {
+    showConfirm('Bạn chắc chắn muốn xóa vật phẩm này?', async () => {
+      showLoading();
+      try {
+        await apiClient.delete(`/items/admin/${itemId}`);
+        closeLoading();
+        showSuccess('Đã xóa vật phẩm!');
+        fetchData();
+      } catch (err) {
+        console.log(err);
+        closeLoading();
+        showError('Xóa thất bại!');
+      }
+    });
   };
 
   const handleEdit = (record) => {
@@ -167,9 +178,7 @@ export default function RewardTable() {
         <Space>
           <EyeOutlined style={{ color: '#1890ff', fontSize: 16, cursor: 'pointer' }} onClick={() => handleViewDetail(record)} />
           <EditOutlined style={{ color: 'blue', fontSize: 16, cursor: 'pointer' }} onClick={() => handleEdit(record)} />
-          <Popconfirm title="Bạn chắc chắn muốn xóa?" okText="Xóa" cancelText="Hủy" onConfirm={() => handleDeleteItem(record.rewardCode)}>
-            <DeleteOutlined style={{ color: '#ff4d4f', fontSize: 16, cursor: 'pointer' }} />
-          </Popconfirm>
+          <DeleteOutlined style={{ color: '#ff4d4f', fontSize: 16, cursor: 'pointer' }} onClick={() => handleDeleteItem(record.rewardCode)} />
         </Space>
       ),
     },
@@ -215,6 +224,7 @@ export default function RewardTable() {
         scroll={{ x: 'max-content' }}
         size="small"
         bordered
+        loading={loading}
       />
 
       <div className="flex justify-between items-center mt-4 flex-wrap gap-2 m-2">

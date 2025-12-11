@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Select, Row, Col, message } from 'antd';
+import { Form, Input, Button, Select, Row, Col } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../../services/api';
+import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
 
 const { Option } = Select;
 
@@ -12,8 +13,10 @@ export default function StudentForm() {
 
   const handleSave = async () => {
     try {
-      setLoading(true);
       const values = await form.validateFields();
+      
+      showLoading();
+      setLoading(true);
 
       const newUser = {
         name: values.name,
@@ -32,12 +35,15 @@ export default function StudentForm() {
       const response = await apiClient.post('/accounts/students/create', newUser);
 
       console.log('API Response:', response.data);
-      message.success('Thêm học sinh thành công!');
+      closeLoading();
+      await showSuccess('Thêm học sinh thành công!');
+      
       form.resetFields();
       navigate('/user-mana');
     } catch (err) {
       console.error('Lỗi khi thêm học sinh:', err);
-      message.error('Không thể thêm học sinh. Vui lòng kiểm tra lại.');
+      closeLoading();
+      showError('Không thể thêm học sinh. Vui lòng kiểm tra lại.');
     } finally {
       setLoading(false);
     }

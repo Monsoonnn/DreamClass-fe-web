@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Table, Tag, Button, Space, Input, Pagination, Avatar, message } from 'antd';
+import { Table, Tag, Button, Space, Input, Pagination, Avatar } from 'antd';
 import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, PlusOutlined } from '@ant-design/icons';
 import * as XLSX from 'xlsx';
+import { showSuccess, showError } from '../../../utils/swalUtils';
 
 export default function StoreTable() {
   // 🧩 DỮ LIỆU MẪU VẬT PHẨM CỬA HÀNG
@@ -54,7 +55,7 @@ export default function StoreTable() {
   const handleExport = () => {
     const listToExport = filteredList();
     if (listToExport.length === 0) {
-      message.warning('Không có dữ liệu để xuất Excel');
+      showError('Không có dữ liệu để xuất Excel');
       return;
     }
 
@@ -73,7 +74,7 @@ export default function StoreTable() {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sách vật phẩm');
 
     XLSX.writeFile(workbook, 'Danh_sach_vat_pham.xlsx');
-    message.success('Xuất Excel thành công');
+    showSuccess('Xuất Excel thành công');
   };
 
   // 🟦 Thao tác

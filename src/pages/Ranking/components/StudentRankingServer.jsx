@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Tag, Button, Space, Input, Pagination, Card, Avatar, Image, message } from 'antd';
+import { Table, Tag, Button, Space, Input, Pagination, Card, Avatar, Image } from 'antd';
 import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, TrophyOutlined } from '@ant-design/icons';
 import { apiClient } from '../../../services/api';
 import { useNavigate } from 'react-router-dom';
+import { showError } from '../../../utils/swalUtils';
 
 export default function StudentRankingServer() {
   const [data, setData] = useState([]);
@@ -22,7 +23,7 @@ export default function StudentRankingServer() {
       setData(res.data.data || []);
     } catch (err) {
       console.error(err);
-      message.error('Không thể tải bảng xếp hạng toàn server');
+      showError('Không thể tải bảng xếp hạng toàn server');
     } finally {
       setLoading(false);
     }

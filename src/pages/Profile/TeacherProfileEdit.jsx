@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, DatePicker, Select, Upload, Button, message } from 'antd';
+import { Modal, Form, Input, DatePicker, Select, Upload, Button } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { apiClient } from '../../services/api';
 import dayjs from 'dayjs';
+import { showLoading, closeLoading, showSuccess, showError } from '../../utils/swalUtils';
 
 export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdated }) {
   const [avatarPreview, setAvatarPreview] = useState(null);
@@ -37,6 +38,7 @@ export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdate
   const handleSubmit = async () => {
     try {
       setSubmitting(true);
+      showLoading();
       const values = await form.validateFields();
       
       // 1. Update Profile Info (JSON) - Chỉ lấy các trường API cho phép
@@ -69,12 +71,14 @@ export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdate
         });
       }
 
-      message.success('Cập nhật thông tin thành công!');
+      closeLoading();
+      await showSuccess('Cập nhật thông tin thành công!');
       onUpdated(); // Reload lại dữ liệu sau khi cập nhật
       onClose(); // Đóng modal
     } catch (err) {
       console.error('Validation Failed:', err);
-      message.error('Cập nhật thông tin thất bại! ' + (err.response?.data?.message || err.message));
+      closeLoading();
+      showError('Cập nhật thông tin thất bại! ' + (err.response?.data?.message || err.message));
     } finally {
       setSubmitting(false);
     }

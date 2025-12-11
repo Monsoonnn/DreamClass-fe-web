@@ -39,7 +39,13 @@ export default function ItemDetail() {
     fetchItem();
   }, [itemId]);
 
-  if (loading) return <Spin className="mt-10" />;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <Spin size="large" />
+      </div>
+    );
+  }
   if (!item) return <div>Không tìm thấy vật phẩm</div>;
 
   return (

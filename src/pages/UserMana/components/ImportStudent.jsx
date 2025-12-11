@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Upload, Button, Table, Space, message, Divider } from 'antd';
+import { Upload, Button, Table, Space, Divider } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { apiClient } from '../../../services/api';
 import { useNavigate } from 'react-router-dom';
 import { formatDate } from '../../../utils/dateUtil';
+import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
 
 export default function ImportStudent() {
   const [file, setFile] = useState(null);
@@ -17,7 +18,7 @@ export default function ImportStudent() {
   // Chọn file
   const handleFileChange = (file) => {
     if (file.size / 1024 / 1024 > MAX_FILE_SIZE_MB) {
-      message.error(`File quá lớn! Vui lòng chọn file <= ${MAX_FILE_SIZE_MB}MB`);
+      showError(`File quá lớn! Vui lòng chọn file <= ${MAX_FILE_SIZE_MB}MB`);
       return false;
     }
     setFile(file);
@@ -27,10 +28,11 @@ export default function ImportStudent() {
   // Import file lên backend
   const handleImport = async () => {
     if (!file) {
-      message.error('Vui lòng chọn file Excel trước khi import');
+      showError('Vui lòng chọn file Excel trước khi import');
       return;
     }
 
+    showLoading();
     setLoading(true);
 
     try {
@@ -70,11 +72,13 @@ export default function ImportStudent() {
 
       setSuccessData(filteredSuccess);
       setSkippedData(filteredSkipped);
-
-      message.success(`Import xong: ${filteredSuccess.length} thành công, ${filteredSkipped.length} bị bỏ qua`);
+      
+      closeLoading();
+      showSuccess(`Import xong: ${filteredSuccess.length} thành công, ${filteredSkipped.length} bị bỏ qua`);
     } catch (err) {
       console.error('Lỗi import học sinh:', err);
-      message.error('Không thể import học sinh. Vui lòng kiểm tra file hoặc session.');
+      closeLoading();
+      showError('Không thể import học sinh. Vui lòng kiểm tra file hoặc session.');
     } finally {
       setLoading(false);
     }

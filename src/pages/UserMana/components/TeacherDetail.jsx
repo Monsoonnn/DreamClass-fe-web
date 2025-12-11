@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, Descriptions, Tag, Button, Spin, message, Breadcrumb } from 'antd';
+import { Card, Descriptions, Tag, Button, Spin, Breadcrumb } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import TeacherUpdate from './TeacherUpdate';
 import { apiClient } from '../../../services/api';
 import { formatDate } from '../../../utils/dateUtil';
+import { showError } from '../../../utils/swalUtils';
 
 export default function TeacherDetail() {
   const { teacherId } = useParams();
@@ -23,7 +24,7 @@ export default function TeacherDetail() {
 
         const payload = res.data?.data;
         if (!payload) {
-          message.error('Không tìm thấy giáo viên!');
+          showError('Không tìm thấy giáo viên!');
           setTimeout(() => navigate('/user-mana'), 1200);
           return;
         }
@@ -55,7 +56,7 @@ export default function TeacherDetail() {
         setTeacher(normalized);
       } catch (err) {
         console.error('Error fetching teacher detail:', err.response?.data || err.message || err);
-        message.error('Lỗi khi tải thông tin giáo viên: ' + (err.response?.data?.message || err.message));
+        showError('Lỗi khi tải thông tin giáo viên: ' + (err.response?.data?.message || err.message));
         setTimeout(() => navigate('/user-mana'), 1200);
       } finally {
         setLoading(false);
@@ -109,7 +110,7 @@ export default function TeacherDetail() {
               className="rounded-lg"
             >
               <Descriptions.Item label="Giới tính">
-                {teacher.gender ? (teacher.gender.toLowerCase() === 'male' ? 'Nam' : teacher.gender.toLowerCase() === 'female' ? 'Nữ' : user.gender) : '—'}
+                {teacher.gender ? (teacher.gender.toLowerCase() === 'male' ? 'Nam' : teacher.gender.toLowerCase() === 'female' ? 'Nữ' : teacher.gender) : '—'}
               </Descriptions.Item>
               <Descriptions.Item label="Ngày sinh">{teacher.dob}</Descriptions.Item>
               <Descriptions.Item label="Địa chỉ">{teacher.address}</Descriptions.Item>

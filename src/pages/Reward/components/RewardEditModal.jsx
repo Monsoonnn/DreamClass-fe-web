@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, Select, Upload, Button, InputNumber, Row, Col, message } from 'antd';
+import { Modal, Form, Input, Select, Upload, Button, InputNumber, Row, Col } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import apiClient from '../../../services/api';
+import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
 
 const { Option } = Select;
 
@@ -34,7 +35,7 @@ export default function RewardEditModal({ visible, onClose, reward, onUpdate }) 
     if (!currentFile) return;
 
     if (currentFile.size / 1024 / 1024 > maxSizeMB) {
-      message.error(`Dung lượng tối đa là ${maxSizeMB}MB`);
+      showError(`Dung lượng tối đa là ${maxSizeMB}MB`);
       return;
     }
 
@@ -46,6 +47,7 @@ export default function RewardEditModal({ visible, onClose, reward, onUpdate }) 
   };
 
   const onFinish = async (values) => {
+    showLoading();
     setLoading(true);
     try {
       const formData = new FormData();
@@ -86,12 +88,14 @@ export default function RewardEditModal({ visible, onClose, reward, onUpdate }) 
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      message.success('Cập nhật phần thưởng thành công!');
+      closeLoading();
+      showSuccess('Cập nhật phần thưởng thành công!');
       onUpdate(); 
       onClose();
     } catch (err) {
       console.error(err);
-      message.error('Cập nhật thất bại: ' + (err.response?.data?.message || err.message));
+      closeLoading();
+      showError('Cập nhật thất bại: ' + (err.response?.data?.message || err.message));
     } finally {
       setLoading(false);
     }

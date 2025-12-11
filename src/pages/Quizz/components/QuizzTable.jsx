@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Space, Popconfirm, Input, Pagination, message, Tag, Select, Modal } from 'antd';
+import { Table, Button, Space, Input, Pagination, Tag, Select } from 'antd';
 import { EyeOutlined, DeleteOutlined, SearchOutlined, FileExcelOutlined, PlusOutlined, EditOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../../services/api';
 import * as XLSX from 'xlsx';
+import { showLoading, closeLoading, showSuccess, showError, showConfirm } from '../../../utils/swalUtils';
 
 const { Option } = Select;
 
@@ -37,7 +38,8 @@ export default function QuizzTable() {
 
       setQuizzList(mapped);
     } catch (error) {
-      message.error('Lỗi tải danh sách quizz');
+      console.error(error);
+      // Fallback for better UX, maybe a toast error if strictly needed, but table loading handles the visual
     } finally {
       setLoading(false);
     }
@@ -64,51 +66,52 @@ export default function QuizzTable() {
     return list;
   };
 
-  const handleDelete = async (id) => {
-    try {
-      await apiClient.delete(`/quizzes/${id}`);
-      message.success('Xóa quizz thành công!');
-      fetchData(); // Refresh data
-      setSelectedRowKeys([]);
-    } catch (err) {
-      console.error(err);
-      message.error('Xóa quizz thất bại!');
-    }
+  const handleDelete = (id) => {
+    showConfirm('Bạn chắc chắn muốn xóa quizz này?', async () => {
+      showLoading();
+      try {
+        await apiClient.delete(`/quizzes/${id}`);
+        closeLoading();
+        showSuccess('Xóa quizz thành công!');
+        fetchData(); // Refresh data
+        setSelectedRowKeys([]);
+      } catch (err) {
+        console.error(err);
+        closeLoading();
+        showError('Xóa quizz thất bại!');
+      }
+    });
   };
 
   const handleDeleteMultiple = () => {
     if (selectedRowKeys.length === 0) {
-      message.warning('Vui lòng chọn ít nhất một quizz để xóa');
+      showError('Vui lòng chọn ít nhất một quizz để xóa');
       return;
     }
 
-    Modal.confirm({
-      title: 'Xác nhận xóa',
-      content: `Bạn có chắc muốn xóa ${selectedRowKeys.length} quizz đã chọn?`,
-      okText: 'Xóa',
-      okType: 'danger',
-      cancelText: 'Hủy',
-      onOk: async () => {
-        try {
-          await Promise.all(
-            selectedRowKeys.map(id => apiClient.delete(`/quizzes/${id}`))
-          );
-          message.success('Đã xóa các quizz đã chọn');
-          fetchData();
-          setSelectedRowKeys([]);
-        } catch (err) {
-          console.error(err);
-          message.error('Có lỗi xảy ra khi xóa nhiều quizz');
-          fetchData();
-        }
-      },
+    showConfirm(`Bạn có chắc muốn xóa ${selectedRowKeys.length} quizz đã chọn?`, async () => {
+      showLoading();
+      try {
+        await Promise.all(
+          selectedRowKeys.map(id => apiClient.delete(`/quizzes/${id}`))
+        );
+        closeLoading();
+        showSuccess('Đã xóa các quizz đã chọn');
+        fetchData();
+        setSelectedRowKeys([]);
+      } catch (err) {
+        console.error(err);
+        closeLoading();
+        showError('Có lỗi xảy ra khi xóa nhiều quizz');
+        fetchData();
+      }
     });
   };
 
   const handleExport = () => {
     const dataToExport = filteredData();
     if (dataToExport.length === 0) {
-      message.warning('Không có dữ liệu để xuất Excel');
+      showError('Không có dữ liệu để xuất Excel');
       return;
     }
 
@@ -126,7 +129,7 @@ export default function QuizzTable() {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sách quizz');
 
     XLSX.writeFile(workbook, 'Danh_sach_quizz.xlsx');
-    message.success('Xuất Excel thành công');
+    showSuccess('Xuất Excel thành công');
   };
 
   const columns = [
@@ -168,9 +171,7 @@ export default function QuizzTable() {
         <Space>
           <EyeOutlined style={{ color: 'green', cursor: 'pointer' }} onClick={() => navigate(`/quizz-mana/view/${record.id}`)} />
           <EditOutlined style={{ color: 'blue', cursor: 'pointer' }} onClick={() => navigate(`/quizz-mana/update/${record.id}`)} />
-          <Popconfirm title="Bạn chắc chắn muốn xóa?" okText="Xóa" cancelText="Hủy" onConfirm={() => handleDelete(record.id)}>
-            <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-          </Popconfirm>
+          <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} onClick={() => handleDelete(record.id)} />
         </Space>
       ),
     },
