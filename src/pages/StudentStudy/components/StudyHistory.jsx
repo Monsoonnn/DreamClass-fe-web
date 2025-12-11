@@ -56,12 +56,14 @@ export default function StudyHistory({ student }) {
 
         p1.forEach((item) => {
           const subjName = item.subject || 'Unknown';
-          const pct =
+          const rawPct =
             item.completionPercentage !== undefined && item.completionPercentage !== null
               ? item.completionPercentage
               : (item.totalLessons || 0) + (item.totalExercises || 0) > 0
-              ? Math.round((((item.completedLessons || 0) + (item.completedExercises || 0)) / ((item.totalLessons || 0) + (item.totalExercises || 0))) * 100)
+              ? (((item.completedLessons || 0) + (item.completedExercises || 0)) / ((item.totalLessons || 0) + (item.totalExercises || 0))) * 100
               : 0;
+
+          const pct = Number(rawPct.toFixed(2));
 
           mappedData[subjName] = {
             completed: pct,
@@ -191,12 +193,13 @@ export default function StudyHistory({ student }) {
                         <Cell key={i} fill={COLORS[i]} />
                       ))}
                     </Pie>
-                    <Legend verticalAlign="bottom" height={36} formatter={(value, entry) => `${value} (${entry.payload.value}%)`} />
+                    <Legend verticalAlign="bottom" height={36} formatter={(value, entry) => `${value} (${Number(entry.payload.value).toFixed(2)}%)`} />
                   </PieChart>
                 </ResponsiveContainer>
 
                 <div className="text-center mt-4">
-                  <div className="text-4xl font-bold text-[#23408e]">{currentProgress.completed}%</div>
+                  <div className="text-4xl font-bold text-[#23408e]">{Number(currentProgress.completed).toFixed(2)}%</div>
+
                   <div className="text-gray-500 mt-1">Tiến độ hoàn thành</div>
                 </div>
               </>
@@ -294,16 +297,16 @@ export default function StudyHistory({ student }) {
                 </div>
               </div>
 
-              <div className="flex justify-end items-center gap-3 text-xs text-gray-600 mt-4 pt-3 border-t">
+              <div className="flex justify-end items-center gap-1 text-xs text-gray-600 mt-4 pt-3 border-t">
                 <span className="font-medium">Không hoạt động</span>
                 <div className="w-3 h-3 bg-[#ebedf0] rounded-sm border border-gray-300"></div>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-[#9be9a8] rounded-sm"></div>
+                  {/* <div className="w-3 h-3 bg-[#9be9a8] rounded-sm"></div> */}
                   <div className="w-3 h-3 bg-[#40c463] rounded-sm"></div>
-                  <div className="w-3 h-3 bg-[#30a14e] rounded-sm"></div>
-                  <div className="w-3 h-3 bg-[#216e39] rounded-sm"></div>
+                  {/* <div className="w-3 h-3 bg-[#30a14e] rounded-sm"></div>
+                  <div className="w-3 h-3 bg-[#216e39] rounded-sm"></div> */}
                 </div>
-                <span className="font-medium">Nhiều hoạt động</span>
+                <span className="font-medium">Có hoạt động</span>
               </div>
             </div>
           </div>

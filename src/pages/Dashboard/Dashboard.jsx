@@ -24,7 +24,7 @@ export default function Dashboard() {
   useEffect(() => {
     const students = getStudents();
     const users = getUsers();
-    const teachers = users.filter(u => u.role === 'teacher');
+    const teachers = users.filter((u) => u.role === 'teacher');
     const books = loadBooks();
     const missions = getMissions();
 
@@ -36,18 +36,20 @@ export default function Dashboard() {
     });
 
     const gradeCounts = {};
-    students.forEach(s => {
+    students.forEach((s) => {
       const grade = s.level || s.grade || 'Khác';
       gradeCounts[grade] = (gradeCounts[grade] || 0) + 1;
     });
-    const gradeChartData = Object.keys(gradeCounts).map(key => ({
-      name: `Khối ${key}`,
-      count: gradeCounts[key]
-    })).sort((a, b) => a.name.localeCompare(b.name));
+    const gradeChartData = Object.keys(gradeCounts)
+      .map((key) => ({
+        name: `Khối ${key}`,
+        count: gradeCounts[key],
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
     setGradeData(gradeChartData);
 
     const genderCounts = { Nam: 0, Nữ: 0, Khác: 0 };
-    students.forEach(s => {
+    students.forEach((s) => {
       const g = s.gender || 'Khác';
       if (genderCounts[g] !== undefined) genderCounts[g]++;
       else genderCounts['Khác']++;
@@ -69,15 +71,15 @@ export default function Dashboard() {
       key: 'name',
       render: (text, record) => (
         <div className="flex items-center gap-2">
-          <Avatar size="small" src={record.avatar || "https://joeschmoe.io/api/v1/random"} />
+          <Avatar size="small" src={record.avatar || 'https://joeschmoe.io/api/v1/random'} />
           <span className="font-medium truncate">{text}</span>
         </div>
-      )
+      ),
     },
     { title: 'Lớp', dataIndex: 'class', key: 'class', align: 'center', width: 80 },
-    { 
-      title: 'Xếp loại', 
-      dataIndex: 'rating', 
+    {
+      title: 'Xếp loại',
+      dataIndex: 'rating',
       key: 'rating',
       align: 'center',
       width: 100,
@@ -86,16 +88,16 @@ export default function Dashboard() {
         if (rating === 'Tốt' || rating === 'Giỏi') color = 'green';
         if (rating === 'Khá') color = 'blue';
         if (rating === 'Trung bình') color = 'orange';
-        return <Tag color={color}>{rating}</Tag>
-      }
+        return <Tag color={color}>{rating}</Tag>;
+      },
     },
   ];
 
   // Shared styles
   const cardStyles = {
-    className: "h-full flex flex-col shadow-sm hover:shadow-md transition-all",
+    className: 'h-full flex flex-col shadow-sm hover:shadow-md transition-all',
     headStyle: { minHeight: '40px', padding: '0 12px', fontSize: '14px', fontWeight: '600' },
-    bodyStyle: { flex: 1, padding: '8px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }
+    bodyStyle: { flex: 1, padding: '8px', overflow: 'hidden', display: 'flex', flexDirection: 'column' },
   };
 
   return (
@@ -105,46 +107,46 @@ export default function Dashboard() {
         <h2 className="text-lg font-bold text-[#23408e] m-0">Dashboard</h2>
         <span className="text-xs text-gray-500">{formatDate(new Date())}</span>
       </div>
-      
+
       {/* 2. Statistics (Compact) */}
       <div className="shrink-0">
         <Row gutter={[8, 8]}>
           <Col span={6}>
             <Card size="small" bordered={false} className="shadow-sm">
-              <Statistic 
+              <Statistic
                 title={<span className="text-xs text-gray-500">Học Sinh</span>}
-                value={stats.totalStudents} 
-                prefix={<TeamOutlined className="text-blue-500" />} 
+                value={stats.totalStudents}
+                prefix={<TeamOutlined className="text-blue-500" />}
                 valueStyle={{ fontSize: '18px', fontWeight: 'bold', color: '#23408e' }}
               />
             </Card>
           </Col>
           <Col span={6}>
             <Card size="small" bordered={false} className="shadow-sm">
-              <Statistic 
+              <Statistic
                 title={<span className="text-xs text-gray-500">Giáo Viên</span>}
-                value={stats.totalTeachers} 
-                prefix={<UserOutlined className="text-green-500" />} 
+                value={stats.totalTeachers}
+                prefix={<UserOutlined className="text-green-500" />}
                 valueStyle={{ fontSize: '18px', fontWeight: 'bold', color: '#389e0d' }}
               />
             </Card>
           </Col>
           <Col span={6}>
             <Card size="small" bordered={false} className="shadow-sm">
-              <Statistic 
+              <Statistic
                 title={<span className="text-xs text-gray-500">Sách</span>}
-                value={stats.totalBooks} 
-                prefix={<ReadOutlined className="text-orange-500" />} 
+                value={stats.totalBooks}
+                prefix={<ReadOutlined className="text-orange-500" />}
                 valueStyle={{ fontSize: '18px', fontWeight: 'bold', color: '#d46b08' }}
               />
             </Card>
           </Col>
           <Col span={6}>
             <Card size="small" bordered={false} className="shadow-sm">
-              <Statistic 
+              <Statistic
                 title={<span className="text-xs text-gray-500">Nhiệm vụ</span>}
-                value={stats.totalMissions} 
-                prefix={<RocketOutlined className="text-purple-500" />} 
+                value={stats.totalMissions}
+                prefix={<RocketOutlined className="text-purple-500" />}
                 valueStyle={{ fontSize: '18px', fontWeight: 'bold', color: '#531dab' }}
               />
             </Card>
@@ -161,8 +163,8 @@ export default function Dashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={gradeData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" tick={{fontSize: 10}} interval={0} />
-                  <YAxis tick={{fontSize: 10}} width={30} allowDecimals={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} />
+                  <YAxis tick={{ fontSize: 10 }} width={30} allowDecimals={false} />
                   <RechartsTooltip />
                   <Bar dataKey="count" name="SL" fill="#23408e" radius={[4, 4, 0, 0]} />
                 </BarChart>
@@ -174,18 +176,10 @@ export default function Dashboard() {
         {/* Item 2: Gender Distribution */}
         <div className="flex-1 min-w-0 flex flex-col">
           <Card title="Giới tính" bordered={false} {...cardStyles}>
-             <div className="flex-1 min-h-0">
+            <div className="flex-1 min-h-0">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie
-                    data={genderData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius="40%"
-                    outerRadius="70%"
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
+                  <Pie data={genderData} cx="50%" cy="50%" innerRadius="40%" outerRadius="70%" paddingAngle={5} dataKey="value">
                     {genderData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
@@ -200,22 +194,18 @@ export default function Dashboard() {
 
         {/* Item 3: Recent Students Table */}
         <div className="flex-1 min-w-0 flex flex-col">
-          <Card 
-            title={<div className="flex items-center gap-2 truncate"><TrophyOutlined className="text-yellow-500" /> Học sinh tiêu biểu</div>} 
-            bordered={false} 
+          <Card
+            title={
+              <div className="flex items-center gap-2 truncate">
+                <TrophyOutlined className="text-yellow-500" /> Học sinh tiêu biểu
+              </div>
+            }
+            bordered={false}
             {...cardStyles}
           >
-             <div className="flex-1 overflow-hidden">
-                <Table 
-                  columns={columns} 
-                  dataSource={recentStudents} 
-                  pagination={false} 
-                  rowKey="key"
-                  size="small"
-                  scroll={{ x: 'max-content', y: '100%' }}
-                  className="h-full"
-                />
-             </div>
+            <div className="flex-1 overflow-hidden">
+              <Table columns={columns} dataSource={recentStudents} pagination={false} rowKey="key" size="small" scroll={{ x: 'max-content', y: '100%' }} className="h-full" />
+            </div>
           </Card>
         </div>
       </div>
