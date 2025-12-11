@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   UserOutlined,
+  TeamOutlined,
   ReadOutlined,
+  EditOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   HomeOutlined,
@@ -11,23 +13,30 @@ import {
   UpOutlined,
   GiftOutlined,
   TrophyOutlined,
+  SolutionOutlined,
+  BookOutlined,
+  QuestionCircleOutlined,
+  UserSwitchOutlined,
+  SyncOutlined,
+  AppstoreOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../context/AuthContext';
 
 // MENU CHO GIÁO VIÊN
 const teacherMenu = [
-  { key: 'dashboard', label: 'Dashboard', icon: <DashboardOutlined style={{ fontSize: 18 }} />, path: '/dashboard' },
-  { key: 'student', label: 'Quản lý học sinh', icon: <UserOutlined style={{ fontSize: 18 }} />, path: '/student-mana' },
-  { key: 'mission', label: 'Quản lý nhiệm vụ', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/teacher-mission-mana' },
+  { key: 'dashboard', label: 'Trang chủ', icon: <DashboardOutlined style={{ fontSize: 18 }} />, path: '/dashboard' },
+  { key: 'student', label: 'Quản lý học sinh', icon: <TeamOutlined style={{ fontSize: 18 }} />, path: '/student-mana' },
+  { key: 'mission', label: 'Quản lý nhiệm vụ', icon: <SolutionOutlined style={{ fontSize: 18 }} />, path: '/teacher-mission-mana' },
   { key: 'ranking', label: 'Bảng xếp hạng', icon: <TrophyOutlined style={{ fontSize: 18 }} />, path: '/ranking-mana' },
-  { key: 'book', label: 'Quản lý sách', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/book-mana' },
-  { key: 'quizz', label: 'Quản lý câu hỏi', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/quizz-mana' },
+  { key: 'book', label: 'Quản lý sách', icon: <BookOutlined style={{ fontSize: 18 }} />, path: '/book-mana' },
+  { key: 'quizz', label: 'Quản lý câu hỏi', icon: <QuestionCircleOutlined style={{ fontSize: 18 }} />, path: '/quizz-mana' },
 ];
 
 // MENU CHO ADMIN
 const adminMenu = [
-  { key: 'dashboard', label: 'Dashboard', icon: <DashboardOutlined style={{ fontSize: 18 }} />, path: '/dashboard' },
-  { key: 'usermana', label: 'Quản lý người dùng', icon: <HomeOutlined style={{ fontSize: 18 }} />, path: '/user-mana' },
+  { key: 'dashboard', label: 'Trang chủ', icon: <DashboardOutlined style={{ fontSize: 18 }} />, path: '/dashboard' },
+  { key: 'usermana', label: 'Quản lý người dùng', icon: <UserSwitchOutlined style={{ fontSize: 18 }} />, path: '/user-mana' },
+
   {
     key: 'ranking',
     label: 'Bảng xếp hạng',
@@ -38,25 +47,27 @@ const adminMenu = [
       { key: 'rankingclass', label: 'Xếp hạng theo lớp', path: '/ranking-class' },
     ],
   },
+
   {
     key: 'reward',
     label: 'Quản lý phần thưởng',
     icon: <GiftOutlined style={{ fontSize: 18 }} />,
     children: [
-      { key: 'spin', label: 'Vòng quay', path: '/spin-mana' },
-      { key: 'item', label: 'Vật phẩm', path: '/item-mana' },
+      { key: 'spin', label: 'Vòng quay', icon: <SyncOutlined />, path: '/spin-mana' },
+      { key: 'item', label: 'Vật phẩm', icon: <AppstoreOutlined />, path: '/item-mana' },
     ],
   },
 
-  { key: 'mission', label: 'Quản lý nhiệm vụ', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/mission-mana' },
-  { key: 'book', label: 'Quản lý sách', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/book-mana' },
-  { key: 'quizz', label: 'Quản lý câu hỏi', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/quizz-mana' },
+  { key: 'mission', label: 'Quản lý nhiệm vụ', icon: <SolutionOutlined style={{ fontSize: 18 }} />, path: '/mission-mana' },
+  { key: 'book', label: 'Quản lý sách', icon: <BookOutlined style={{ fontSize: 18 }} />, path: '/book-mana' },
+  { key: 'quizz', label: 'Quản lý câu hỏi', icon: <QuestionCircleOutlined style={{ fontSize: 18 }} />, path: '/quizz-mana' },
 ];
+
 // MENU CHO HỌC SINH
 const StudentMenu = [
-  // { key: 'dashboard', label: 'Dashboard', icon: <DashboardOutlined style={{ fontSize: 18 }} />, path: '/dashboard' },
-  { key: 'study', label: 'Học tâp', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/student-study' },
-  { key: 'quizz', label: 'Làm bài quizz', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/student-quizz-list' },
+  { key: 'study', label: 'Học tập', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/student-study' },
+  { key: 'quizz', label: 'Làm bài quizz', icon: <EditOutlined style={{ fontSize: 18 }} />, path: '/student-quizz-list' },
+
   {
     key: 'ranking',
     label: 'Bảng xếp hạng',
@@ -67,7 +78,8 @@ const StudentMenu = [
       { key: 'rankingclass', label: 'Xếp hạng theo lớp', path: '/student-ranking-class' },
     ],
   },
-  { key: 'book', label: 'Xem sách', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/student-book' },
+
+  { key: 'book', label: 'Xem sách', icon: <BookOutlined style={{ fontSize: 18 }} />, path: '/student-book' },
 ];
 
 export default function Sidebar() {
