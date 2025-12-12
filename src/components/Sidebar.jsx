@@ -29,7 +29,7 @@ const teacherMenu = [
   { key: 'mission', label: 'Quản lý nhiệm vụ', icon: <SolutionOutlined style={{ fontSize: 18 }} />, path: '/teacher-mission-mana' },
   { key: 'ranking', label: 'Bảng xếp hạng', icon: <TrophyOutlined style={{ fontSize: 18 }} />, path: '/ranking-mana' },
   { key: 'book', label: 'Quản lý sách', icon: <BookOutlined style={{ fontSize: 18 }} />, path: '/book-mana' },
-  { key: 'quizz', label: 'Quản lý câu hỏi', icon: <QuestionCircleOutlined style={{ fontSize: 18 }} />, path: '/quizz-mana' },
+  { key: 'quizz', label: 'Quản lý Quizz', icon: <QuestionCircleOutlined style={{ fontSize: 18 }} />, path: '/quizz-mana' },
 ];
 
 // MENU CHO ADMIN
@@ -60,13 +60,13 @@ const adminMenu = [
 
   { key: 'mission', label: 'Quản lý nhiệm vụ', icon: <SolutionOutlined style={{ fontSize: 18 }} />, path: '/mission-mana' },
   { key: 'book', label: 'Quản lý sách', icon: <BookOutlined style={{ fontSize: 18 }} />, path: '/book-mana' },
-  { key: 'quizz', label: 'Quản lý câu hỏi', icon: <QuestionCircleOutlined style={{ fontSize: 18 }} />, path: '/quizz-mana' },
+  { key: 'quizz', label: 'Quản lý Quizz', icon: <QuestionCircleOutlined style={{ fontSize: 18 }} />, path: '/quizz-mana' },
 ];
 
 // MENU CHO HỌC SINH
 const StudentMenu = [
   { key: 'study', label: 'Học tập', icon: <ReadOutlined style={{ fontSize: 18 }} />, path: '/student-study' },
-  { key: 'quizz', label: 'Làm bài quizz', icon: <EditOutlined style={{ fontSize: 18 }} />, path: '/student-quizz-list' },
+  { key: 'quizz', label: 'Làm bài Quizz', icon: <EditOutlined style={{ fontSize: 18 }} />, path: '/student-quizz-list' },
 
   {
     key: 'ranking',

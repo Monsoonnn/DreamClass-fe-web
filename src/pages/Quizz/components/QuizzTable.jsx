@@ -53,11 +53,11 @@ export default function QuizzTable() {
     let list = quizzList;
 
     if (filterSubject !== 'all') {
-      list = list.filter(item => item.subject === filterSubject);
+      list = list.filter((item) => item.subject === filterSubject);
     }
 
     if (filterGrade !== 'all') {
-      list = list.filter(item => String(item.grade) === String(filterGrade));
+      list = list.filter((item) => String(item.grade) === String(filterGrade));
     }
 
     if (inputSearchText.trim()) {
@@ -92,9 +92,7 @@ export default function QuizzTable() {
     showConfirm(`Bạn có chắc muốn xóa ${selectedRowKeys.length} quizz đã chọn?`, async () => {
       showLoading();
       try {
-        await Promise.all(
-          selectedRowKeys.map(id => apiClient.delete(`/quizzes/${id}`))
-        );
+        await Promise.all(selectedRowKeys.map((id) => apiClient.delete(`/quizzes/${id}`)));
         closeLoading();
         showSuccess('Đã xóa các quizz đã chọn');
         fetchData();
@@ -116,11 +114,11 @@ export default function QuizzTable() {
     }
 
     const exportData = dataToExport.map((item, index) => ({
-      'STT': index + 1,
+      STT: index + 1,
       'Tên quizz': item.name,
-      'Khối': item.grade,
+      Khối: item.grade,
       'Môn học': item.subject,
-      'Chương': item.chapter,
+      Chương: item.chapter,
       'Ghi chú': item.note,
     }));
 
@@ -177,8 +175,8 @@ export default function QuizzTable() {
     },
   ];
 
-  const uniqueSubjects = [...new Set(quizzList.map(item => item.subject).filter(Boolean))];
-  const uniqueGrades = [...new Set(quizzList.map(item => item.grade).filter(Boolean))];
+  const uniqueSubjects = [...new Set(quizzList.map((item) => item.subject).filter(Boolean))];
+  const uniqueGrades = [...new Set(quizzList.map((item) => item.grade).filter(Boolean))];
 
   // ================= RENDER =================
   return (
@@ -187,21 +185,21 @@ export default function QuizzTable() {
       <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
         <Space.Compact className="w-full max-w-xl">
           <Input placeholder="Nhập tìm kiếm..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 150 }} />
-          <Select 
-            defaultValue="all" 
-            style={{ width: 120 }} 
-            onChange={setFilterSubject}
-          >
+          <Select defaultValue="all" style={{ width: 120 }} onChange={setFilterSubject}>
             <Option value="all">Tất cả môn</Option>
-            {uniqueSubjects.map(sub => <Option key={sub} value={sub}>{sub}</Option>)}
+            {uniqueSubjects.map((sub) => (
+              <Option key={sub} value={sub}>
+                {sub}
+              </Option>
+            ))}
           </Select>
-          <Select 
-            defaultValue="all" 
-            style={{ width: 120 }} 
-            onChange={setFilterGrade}
-          >
+          <Select defaultValue="all" style={{ width: 120 }} onChange={setFilterGrade}>
             <Option value="all">Tất cả khối</Option>
-            {uniqueGrades.map(grade => <Option key={grade} value={grade}>{grade}</Option>)}
+            {uniqueGrades.map((grade) => (
+              <Option key={grade} value={grade}>
+                {grade}
+              </Option>
+            ))}
           </Select>
           <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}>
             Tìm
@@ -212,7 +210,16 @@ export default function QuizzTable() {
           <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate(`/quizz-mana/add`)}>
             Thêm
           </Button>
-          <Button danger icon={<DeleteOutlined />} onClick={handleDeleteMultiple}>
+          <Button
+            danger
+            icon={<DeleteOutlined />}
+            onClick={handleDeleteMultiple}
+            disabled={selectedRowKeys.length === 0} // chỉ enable khi chọn ít nhất 1
+            style={{
+              opacity: selectedRowKeys.length === 0 ? 0.5 : 1, // mờ khi chưa chọn
+              cursor: selectedRowKeys.length === 0 ? 'not-allowed' : 'pointer',
+            }}
+          >
             Xóa
           </Button>
           <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
