@@ -87,12 +87,12 @@ export default function MissionTable() {
       showLoading();
       try {
         await apiClient.delete(`/quests/admin/templates/${record.questId}`);
-        
+
         // Update local state
         const newMissions = missions.filter((m) => m.questId !== record.questId);
         setMissions(newMissions);
         setSelectedRowKeys((keys) => keys.filter((k) => k !== record.questId));
-        
+
         const totalPages = Math.ceil(newMissions.length / pageSize);
         if (currentPage > totalPages) {
           setCurrentPage(totalPages > 0 ? totalPages : 1);
@@ -150,7 +150,14 @@ export default function MissionTable() {
     { title: 'Tên nhiệm vụ', dataIndex: 'name' },
     { title: 'Ngày tạo', dataIndex: 'createdAt', align: 'center', render: (createdAt) => formatDate(createdAt) },
     {
-      title: 'Loại quest',
+      title: 'Loại',
+      dataIndex: 'isDailyQuest',
+      align: 'center',
+      render: (isDailyQuest) => <Tag color={isDailyQuest ? 'green' : 'gold'}>{isDailyQuest ? 'Hàng ngày' : 'Thông thường'}</Tag>,
+    },
+
+    {
+      title: 'Cách nhận',
       dataIndex: 'dailyQuestType',
       align: 'center',
       render: (type) => {
@@ -188,71 +195,80 @@ export default function MissionTable() {
 
   return (
     <div className="bg-white shadow-lg p-2">
-        <>
-          <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
-            <Space.Compact className="w-full max-w-xl">
-              <Input placeholder="Nhập tìm kiếm..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 200 }} />
-              <Select defaultValue="all" style={{ width: 160 }} onChange={setFilterType}>
-                <Option value="all">Tất cả loại</Option>
-                <Option value="NPC_INTERACTION">Tương tác NPC</Option>
-                <Option value="AUTO_ASSIGN">Tự động</Option>
-              </Select>
-              <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }} onClick={() => setCurrentPage(1)}>
-                Tìm
-              </Button>
-            </Space.Compact>
+      <>
+        <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
+          <Space.Compact className="w-full max-w-xl">
+            <Input placeholder="Nhập tìm kiếm..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 200 }} />
+            <Select defaultValue="all" style={{ width: 160 }} onChange={setFilterType}>
+              <Option value="all">Cách nhận</Option>
+              <Option value="NPC_INTERACTION">Tương tác NPC</Option>
+              <Option value="AUTO_ASSIGN">Tự động</Option>
+            </Select>
+            <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }} onClick={() => setCurrentPage(1)}>
+              Tìm
+            </Button>
+          </Space.Compact>
 
-            <Space.Compact>
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/mission-mana/add')}>
-                Thêm
-              </Button>
-              <Button danger icon={<DeleteOutlined />} onClick={handleDeleteMultiple}>
-                Xóa
-              </Button>
-              <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
-                Xuất Excel
-              </Button>
-            </Space.Compact>
-          </div>
-
-          <Table
-            loading={loading}
-            dataSource={filteredMissions().slice((currentPage - 1) * pageSize, currentPage * pageSize)}
-            columns={columns}
-            pagination={false}
-            rowKey="questId"
-            rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
-            scroll={{ x: 'max-content' }}
-            size="small"
-            bordered
-          />
-
-          <div className="flex justify-between items-center mt-4 flex-wrap gap-2 m-2">
-            <div className="text-sm text-gray-800">
-              <span>Đã chọn: {selectedRowKeys.length} bản ghi</span>
-            </div>
-            <Pagination
-              current={currentPage}
-              pageSize={pageSize}
-              total={filteredMissions().length}
-              onChange={(page, size) => {
-                setCurrentPage(page);
-                setPageSize(size);
+          <Space.Compact>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/mission-mana/add')}>
+              Thêm
+            </Button>
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              onClick={handleDeleteMultiple}
+              disabled={selectedRowKeys.length === 0} // chỉ enable khi chọn ít nhất 1
+              style={{
+                opacity: selectedRowKeys.length === 0 ? 0.5 : 1, // mờ khi chưa chọn
+                cursor: selectedRowKeys.length === 0 ? 'not-allowed' : 'pointer',
               }}
-              showSizeChanger
-              pageSizeOptions={['5', '10', '20', '50']}
-            />
-          </div>
+            >
+              Xóa
+            </Button>
+            <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
+              Xuất Excel
+            </Button>
+          </Space.Compact>
+        </div>
 
-          {editModalVisible && currentMission && (
-            <EditMissionModal
-              visible={editModalVisible}
-              onClose={() => setEditModalVisible(false)}
-              missionData={{ ...currentMission, allMissions: missions }}
-              refreshMissions={refreshMissions}
-            />
-          )}
-        </>
+        <Table
+          loading={loading}
+          dataSource={filteredMissions().slice((currentPage - 1) * pageSize, currentPage * pageSize)}
+          columns={columns}
+          pagination={false}
+          rowKey="questId"
+          rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
+          scroll={{ x: 'max-content' }}
+          size="small"
+          bordered
+        />
+
+        <div className="flex justify-between items-center mt-4 flex-wrap gap-2 m-2">
+          <div className="text-sm text-gray-800">
+            <span>Đã chọn: {selectedRowKeys.length} bản ghi</span>
+          </div>
+          <Pagination
+            current={currentPage}
+            pageSize={pageSize}
+            total={filteredMissions().length}
+            onChange={(page, size) => {
+              setCurrentPage(page);
+              setPageSize(size);
+            }}
+            showSizeChanger
+            pageSizeOptions={['5', '10', '20', '50']}
+          />
+        </div>
+
+        {editModalVisible && currentMission && (
+          <EditMissionModal
+            visible={editModalVisible}
+            onClose={() => setEditModalVisible(false)}
+            missionData={{ ...currentMission, allMissions: missions }}
+            refreshMissions={refreshMissions}
+          />
+        )}
+      </>
     </div>
   );
 }

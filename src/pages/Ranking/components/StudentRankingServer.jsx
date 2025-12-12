@@ -174,13 +174,13 @@ export default function StudentRankingServer() {
 
       {/* SEARCH + BUTTONS */}
       <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
-        <Space.Compact className="w-full max-w-xl">
+        {/* <Space.Compact className="w-full max-w-xl">
           <Input placeholder="Nhập tìm kiếm..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 220 }} />
           <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}>
             Tìm
           </Button>
           <Button type="primary" icon={<FilterOutlined />} style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }} />
-        </Space.Compact>
+        </Space.Compact> */}
 
         {/* <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }}>
           Xuất Excel

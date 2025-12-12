@@ -85,7 +85,7 @@ export default function TeacherMissionTable() {
       showLoading();
       try {
         await apiClient.delete(`/teacher/quest-templates/${record.questId}`);
-        
+
         // Optimistic update
         const newMissions = missions.filter((m) => m.questId !== record.questId);
         setMissions(newMissions);
@@ -150,7 +150,13 @@ export default function TeacherMissionTable() {
     { title: 'Tên nhiệm vụ', dataIndex: 'name' },
     { title: 'Ngày tạo', dataIndex: 'createdAt', align: 'center', render: (createdAt) => formatDate(createdAt) },
     {
-      title: 'Loại quest',
+      title: 'Loại',
+      dataIndex: 'isDailyQuest',
+      align: 'center',
+      render: (isDailyQuest) => <Tag color={isDailyQuest ? 'green' : 'gold'}>{isDailyQuest ? 'Hàng ngày' : 'Thông thường'}</Tag>,
+    },
+    {
+      title: 'Cách nhận',
       dataIndex: 'dailyQuestType',
       align: 'center',
       render: (type) => {
@@ -188,94 +194,94 @@ export default function TeacherMissionTable() {
 
   return (
     <div className="bg-white shadow-lg p-2">
-        <>
-          {/* Thanh công cụ */}
-          <Breadcrumb
-            className="mb-4 text-sm"
-            items={[
-              {
-                href: '/teacher-mission-mana',
-                title: (
-                  <>
-                    <ReadOutlined />
-                    <span>Quản lý nhiệm vụ</span>
-                  </>
-                ),
-              },
-              {
-                title: (
-                  <>
-                    <UnorderedListOutlined />
-                    <span className="font-semibold text-[#23408e]">Danh sách nhiệm vụ</span>
-                  </>
-                ),
-              },
-            ]}
-          />
-          <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
-            <Space.Compact className="w-full max-w-xl">
-              <Input placeholder="Nhập tìm kiếm..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 220 }} />
-              <Select defaultValue="all" style={{ width: 160 }} onChange={setFilterType}>
-                <Option value="all">Tất cả loại</Option>
-                <Option value="NPC_INTERACTION">Tương tác NPC</Option>
-                <Option value="AUTO_ASSIGN">Tự động</Option>
-              </Select>
-              <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }} onClick={() => setCurrentPage(1)}>
-                Tìm
-              </Button>
-            </Space.Compact>
+      <>
+        {/* Thanh công cụ */}
+        <Breadcrumb
+          className="mb-4 text-sm"
+          items={[
+            {
+              href: '/teacher-mission-mana',
+              title: (
+                <>
+                  <ReadOutlined />
+                  <span>Quản lý nhiệm vụ</span>
+                </>
+              ),
+            },
+            {
+              title: (
+                <>
+                  <UnorderedListOutlined />
+                  <span className="font-semibold text-[#23408e]">Danh sách nhiệm vụ</span>
+                </>
+              ),
+            },
+          ]}
+        />
+        <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
+          <Space.Compact className="w-full max-w-xl">
+            <Input placeholder="Nhập tìm kiếm..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 220 }} />
+            <Select defaultValue="all" style={{ width: 160 }} onChange={setFilterType}>
+              <Option value="all">Cách nhận</Option>
+              <Option value="NPC_INTERACTION">Tương tác NPC</Option>
+              <Option value="AUTO_ASSIGN">Tự động</Option>
+            </Select>
+            <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }} onClick={() => setCurrentPage(1)}>
+              Tìm
+            </Button>
+          </Space.Compact>
 
-            <Space.Compact>
-              <Button danger icon={<DeleteOutlined />} onClick={handleDeleteMultiple}>
+          <Space.Compact>
+            {/* <Button danger icon={<DeleteOutlined />} onClick={handleDeleteMultiple}>
                 Xóa
-              </Button>
-              <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
-                Xuất Excel
-              </Button>
-            </Space.Compact>
-          </div>
+              </Button> */}
+            <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
+              Xuất Excel
+            </Button>
+          </Space.Compact>
+        </div>
 
-          {/* Bảng dữ liệu */}
-          <Table
-            dataSource={filteredMissions().slice((currentPage - 1) * pageSize, currentPage * pageSize)}
-            columns={columns}
-            pagination={false}
-            rowKey="questId"
-            rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
-            scroll={{ x: 'max-content' }}
-            size="small"
-            bordered
-            loading={loading}
+        {/* Bảng dữ liệu */}
+        <Table
+          dataSource={filteredMissions().slice((currentPage - 1) * pageSize, currentPage * pageSize)}
+          columns={columns}
+          pagination={false}
+          rowKey="questId"
+          rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
+          scroll={{ x: 'max-content' }}
+          size="small"
+          bordered
+          loading={loading}
+        />
+
+        {/* Phân trang & Thông tin chọn */}
+        <div className="flex justify-between items-center mt-4 flex-wrap gap-2 m-2">
+          <div className="text-sm text-gray-800">
+            <span>Đã chọn: {selectedRowKeys.length} bản ghi</span>
+          </div>
+          <Pagination
+            current={currentPage}
+            pageSize={pageSize}
+            total={filteredMissions().length}
+            onChange={(page, size) => {
+              setCurrentPage(page);
+              setPageSize(size);
+            }}
+            showSizeChanger
+            pageSizeOptions={['5', '10', '20', '50']}
           />
+        </div>
 
-          {/* Phân trang & Thông tin chọn */}
-          <div className="flex justify-between items-center mt-4 flex-wrap gap-2 m-2">
-            <div className="text-sm text-gray-800">
-              <span>Đã chọn: {selectedRowKeys.length} bản ghi</span>
-            </div>
-            <Pagination
-              current={currentPage}
-              pageSize={pageSize}
-              total={filteredMissions().length}
-              onChange={(page, size) => {
-                setCurrentPage(page);
-                setPageSize(size);
-              }}
-              showSizeChanger
-              pageSizeOptions={['5', '10', '20', '50']}
-            />
-          </div>
-
-          {/* --- Edit Mission Modal --- */}
-          {editModalVisible && currentMission && (
-            <TeacherMissionEdit
-              visible={editModalVisible}
-              onClose={() => setEditModalVisible(false)}
-              missionData={{ ...currentMission, allMissions: missions }}
-              refreshMissions={refreshMissions}
-            />
-          )}
-        </>
+        {/* --- Edit Mission Modal --- */}
+        {editModalVisible && currentMission && (
+          <TeacherMissionEdit
+            visible={editModalVisible}
+            onClose={() => setEditModalVisible(false)}
+            missionData={{ ...currentMission, allMissions: missions }}
+            refreshMissions={refreshMissions}
+          />
+        )}
+      </>
     </div>
   );
 }

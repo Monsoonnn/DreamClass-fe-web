@@ -41,7 +41,7 @@ export default function SpinTable() {
       setData(mapped);
     } catch (err) {
       console.error(err);
-      // showError('Không thể tải danh sách vòng quay!'); 
+      // showError('Không thể tải danh sách vòng quay!');
       // Optional: uncomment if strict error popup needed on load
     } finally {
       setLoading(false);
@@ -221,7 +221,16 @@ export default function SpinTable() {
           <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/spin-mana/add')}>
             Thêm mới
           </Button>
-          <Button danger icon={<DeleteOutlined />} onClick={handleDeleteMultiple}>
+          <Button
+            danger
+            icon={<DeleteOutlined />}
+            onClick={handleDeleteMultiple}
+            disabled={selectedRowKeys.length === 0} // chỉ enable khi chọn ít nhất 1
+            style={{
+              opacity: selectedRowKeys.length === 0 ? 0.5 : 1, // mờ khi chưa chọn
+              cursor: selectedRowKeys.length === 0 ? 'not-allowed' : 'pointer',
+            }}
+          >
             Xóa
           </Button>
           <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
