@@ -69,7 +69,7 @@ export default function AddSpin() {
 
       closeLoading();
       await showSuccess('Tạo vòng quay thành công!');
-      
+
       form.resetFields();
       setItems([{ itemId: '', rate: 0, isRare: false }]);
       navigate('/spin-mana');
@@ -142,11 +142,22 @@ export default function AddSpin() {
           {items.map((item, index) => (
             <Card key={index} className="rounded-none" size="small">
               <Space direction="vertical" className="w-full" size="middle">
+                {/* Mã vật phẩm + nút xóa */}
                 <div>
-                  <label className="block text-sm font-medium mb-1">Item ID</label>
-                  <Input placeholder="VD: CCT102025, GG001..." value={item.itemId} onChange={(e) => updateItem(index, 'itemId', e.target.value)} />
+                  <label className="block text-sm font-medium mb-1">Mã vật phẩm</label>
+
+                  <div className="flex items-center gap-1">
+                    <Input placeholder="VD: CCT102025, GG001..." value={item.itemId} onChange={(e) => updateItem(index, 'itemId', e.target.value)} />
+
+                    {items.length > 1 && (
+                      <Button danger type="dashed" icon={<DeleteOutlined />} onClick={() => removeItem(index)}>
+                        Xóa
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
+                {/* Tỉ lệ */}
                 <div>
                   <label className="block text-sm font-medium mb-1">Tỉ lệ</label>
                   <InputNumber
@@ -160,13 +171,6 @@ export default function AddSpin() {
                     precision={2}
                   />
                 </div>
-
-                {/* <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">Vật phẩm hiếm?</label>
-                  <Switch checked={item.isRare} onChange={(v) => updateItem(index, 'isRare', v)} />
-                </div> */}
-
-                {items.length > 1 && <DeleteOutlined style={{ color: '#ff4d4f', fontSize: 16, cursor: 'pointer' }} onClick={() => removeItem(index)} block />}
               </Space>
             </Card>
           ))}

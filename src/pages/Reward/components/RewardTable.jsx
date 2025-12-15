@@ -42,7 +42,7 @@ export default function RewardTable() {
       setData(mapped);
     } catch (err) {
       console.error(err);
-      // showError('Không thể tải danh sách phần thưởng!'); 
+      // showError('Không thể tải danh sách phần thưởng!');
       // Optional: uncomment if you want loud errors on fetch
     } finally {
       setLoading(false);
@@ -76,12 +76,12 @@ export default function RewardTable() {
     }
 
     const exportData = listToExport.map((item, index) => ({
-      'STT': index + 1,
+      STT: index + 1,
       'Mã số': item.rewardCode,
       'Tên phần thưởng': item.rewardName,
       'Phân loại': item.category === 'banner' ? 'Cờ hiệu' : item.category === 'title' ? 'Danh hiệu' : item.category === 'badge' ? 'Huy hiệu' : 'Khác',
       'Số lượng': item.quantity,
-      'Điều kiện nhận': item.condition,
+      'Mô tả': item.condition,
       'Ghi chú': item.note,
     }));
 
@@ -109,6 +109,25 @@ export default function RewardTable() {
         console.log(err);
         closeLoading();
         showError('Xóa thất bại!');
+      }
+    });
+  };
+  const handleDeleteMultiple = () => {
+    if (selectedRowKeys.length === 0) return;
+
+    showConfirm(`Bạn chắc chắn muốn xóa ${selectedRowKeys.length} vật phẩm đã chọn?`, async () => {
+      showLoading();
+      try {
+        await Promise.all(selectedRowKeys.map((itemId) => apiClient.delete(`/items/admin/${itemId}`)));
+
+        closeLoading();
+        showSuccess('Đã xóa các vật phẩm đã chọn!');
+        setSelectedRowKeys([]);
+        fetchData();
+      } catch (err) {
+        console.error(err);
+        closeLoading();
+        showError('Xóa nhiều thất bại!');
       }
     });
   };
@@ -147,11 +166,23 @@ export default function RewardTable() {
       render: (type) => {
         let color = 'blue';
         let text = type;
-        if (type === 'empty') { color = 'gold'; text = 'Khác'; }
-        if (type === 'title') { color = 'purple'; text = 'Danh hiệu'; }
-        if (type === 'badge') { color = 'green'; text = 'Huy hiệu'; }
-        if (type === 'banner') { color = 'cyan'; text = 'Cờ hiệu'; }
-        
+        if (type === 'empty') {
+          color = 'gold';
+          text = 'Khác';
+        }
+        if (type === 'title') {
+          color = 'purple';
+          text = 'Danh hiệu';
+        }
+        if (type === 'badge') {
+          color = 'green';
+          text = 'Huy hiệu';
+        }
+        if (type === 'banner') {
+          color = 'cyan';
+          text = 'Cờ hiệu';
+        }
+
         return <Tag color={color}>{text}</Tag>;
       },
     },
@@ -162,7 +193,7 @@ export default function RewardTable() {
       render: (q) => <Tag color="cyan">{q}</Tag>,
     },
     {
-      title: 'Điều kiện nhận',
+      title: 'Mô tả',
       dataIndex: 'condition',
       ellipsis: true,
     },
@@ -189,15 +220,11 @@ export default function RewardTable() {
       <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
         <Space.Compact className="w-full max-w-xl">
           <Input placeholder="Nhập tên hoặc mã phần thưởng..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 200 }} />
-          <Select 
-            defaultValue="all" 
-            style={{ width: 150 }} 
-            onChange={setFilterCategory}
-          >
+          <Select defaultValue="all" style={{ width: 150 }} onChange={setFilterCategory}>
             <Option value="all">Tất cả phân loại</Option>
             <Option value="banner">Cờ hiệu</Option>
             <Option value="title">Danh hiệu</Option>
-            <Option value="badge">Huy hiệu</Option>
+            {/* <Option value="badge">Huy hiệu</Option> */}
             <Option value="empty">Khác</Option>
           </Select>
           <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a' }} onClick={() => setCurrentPage(1)}>
@@ -209,6 +236,10 @@ export default function RewardTable() {
           <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/item-mana/add')}>
             Thêm
           </Button>
+          <Button danger icon={<DeleteOutlined />} disabled={selectedRowKeys.length === 0} onClick={handleDeleteMultiple}>
+            Xóa
+          </Button>
+
           <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
             Xuất Excel
           </Button>
@@ -219,7 +250,7 @@ export default function RewardTable() {
         dataSource={filteredRewards().slice((currentPage - 1) * pageSize, currentPage * pageSize)}
         columns={columns}
         pagination={false}
-        rowKey="key"
+        rowKey="rewardCode"
         rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
         scroll={{ x: 'max-content' }}
         size="small"
@@ -243,12 +274,7 @@ export default function RewardTable() {
         />
       </div>
 
-      <RewardEditModal 
-        visible={editModalVisible}
-        onClose={() => setEditModalVisible(false)}
-        reward={editingItem}
-        onUpdate={fetchData}
-      />
+      <RewardEditModal visible={editModalVisible} onClose={() => setEditModalVisible(false)} reward={editingItem} onUpdate={fetchData} />
     </div>
   );
 }

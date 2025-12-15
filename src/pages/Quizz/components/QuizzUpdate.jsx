@@ -107,7 +107,7 @@ export default function QuizzUpdate() {
   const handleSubmit = async (values) => {
     // Validate that each question has at least one correct answer
     for (const q of questions) {
-      if (!q.answers.some(a => a.isCorrect)) {
+      if (!q.answers.some((a) => a.isCorrect)) {
         showError('Mỗi câu hỏi phải có ít nhất một đáp án đúng được chọn!');
         return;
       }
@@ -147,7 +147,12 @@ export default function QuizzUpdate() {
     }
   };
 
-  if (loading) return <Spin className="p-10" size="large" />;
+  if (loading)
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Spin size="large" />
+      </div>
+    );
 
   /* --------------------------------------------------
    * 4️⃣ UI

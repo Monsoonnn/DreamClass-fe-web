@@ -45,18 +45,16 @@ export default function StudyAchievements() {
           <Row gutter={[16, 16]}>
             {items.map((item) => (
               <Col xs={24} sm={12} md={8} lg={6} key={item._id}>
-                <Card hoverable className="rounded shadow-sm" cover={<img alt={item.itemDetails?.name} src={item.itemDetails?.image} className="w-full h-48 object-contain p-4" />}>
+                <Card hoverable className="rounded shadow-sm" cover={<img alt={item.itemDetails?.name} src={item.itemDetails?.image} className="w-full h-36 object-contain p-4" />}>
                   <Card.Meta
-                    title={<div className="font-semibold text-[#23408e]">{item.itemDetails?.name}</div>}
+                    title={<div className="font-semibold text-sm text-[#23408e]">{item.itemDetails?.name}</div>}
                     description={
                       <div className="text-sm mt-2 text-gray-600 space-y-1">
-                        <div>
+                        {/* <div>
                           <b>Mã vật phẩm:</b> {item.itemId}
-                        </div>
-                        <div>
-                          <b>Loại:</b> <Tag color="blue">{item.itemDetails?.type}</Tag>
-                        </div>
-                        <div>
+                        </div> */}
+
+                        <div className="text-sm">
                           <b>Ngày nhận:</b> {new Date(item.obtainedDate).toLocaleDateString('vi-VN')}
                         </div>
                         <div className="text-gray-500 italic">{item.itemDetails?.description}</div>

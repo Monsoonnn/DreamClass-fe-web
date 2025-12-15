@@ -18,7 +18,7 @@ export default function UserInfo({ user }) {
           <img src={user.avatar || '/avatar-default.png'} alt="avatar" className="w-24 h-24 rounded-full border-2 border-blue-200 object-cover shadow mb-2" />
 
           <div className="text-xl font-bold text-[#23408e] leading-tight">{user.name}</div>
-          <div className="text-sm text-gray-500">Mã HS: {user.playerId}</div>
+          {/* <div className="text-sm text-gray-500">Mã HS: {user.playerId}</div> */}
 
           <Tag color={user.role === 'teacher' ? 'blue' : 'green'} style={{ fontWeight: 600, fontSize: 12, padding: '2px 12px', marginTop: 4 }}>
             {user.role === 'teacher' ? 'Giáo viên' : 'Học sinh'}
