@@ -161,14 +161,14 @@ export default function StudentLearning({ student, playerId }) {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
       {/* Tiến độ học */}
       <div className="lg:col-span-1">
         <Card title="Tiến độ học tập" className="shadow-sm" loading={loadingProgress}>
           <div className="flex flex-col items-center">
             {subjects.length > 0 ? (
               <>
-                <div className="mb-4 w-full px-4">
+                <div className="mb-2 w-full px-4">
                   <label className="block text-sm font-medium mb-2 text-gray-700">Chọn môn học</label>
                   <Select value={selectedSubject} onChange={setSelectedSubject} options={subjects} className="w-full" size="middle" />
                 </div>
@@ -180,18 +180,29 @@ export default function StudentLearning({ student, playerId }) {
                         <Cell key={i} fill={COLORS[i]} />
                       ))}
                     </Pie>
-                    <Legend verticalAlign="bottom" height={36} formatter={(value, entry) => `${value} (${Number(entry.payload.value).toFixed(2)}%)`} />
+                    <Legend
+                      verticalAlign="bottom"
+                      height={36}
+                      formatter={(value, entry) => {
+                        const val = Number(entry.payload.value);
+                        // Nếu là số nguyên thì giữ nguyên, nếu lẻ thì lấy 2 số thập phân
+                        const displayVal = Number.isInteger(val) ? val : val.toFixed(2);
+                        return `${value} (${displayVal}%)`;
+                      }}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
 
-                <div className="text-center mt-4">
-                  <div className="text-4xl font-bold text-[#23408e]">{Number(currentProgress.completed).toFixed(2)}%</div>
-
+                <div className="text-center ">
                   <div className="text-gray-500 mt-1">Tiến độ hoàn thành</div>
+                  <div className="text-4xl font-bold text-[#23408e]">
+                    {/* Logic: Nếu là số nguyên -> hiển thị số đó. Nếu lẻ -> cắt lấy 2 số đuôi */}
+                    {Number.isInteger(currentProgress.completed) ? currentProgress.completed : Number(currentProgress.completed).toFixed(2)}%
+                  </div>
                 </div>
               </>
             ) : (
-              <div className="py-10 text-gray-400">Chưa có dữ liệu môn học</div>
+              <div className="py-10 text-gray-400">Chưa có dữ liệu</div>
             )}
           </div>
         </Card>
@@ -297,10 +308,7 @@ export default function StudentLearning({ student, playerId }) {
                 <span className="font-medium">Không hoạt động</span>
                 <div className="w-3 h-3 bg-[#ebedf0] rounded-sm border border-gray-300"></div>
                 <div className="flex items-center gap-1">
-                  {/* <div className="w-3 h-3 bg-[#9be9a8] rounded-sm"></div> */}
                   <div className="w-3 h-3 bg-[#40c463] rounded-sm"></div>
-                  {/* <div className="w-3 h-3 bg-[#30a14e] rounded-sm"></div>
-                  <div className="w-3 h-3 bg-[#216e39] rounded-sm"></div> */}
                 </div>
                 <span className="font-medium">Có hoạt động</span>
               </div>

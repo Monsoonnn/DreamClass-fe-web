@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Statistic, Table, Tag, Avatar } from 'antd';
+import { Card, Row, Col, Statistic, Table, Tag, Avatar, Spin, message } from 'antd';
 import { UserOutlined, ReadOutlined, RocketOutlined, TrophyOutlined, TeamOutlined } from '@ant-design/icons';
 import { formatDate } from '../../utils/dateUtil';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-
-// Import services to get mock data
-import { getStudents } from '../Student/components/StudentService';
-import { getUsers } from '../UserMana/components/userService';
-import { loadBooks } from '../BookMana/components/BookService';
-import { getMissions } from '../Mission/components/MissionService';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import apiClient from '../../services/api';
 
 export default function Dashboard() {
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalStudents: 0,
     totalTeachers: 0,
@@ -21,50 +17,113 @@ export default function Dashboard() {
   const [genderData, setGenderData] = useState([]);
   const [recentStudents, setRecentStudents] = useState([]);
 
-  useEffect(() => {
-    const students = getStudents();
-    const users = getUsers();
-    const teachers = users.filter((u) => u.role === 'teacher');
-    const books = loadBooks();
-    const missions = getMissions();
-
-    setStats({
-      totalStudents: students.length,
-      totalTeachers: teachers.length,
-      totalBooks: books.length,
-      totalMissions: missions.length,
-    });
-
-    const gradeCounts = {};
-    students.forEach((s) => {
-      const grade = s.level || s.grade || 'Khác';
-      gradeCounts[grade] = (gradeCounts[grade] || 0) + 1;
-    });
-    const gradeChartData = Object.keys(gradeCounts)
-      .map((key) => ({
-        name: `Khối ${key}`,
-        count: gradeCounts[key],
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-    setGradeData(gradeChartData);
-
-    const genderCounts = { Nam: 0, Nữ: 0, Khác: 0 };
-    students.forEach((s) => {
-      const g = s.gender || 'Khác';
-      if (genderCounts[g] !== undefined) genderCounts[g]++;
-      else genderCounts['Khác']++;
-    });
-    setGenderData([
-      { name: 'Nam', value: genderCounts.Nam },
-      { name: 'Nữ', value: genderCounts.Nữ },
-    ]);
-
-    setRecentStudents(students.slice(0, 10)); // Lấy nhiều hơn để test scroll
-  }, []);
-
+  // Màu cho biểu đồ tròn
   const COLORS = ['#0088FE', '#FF8042', '#FFBB28'];
 
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+
+      // Gọi song song 5 API: Học sinh, Bảng xếp hạng, Giáo viên, Sách, Nhiệm vụ
+      const [studentsRes, rankingRes, teachersRes, booksRes, questsRes] = await Promise.all([
+        apiClient.get('/players/admin/players', { params: { limit: 1000 } }), // Lấy data vẽ biểu đồ
+        apiClient.get('/ranking/global'), // Lấy bảng xếp hạng
+        apiClient.get('/accounts/teachers', { params: { limit: 1 } }), // Chỉ cần lấy total count
+        apiClient.get('/pdfs/list/books'), // Lấy danh sách sách
+        apiClient.get('/quests/admin/templates'), // Lấy danh sách nhiệm vụ
+      ]);
+
+      // --- 1. Xử lý dữ liệu Học sinh ---
+      const studentData = studentsRes.data.data || [];
+      const studentPagination = studentsRes.data.pagination || {};
+
+      // --- 2. Xử lý dữ liệu Giáo viên ---
+      const teachersPagination = teachersRes.data?.pagination || {};
+      const totalTeachersCount = teachersPagination.total || teachersRes.data?.data?.length || 0;
+
+      // --- 3. Xử lý dữ liệu Sách ---
+      // API trả về mảng data chứa các sách
+      const booksList = booksRes.data?.data || [];
+      const totalBooksCount = booksList.length;
+
+      // --- 4. Xử lý dữ liệu Nhiệm vụ ---
+      // API trả về field 'count' hoặc đếm mảng data
+      const questsData = questsRes.data || {};
+      const totalQuestsCount = questsData.count || (questsData.data ? questsData.data.length : 0);
+
+      // Cập nhật thống kê tổng hợp
+      setStats((prev) => ({
+        ...prev,
+        totalStudents: studentPagination.total || studentData.length,
+        totalTeachers: totalTeachersCount,
+        totalBooks: totalBooksCount, // Đã cập nhật từ API
+        totalMissions: totalQuestsCount, // Đã cập nhật từ API
+      }));
+
+      // --- 5. Xử lý Biểu đồ Phân bố Khối ---
+      const gradeCounts = {};
+      studentData.forEach((s) => {
+        const grade = s.grade ? s.grade : 'Khác';
+        gradeCounts[grade] = (gradeCounts[grade] || 0) + 1;
+      });
+
+      const formattedGradeData = Object.keys(gradeCounts)
+        .map((key) => ({
+          name: key === 'Khác' ? 'Khác' : `Khối ${key}`,
+          count: gradeCounts[key],
+          originalKey: key,
+        }))
+        .sort((a, b) => a.originalKey.toString().localeCompare(b.originalKey.toString()));
+
+      setGradeData(formattedGradeData);
+
+      // --- 6. Xử lý Biểu đồ Giới tính ---
+      let maleCount = 0;
+      let femaleCount = 0;
+
+      studentData.forEach((s) => {
+        const g = s.gender ? s.gender.toLowerCase() : '';
+        if (g === 'male' || g === 'nam') maleCount++;
+        else if (g === 'female' || g === 'nữ') femaleCount++;
+      });
+
+      setGenderData([
+        { name: 'Nam', value: maleCount },
+        { name: 'Nữ', value: femaleCount },
+      ]);
+
+      // --- 7. Xử lý Bảng xếp hạng ---
+      const rankingData = rankingRes.data?.data || [];
+      const top10Ranking = rankingData.slice(0, 9).map((item) => ({
+        key: item._id,
+        rank: item.rank,
+        name: item.name,
+        avatar: item.avatar,
+        class: item.className,
+        points: item.points || 0,
+      }));
+
+      setRecentStudents(top10Ranking);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      message.error('Không thể tải dữ liệu Dashboard');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const columns = [
+    {
+      title: 'Hạng',
+      dataIndex: 'rank',
+      key: 'rank',
+      align: 'center',
+      render: (rank) => <span className="font-semibold text-yellow-600">#{rank}</span>,
+    },
     {
       title: 'Học sinh',
       dataIndex: 'name',
@@ -76,20 +135,17 @@ export default function Dashboard() {
         </div>
       ),
     },
-    { title: 'Lớp', dataIndex: 'class', key: 'class', align: 'center', width: 80 },
     {
-      title: 'Xếp loại',
-      dataIndex: 'rating',
-      key: 'rating',
+      title: 'Lớp',
+      dataIndex: 'class',
+      key: 'class',
       align: 'center',
-      width: 100,
-      render: (rating) => {
-        let color = 'default';
-        if (rating === 'Tốt' || rating === 'Giỏi') color = 'green';
-        if (rating === 'Khá') color = 'blue';
-        if (rating === 'Trung bình') color = 'orange';
-        return <Tag color={color}>{rating}</Tag>;
-      },
+    },
+    {
+      title: 'Điểm',
+      dataIndex: 'points',
+      key: 'points',
+      align: 'center',
     },
   ];
 
@@ -99,6 +155,14 @@ export default function Dashboard() {
     headStyle: { minHeight: '40px', padding: '0 12px', fontSize: '14px', fontWeight: '600' },
     bodyStyle: { flex: 1, padding: '8px', overflow: 'hidden', display: 'flex', flexDirection: 'column' },
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-2 h-full flex flex-col gap-2 overflow-hidden bg-slate-50">
@@ -155,7 +219,7 @@ export default function Dashboard() {
       </div>
 
       {/* 3. Main Content Area (Single Row) */}
-      <div className="flex-1 min-h-0 flex gap-2 pb-1">
+      <div className="flex-1 min-h-0 flex gap-1 pb-1">
         {/* Item 1: Grade Distribution */}
         <div className="flex-1 min-w-0 flex flex-col">
           <Card title="Phân bố khối" bordered={false} {...cardStyles}>
@@ -166,7 +230,7 @@ export default function Dashboard() {
                   <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} />
                   <YAxis tick={{ fontSize: 10 }} width={30} allowDecimals={false} />
                   <RechartsTooltip />
-                  <Bar dataKey="count" name="SL" fill="#23408e" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="count" name="Số lượng" fill="#23408e" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -197,14 +261,14 @@ export default function Dashboard() {
           <Card
             title={
               <div className="flex items-center gap-2 truncate">
-                <TrophyOutlined className="text-yellow-500" /> Học sinh tiêu biểu
+                <TrophyOutlined className="text-yellow-500" /> Bảng xếp hạng
               </div>
             }
             bordered={false}
             {...cardStyles}
           >
             <div className="flex-1 overflow-hidden">
-              <Table columns={columns} dataSource={recentStudents} pagination={false} rowKey="key" size="small" scroll={{ x: 'max-content', y: '100%' }} className="h-full" />
+              <Table columns={columns} dataSource={recentStudents} pagination={false} rowKey="key" size="small" scroll={{ x: 'max-content' }} className="h-full" />
             </div>
           </Card>
         </div>

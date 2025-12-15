@@ -53,12 +53,12 @@ export default function RewardEditModal({ visible, onClose, reward, onUpdate }) 
       const formData = new FormData();
       formData.append('itemId', values.rewardCode);
       formData.append('name', values.rewardName);
-      formData.append('type', values.category); 
+      formData.append('type', values.category);
       formData.append('description', values.condition || '');
       formData.append('notes', values.note || '');
       // Quantity is in customFields for some implementations, check AddReward logic.
-      // AddReward doesn't seem to send quantity explicitly in FormData? 
-      // Wait, AddReward.jsx didn't send quantity in FormData? 
+      // AddReward doesn't seem to send quantity explicitly in FormData?
+      // Wait, AddReward.jsx didn't send quantity in FormData?
       // AddReward.jsx: initialValues={{ quantity: 1 }}. Form has quantity.
       // But in onFinish: formData.append(...) does NOT include quantity!
       // This might be a bug in AddReward too if quantity is needed.
@@ -83,14 +83,14 @@ export default function RewardEditModal({ visible, onClose, reward, onUpdate }) 
       // So update should probably use /items/admin/${itemId}.
       // But if we CHANGE rewardCode (itemId), the URL might need old ID.
       // Assuming itemId is unique key.
-      
+
       await apiClient.put(`/items/admin/${reward.rewardCode}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       closeLoading();
       showSuccess('Cập nhật phần thưởng thành công!');
-      onUpdate(); 
+      onUpdate();
       onClose();
     } catch (err) {
       console.error(err);
@@ -102,14 +102,7 @@ export default function RewardEditModal({ visible, onClose, reward, onUpdate }) 
   };
 
   return (
-    <Modal 
-      title="Chỉnh sửa phần thưởng" 
-      open={visible} 
-      onCancel={onClose} 
-      footer={null} 
-      width={800}
-      confirmLoading={loading}
-    >
+    <Modal title="Chỉnh sửa phần thưởng" open={visible} onCancel={onClose} footer={null} width={800} confirmLoading={loading}>
       <Form form={form} layout="vertical" onFinish={onFinish}>
         <Row gutter={24}>
           {/* Cột trái */}
@@ -124,15 +117,14 @@ export default function RewardEditModal({ visible, onClose, reward, onUpdate }) 
               <Select placeholder="Chọn phân loại">
                 <Option value="banner">Cờ hiệu</Option>
                 <Option value="title">Danh hiệu</Option>
-                <Option value="badge">Huy hiệu</Option>
                 <Option value="empty">Khác</Option>
               </Select>
             </Form.Item>
             <Form.Item label="Số lượng" name="quantity" rules={[{ required: true, message: 'Vui lòng nhập số lượng' }]}>
               <InputNumber min={1} style={{ width: '100%' }} />
             </Form.Item>
-            <Form.Item label="Điều kiện nhận" name="condition" rules={[{ required: true, message: 'Vui lòng nhập điều kiện nhận' }]}>
-              <Input.TextArea placeholder="Nhập điều kiện nhận" rows={3} />
+            <Form.Item label="Mô tả" name="condition" rules={[{ required: true, message: 'Vui lòng nhập mô tả' }]}>
+              <Input.TextArea placeholder="Nhập mô tả" rows={3} />
             </Form.Item>
           </Col>
 

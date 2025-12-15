@@ -183,7 +183,7 @@ export default function SpinUpdate() {
           </Form.Item>
 
           <Form.Item label="Thời gian sự kiện" name="timeRange" rules={[{ required: true, message: 'Chọn thời gian!' }]}>
-            <RangePicker showTime className="w-full" format="YYYY-MM-DD HH:mm:ss" placeholder={['Bắt đầu', 'Kết thúc']} />
+            <RangePicker showTime className="w-full" format="DD/MM/YYYY HH:mm:ss" placeholder={['Bắt đầu', 'Kết thúc']} />
           </Form.Item>
 
           <Divider orientation="left">
@@ -196,11 +196,22 @@ export default function SpinUpdate() {
           {items.map((item, index) => (
             <Card key={index} className="rounded-none mb-3 bg-gray-50" size="small">
               <Space direction="vertical" className="w-full" size="middle">
+                {/* Mã vật phẩm + nút xóa */}
                 <div>
-                  <label className="block text-sm font-medium mb-1">Item ID</label>
-                  <Input placeholder="VD: CCT102025, GG001..." value={item.itemId} onChange={(e) => updateItem(index, 'itemId', e.target.value)} />
+                  <label className="block text-sm font-medium mb-1">Mã vật phẩm</label>
+
+                  <div className="flex items-center gap-1">
+                    <Input placeholder="VD: CCT102025, GG001..." value={item.itemId} onChange={(e) => updateItem(index, 'itemId', e.target.value)} />
+
+                    {items.length > 1 && (
+                      <Button type="dashed" danger icon={<DeleteOutlined />} onClick={() => removeItem(index)} className="border border-red-200 bg-white whitespace-nowrap">
+                        Xóa
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
+                {/* Tỉ lệ */}
                 <div>
                   <label className="block text-sm font-medium mb-1">Tỉ lệ (Rate)</label>
                   <InputNumber
@@ -214,18 +225,6 @@ export default function SpinUpdate() {
                     precision={2}
                   />
                 </div>
-
-                {items.length > 1 && (
-                  <Button
-                    type="text"
-                    danger
-                    icon={<DeleteOutlined />}
-                    onClick={() => removeItem(index)}
-                    className="flex items-center justify-center w-full border border-red-200 bg-white"
-                  >
-                    Xóa Item này
-                  </Button>
-                )}
               </Space>
             </Card>
           ))}

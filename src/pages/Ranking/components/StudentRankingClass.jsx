@@ -205,7 +205,7 @@ export default function StudentRankingClass() {
           </div>
 
           {/* PAGINATION */}
-          <div className="flex justify-between items-center mt-4 flex-wrap gap-2 m-2">
+          <div className="flex justify-end items-center mt-4 flex-wrap gap-2 m-2">
             <Pagination
               current={currentPage}
               pageSize={pageSize}
