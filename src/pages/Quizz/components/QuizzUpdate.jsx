@@ -11,6 +11,7 @@ export default function QuizzUpdate() {
   const [form] = Form.useForm();
 
   const [loading, setLoading] = useState(true);
+  const [submitLoading, setSubmitLoading] = useState(false);
   const [questions, setQuestions] = useState([]);
   const [chapterName, setChapterName] = useState(''); // backend yêu cầu chapters = [{}]
 
@@ -134,20 +135,26 @@ export default function QuizzUpdate() {
       ],
     };
 
-    showLoading();
+    setSubmitLoading(true); // Start button loading
     try {
       await apiClient.put(`/quizzes/${quizzId}`, body);
-      closeLoading();
       await showSuccess('Cập nhật quizz thành công!');
       navigate('/quizz-mana');
     } catch (err) {
       console.error(err);
-      closeLoading();
       showError('Lỗi khi cập nhật quizz!');
+    } finally {
+      setSubmitLoading(false); // End button loading
     }
   };
 
-  if (loading) return <Spin className="p-10" size="large" />;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   /* --------------------------------------------------
    * 4️⃣ UI
@@ -191,15 +198,22 @@ export default function QuizzUpdate() {
           <Form.Item label="Môn học" name="subject" rules={[{ required: true }]}>
             <Select
               options={[
-                { value: 'Toán', label: 'Toán' },
-                { value: 'Ngữ Văn', label: 'Ngữ Văn' },
-                { value: 'Lịch sử', label: 'Lịch sử' },
+                { value: 'Toán Học', label: 'Toán Học' },
+                { value: 'Vật Lý', label: 'Vật Lý' },
+                { value: 'Hoá Học', label: 'Hoá Học' },
+                { value: 'Sinh Học', label: 'Sinh Học' },
               ]}
             />
           </Form.Item>
 
           <Form.Item label="Khối lớp" name="grade" rules={[{ required: true }]}>
-            <Input placeholder="Ví dụ: 9, 10..." />
+            <Select
+              options={[
+                { value: '10', label: '10' },
+                { value: '11', label: '11' },
+                { value: '12', label: '12' },
+              ]}
+            />
           </Form.Item>
 
           <Form.Item label="Tên chương">
@@ -246,7 +260,7 @@ export default function QuizzUpdate() {
 
           <div className="mt-2 flex justify-end gap-1">
             <Button onClick={() => navigate('/quizz-mana')}>Hủy</Button>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" loading={submitLoading}>
               Lưu thay đổi
             </Button>
           </div>

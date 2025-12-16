@@ -1,13 +1,14 @@
 // src/pages/ranking/RankingGrade.jsx
 import React, { useState } from 'react';
-import { Table, Tag, Button, Space, Input, Pagination, Card, Avatar, Image, message } from 'antd';
+import { Table, Tag, Button, Space, Input, Pagination, Card, Avatar, Image, message, Select } from 'antd';
 import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, TrophyOutlined } from '@ant-design/icons';
 import { apiClient } from '../../../services/api';
+import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 
 export default function RankingGrade() {
-  const [gradeInput, setGradeInput] = useState('');
+  const [gradeInput, setGradeInput] = useState(undefined);
   const [grade, setGrade] = useState(null); // grade hiện tại đã tìm
   const [data, setData] = useState([]);
   const [inputSearchText, setInputSearchText] = useState('');
@@ -21,7 +22,8 @@ export default function RankingGrade() {
   const handleFetch = async () => {
     const g = (gradeInput || '').trim();
     if (!g) {
-      return message.warning('Vui lòng nhập tên khối (ví dụ: 6, 7, 10...)');
+      showError('Vui lòng nhập tên khối (ví dụ: 6, 7, 10...)');
+      return;
     }
 
     setLoading(true);
@@ -35,7 +37,7 @@ export default function RankingGrade() {
       // nếu API hiển thị pagination bạn có thể set thêm pagination từ res.data.pagination
     } catch (err) {
       console.error(err);
-      message.error('Không thể tải bảng xếp hạng theo khối');
+      showError('Không thể tải bảng xếp hạng theo khối');
       setGrade(null);
     } finally {
       setLoading(false);
@@ -59,7 +61,7 @@ export default function RankingGrade() {
   const handleExport = () => {
     const listToExport = filteredRanking();
     if (listToExport.length === 0) {
-      message.warning('Không có dữ liệu để xuất Excel');
+      showError('Không có dữ liệu để xuất Excel');
       return;
     }
 
@@ -77,7 +79,7 @@ export default function RankingGrade() {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Bảng xếp hạng khối');
 
     XLSX.writeFile(workbook, 'Bang_xep_hang_khoi.xlsx');
-    message.success('Xuất Excel thành công');
+    showSuccess('Xuất Excel thành công');
   };
 
   const paginatedData = filteredRanking().slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -140,7 +142,11 @@ export default function RankingGrade() {
       {/* INPUT KHỐI - HIỂN THỊ Ở GIỮA */}
       <div className="flex justify-center mb-6">
         <Space>
-          <Input placeholder="Nhập tên khối (ví dụ: 10)" style={{ width: 260 }} value={gradeInput} onChange={(e) => setGradeInput(e.target.value)} onPressEnter={handleFetch} />
+          <Select placeholder="Chọn khối" style={{ width: 260 }} value={gradeInput} onChange={(value) => setGradeInput(value)}>
+            <Option value="10">Khối 10</Option>
+            <Option value="11">Khối 11</Option>
+            <Option value="12">Khối 12</Option>
+          </Select>
           <Button type="primary" icon={<SearchOutlined />} onClick={handleFetch} loading={loading}>
             Xem bảng xếp hạng
           </Button>
@@ -222,8 +228,6 @@ export default function RankingGrade() {
               </>
             )}
 
-            {/* Thông báo nếu không có dữ liệu */}
-            {top3.length === 0 && <div className="text-gray-500">Không có dữ liệu cho khối {grade}</div>}
           </div>
 
           {/* SEARCH + BUTTONS */}
@@ -236,7 +240,7 @@ export default function RankingGrade() {
             {/* <Button type="primary" icon={<FilterOutlined />} style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }} /> */}
             {/* </Space.Compact> */}
 
-            <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
+            <Button type="default" icon={<FileExcelOutlined />} className="ml-auto" style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
               Xuất Excel
             </Button>
           </div>

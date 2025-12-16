@@ -1,8 +1,9 @@
 // src/pages/ranking/RankingClass.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, Tag, Button, Space, Input, Pagination, Card, Avatar, Image, message } from 'antd';
 import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, TrophyOutlined } from '@ant-design/icons';
 import { apiClient } from '../../../services/api';
+import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 
@@ -20,7 +21,7 @@ export default function RankingClass() {
   // Fetch API ranking theo lớp
   const handleFetch = async () => {
     const cls = (classInput || '').trim();
-    if (!cls) return message.warning('Vui lòng nhập tên lớp (ví dụ: 10A1, 17A1...)');
+    if (!cls) return showError('Vui lòng nhập tên lớp (ví dụ: 10A1, 17A1...)');
 
     setLoading(true);
     setData([]);
@@ -32,7 +33,7 @@ export default function RankingClass() {
       setClassName(cls);
     } catch (err) {
       console.error(err);
-      message.error('Không thể tải bảng xếp hạng theo lớp');
+      showError('Không thể tải bảng xếp hạng theo lớp');
       setClassName(null);
     } finally {
       setLoading(false);
@@ -56,7 +57,7 @@ export default function RankingClass() {
   const handleExport = () => {
     const listToExport = filteredRanking();
     if (listToExport.length === 0) {
-      message.warning('Không có dữ liệu để xuất Excel');
+      showError('Không có dữ liệu để xuất Excel');
       return;
     }
 
@@ -74,7 +75,7 @@ export default function RankingClass() {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Bảng xếp hạng lớp');
 
     XLSX.writeFile(workbook, 'Bang_xep_hang_lop.xlsx');
-    message.success('Xuất Excel thành công');
+    showSuccess('Xuất Excel thành công');
   };
 
   const paginatedData = filteredRanking().slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -119,8 +120,7 @@ export default function RankingClass() {
 
   return (
     <div className="bg-white p-4">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">Bảng xếp hạng theo lớp</h1>
-
+                <h1 className="text-2xl font-bold text-gray-800 mb-4">Bảng xếp hạng theo lớp</h1>
       {/* INPUT LỚP */}
       <div className="flex justify-center mb-6">
         <Space>
@@ -205,7 +205,6 @@ export default function RankingClass() {
               </>
             )}
             {/* Nếu không có top nào (dữ liệu rỗng) */}
-            {top3.length === 0 && <div className="text-gray-500">Không có dữ liệu cho lớp {className}</div>}
           </div>
 
           {/* SEARCH + BUTTON */}
@@ -218,7 +217,7 @@ export default function RankingClass() {
               <Button type="primary" icon={<FilterOutlined />} style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }} />
             </Space.Compact> */}
 
-            <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
+            <Button type="default" icon={<FileExcelOutlined />} className="ml-auto" style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
               Xuất Excel
             </Button>
           </div>
