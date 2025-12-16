@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Button, Card, Input, Form, Tag, Breadcrumb, message } from 'antd';
+import { Button, Card, Input, Select, Form, Tag, Breadcrumb, message } from 'antd';
 import { PlusOutlined, DeleteOutlined, FileExcelOutlined, UserOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../../services/api';
@@ -137,7 +137,7 @@ export default function AddQuizz() {
         return;
       }
       if (!q.answers.some((a) => a.isCorrect)) {
-        message.error(`Câu hỏi số ${i + 1} chưa chọn đáp án đúng!`);
+        showError(`Câu hỏi số ${i + 1} chưa chọn đáp án đúng!`);
         return;
       }
     }
@@ -185,7 +185,6 @@ export default function AddQuizz() {
     console.log('Payload sending:', JSON.stringify(payload, null, 2));
 
     try {
-      showLoading();
       const response = await apiClient.post('/quizzes', payload);
 
       showSuccess('Tạo bộ câu hỏi thành công!');
@@ -196,8 +195,6 @@ export default function AddQuizz() {
       console.error(error);
       const msg = error.response?.data?.message || 'Có lỗi xảy ra';
       showError(msg);
-    } finally {
-      closeLoading();
     }
   };
 
@@ -242,10 +239,23 @@ export default function AddQuizz() {
 
             <div className="grid grid-cols-2 gap-2">
               <Form.Item label="Môn học" name="subject" rules={[{ required: true, message: 'Chọn môn học!' }]}>
-                <Input placeholder="Toán, Lý..." />
+                <Select
+                  options={[
+                    { value: 'Toán Học', label: 'Toán Học' },
+                    { value: 'Vật Lý', label: 'Vật Lý' },
+                    { value: 'Hoá Học', label: 'Hoá Học' },
+                    { value: 'Sinh Học', label: 'Sinh Học' },
+                  ]}
+                />
               </Form.Item>
               <Form.Item label="Khối lớp" name="grade" rules={[{ required: true, message: 'Chọn khối!' }]}>
-                <Input type="number" placeholder="10, 11..." />
+                <Select
+                  options={[
+                    { value: '10', label: '10' },
+                    { value: '11', label: '11' },
+                    { value: '12', label: '12' },
+                  ]}
+                />
               </Form.Item>
             </div>
 

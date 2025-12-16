@@ -75,17 +75,17 @@ export default function TeacherMissionEdit({ visible, onClose, missionData, refr
 
         {/* Editable: Reward Gold */}
         <Form.Item label="Vàng thưởng" name="rewardGold">
-          <InputNumber min={0} className="w-full" />
+          <InputNumber min={0} className="w-full" disabled />
         </Form.Item>
 
         {/* Editable: Point */}
         <Form.Item label="Điểm thưởng" name="point">
-          <InputNumber min={0} className="w-full" />
+          <InputNumber min={0} className="w-full" disabled />
         </Form.Item>
 
         {/* Editable: isDailyQuest */}
         <Form.Item label="Là nhiệm vụ hàng ngày?" name="isDailyQuest" valuePropName="checked">
-          <Switch onChange={(checked) => setIsDailyQuest(checked)} />
+          <Switch onChange={(checked) => setIsDailyQuest(checked)} disabled />
         </Form.Item>
 
         {/* Editable: dailyQuestType (conditional) */}

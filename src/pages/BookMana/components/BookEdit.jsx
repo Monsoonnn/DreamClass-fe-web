@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Modal, Form, Input, Button, Select, message, Upload, Space } from 'antd';
 import { UploadOutlined, DeleteOutlined } from '@ant-design/icons';
 import { apiClient } from '../../../services/api';
+import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
 
 const { Option } = Select;
 
@@ -40,7 +41,6 @@ export default function BookEdit({ visible, onClose, bookKey, bookData, onUpdate
           title: book.title,
           category: book.category,
           grade: book.grade,
-          subject: book.subject,
           description: book.description,
           note: book.note,
         });
@@ -58,14 +58,14 @@ export default function BookEdit({ visible, onClose, bookKey, bookData, onUpdate
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
-      setLoading(true);
+      setLoading(true); // Keep for button loading state
+      showLoading(); // Show global loading overlay
 
       // Tạo FormData để gửi file
       const formData = new FormData();
       formData.append('title', values.title);
       formData.append('category', values.category || '');
       formData.append('grade', values.grade);
-      formData.append('subject', values.subject || '');
       formData.append('description', values.description || '');
       formData.append('note', values.note || '');
 
@@ -79,14 +79,16 @@ export default function BookEdit({ visible, onClose, bookKey, bookData, onUpdate
         },
       });
 
-      message.success('Cập nhật sách thành công!');
+      closeLoading(); // Close global loading overlay
+      showSuccess('Cập nhật sách thành công!');
       onUpdate(); // Reload danh sách
       onClose();
     } catch (err) {
       console.error('Lỗi cập nhật sách:', err);
-      message.error(err.response?.data?.message || 'Cập nhật sách thất bại!');
+      closeLoading(); // Close global loading overlay on error
+      showError(err.response?.data?.message || 'Cập nhật sách thất bại!');
     } finally {
-      setLoading(false);
+      setLoading(false); // Ensure button loading state is reset
     }
   };
 
@@ -126,9 +128,7 @@ export default function BookEdit({ visible, onClose, bookKey, bookData, onUpdate
               <Option value="12">12</Option>
             </Select>
           </Form.Item>
-          <Form.Item name="subject" label="Môn học">
-            <Input placeholder="Nhập tên môn học (nếu có)" />
-          </Form.Item>
+          {/* Subject field removed */}
           <div /> {/* Ô trống để căn lệch hàng */}
           {/* FULL WIDTH */}
           <Form.Item name="description" label="Mô tả" className="col-span-2">

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Tag, Button, Space, Input, Pagination, Card, Avatar, Image, message } from 'antd';
 import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, TrophyOutlined } from '@ant-design/icons';
 import { apiClient } from '../../../services/api';
+import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 
@@ -23,7 +24,7 @@ export default function RankingServerTable() {
       setData(res.data.data || []);
     } catch (err) {
       console.error(err);
-      message.error('Không thể tải bảng xếp hạng toàn server');
+      showError('Không thể tải bảng xếp hạng toàn server');
     } finally {
       setLoading(false);
     }
@@ -51,7 +52,7 @@ export default function RankingServerTable() {
   const handleExport = () => {
     const listToExport = filteredRanking();
     if (listToExport.length === 0) {
-      message.warning('Không có dữ liệu để xuất Excel');
+      showError('Không có dữ liệu để xuất Excel');
       return;
     }
 
@@ -69,7 +70,7 @@ export default function RankingServerTable() {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Bảng xếp hạng server');
 
     XLSX.writeFile(workbook, 'Bang_xep_hang_server.xlsx');
-    message.success('Xuất Excel thành công');
+    showSuccess('Xuất Excel thành công');
   };
 
   const paginatedData = filteredRanking().slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -206,7 +207,7 @@ export default function RankingServerTable() {
         {/* <Button type="primary" icon={<FilterOutlined />} style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }} /> */}
         {/* </Space.Compact> */}
 
-        <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
+        <Button type="default" icon={<FileExcelOutlined />} className="ml-auto" style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
           Xuất Excel
         </Button>
       </div>

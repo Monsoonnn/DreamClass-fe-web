@@ -1,13 +1,14 @@
 // src/pages/ranking/RankingGrade.jsx
 import React, { useState } from 'react';
-import { Table, Tag, Button, Space, Input, Pagination, Card, Avatar, Image, message, Breadcrumb } from 'antd';
-import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, TrophyOutlined, OrderedListOutlined, TeamOutlined } from '@ant-design/icons';
+import { Table, Tag, Button, Space, Input, Pagination, Card, Avatar, Image, message, Select, Breadcrumb } from 'antd'; // Combined AntD imports
+import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, TrophyOutlined, OrderedListOutlined, TeamOutlined } from '@ant-design/icons'; // Combined icon imports
 import { apiClient } from '../../../services/api';
+import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 
 export default function RankingGrade() {
-  const [gradeInput, setGradeInput] = useState('');
+  const [gradeInput, setGradeInput] = useState(undefined); // My change
   const [grade, setGrade] = useState(null); // grade hiện tại đã tìm
   const [data, setData] = useState([]);
   const [inputSearchText, setInputSearchText] = useState('');
@@ -21,7 +22,8 @@ export default function RankingGrade() {
   const handleFetch = async () => {
     const g = (gradeInput || '').trim();
     if (!g) {
-      return message.warning('Vui lòng nhập tên khối (ví dụ: 6, 7, 10...)');
+      showError('Vui lòng nhập tên khối (ví dụ: 6, 7, 10...)'); // My change
+      return;
     }
 
     setLoading(true);
@@ -35,7 +37,7 @@ export default function RankingGrade() {
       // nếu API hiển thị pagination bạn có thể set thêm pagination từ res.data.pagination
     } catch (err) {
       console.error(err);
-      message.error('Không thể tải bảng xếp hạng theo khối');
+      showError('Không thể tải bảng xếp hạng theo khối'); // My change
       setGrade(null);
     } finally {
       setLoading(false);
@@ -59,7 +61,7 @@ export default function RankingGrade() {
   const handleExport = () => {
     const listToExport = filteredRanking();
     if (listToExport.length === 0) {
-      message.warning('Không có dữ liệu để xuất Excel');
+      showError('Không có dữ liệu để xuất Excel'); // My change
       return;
     }
 
@@ -77,7 +79,7 @@ export default function RankingGrade() {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Bảng xếp hạng khối');
 
     XLSX.writeFile(workbook, 'Bang_xep_hang_khoi.xlsx');
-    message.success('Xuất Excel thành công');
+    showSuccess('Xuất Excel thành công'); // My change
   };
 
   const paginatedData = filteredRanking().slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -134,7 +136,7 @@ export default function RankingGrade() {
   const top3 = filteredRanking().slice(0, 3);
 
   return (
-    <div className="p-2">
+    <div className="p-2"> {/* Take p-2 from origin/main */}
       <Breadcrumb
         className="mb-4 text-sm"
         items={[
@@ -157,13 +159,17 @@ export default function RankingGrade() {
           },
         ]}
       />
-      <div className="bg-white p-2">
+      <div className="bg-white p-2"> {/* Take bg-white p-2 from origin/main */}
         <h1 className="text-2xl font-bold text-gray-800 mb-4">Bảng xếp hạng theo khối</h1>
 
         {/* INPUT KHỐI - HIỂN THỊ Ở GIỮA */}
         <div className="flex justify-center mb-6">
           <Space>
-            <Input placeholder="Nhập tên khối (ví dụ: 10)" style={{ width: 260 }} value={gradeInput} onChange={(e) => setGradeInput(e.target.value)} onPressEnter={handleFetch} />
+            <Select placeholder="Chọn khối" style={{ width: 260 }} value={gradeInput} onChange={(value) => setGradeInput(value)}> {/* My change */}
+              <Option value="10">Khối 10</Option>
+              <Option value="11">Khối 11</Option>
+              <Option value="12">Khối 12</Option>
+            </Select>
             <Button type="primary" icon={<SearchOutlined />} onClick={handleFetch} loading={loading}>
               Xem bảng xếp hạng
             </Button>
@@ -251,18 +257,10 @@ export default function RankingGrade() {
 
             {/* SEARCH + BUTTONS */}
             <div className="flex justify-end items-center flex-wrap mb-3 gap-2">
-              {/* <Space.Compact className="w-full max-w-xl">
-              <Input placeholder="Nhập tìm kiếm..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 220 }} />
-              <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}>
-                Tìm
-              </Button> */}
-              {/* <Button type="primary" icon={<FilterOutlined />} style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }} /> */}
-              {/* </Space.Compact> */}
-
-              <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
-                Xuất Excel
-              </Button>
-            </div>
+            <Button type="default" icon={<FileExcelOutlined />} className="ml-auto" style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
+              Xuất Excel
+            </Button>
+          </div>
 
             {/* TABLE */}
             <div className="w-full overflow-auto">

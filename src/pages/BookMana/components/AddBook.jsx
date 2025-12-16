@@ -38,7 +38,6 @@ export default function AddBook() {
       formData.append('file', fileList[0].originFileObj);
       formData.append('title', values.name);
       formData.append('grade', values.level);
-      formData.append('subject', values.subject || '');
       formData.append('description', values.description);
       formData.append('note', values.note || '');
       formData.append('category', values.category);
@@ -108,9 +107,7 @@ export default function AddBook() {
               </Select>
             </Form.Item>
 
-            <Form.Item label="Môn học" name="subject">
-              <Input placeholder="Nhập tên môn học (nếu có)" />
-            </Form.Item>
+              {/* Subject field removed */}
 
             <Form.Item label="Nhà xuất bản" name="category" rules={[{ required: true, message: 'Nhập tên nhà xuất bản' }]}>
               <Input placeholder="Nhập tên nhà xuất bản" />
