@@ -198,7 +198,7 @@ export default function RankingServerTable() {
       </div>
 
       {/* SEARCH + BUTTONS */}
-      <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
+      <div className="flex justify-end items-center flex-wrap mb-3 gap-2">
         {/* <Space.Compact className="w-full max-w-xl">
           <Input placeholder="Nhập tìm kiếm..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 220 }} />
           <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}>
@@ -217,7 +217,7 @@ export default function RankingServerTable() {
         <Table dataSource={paginatedData} columns={columns} pagination={false} rowKey="playerId" loading={loading} scroll={{ x: 'max-content' }} size="small" bordered />
       </div>
       {/* PAGINATION */}
-      <div className="flex justify-between items-center mt-4 flex-wrap gap-2 m-2">
+      <div className="flex justify-end items-center mt-4 flex-wrap gap-2 m-2">
         <Pagination
           current={currentPage}
           pageSize={pageSize}

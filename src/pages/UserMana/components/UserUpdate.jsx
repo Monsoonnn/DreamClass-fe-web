@@ -35,7 +35,7 @@ export default function UserUpdate({ open, onClose, userData, onUpdated }) {
   const handleUpdate = async () => {
     try {
       const values = await form.validateFields();
-      
+
       showLoading();
       setLoading(true);
 
@@ -108,8 +108,8 @@ export default function UserUpdate({ open, onClose, userData, onUpdated }) {
 
             <Form.Item label="Giới tính" name="gender" rules={[{ required: true }]}>
               <Select>
-                <Option value="Nam">Nam</Option>
-                <Option value="Nữ">Nữ</Option>
+                <Option value="Male">Nam</Option>
+                <Option value="Female">Nữ</Option>
               </Select>
             </Form.Item>
 
@@ -135,7 +135,7 @@ export default function UserUpdate({ open, onClose, userData, onUpdated }) {
               <Input />
             </Form.Item>
 
-            <Form.Item label="Lớp" name="class">
+            <Form.Item label="Lớp" name="className">
               <Input />
             </Form.Item>
             <Form.Item label="Mật khẩu mới" name="password">

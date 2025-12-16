@@ -57,7 +57,7 @@ export default function AddReward() {
 
       closeLoading();
       await showSuccess('Thêm phần thưởng thành công!');
-      
+
       form.resetFields();
       setPreviewImage(null);
       setFileList([]);
@@ -94,7 +94,7 @@ export default function AddReward() {
             <Form.Item label="Số lượng" name="quantity">
               <InputNumber min={1} style={{ width: '100%' }} />
             </Form.Item>
-            <Form.Item label="Điều kiện nhận" name="condition" rules={[{ required: true, message: 'Nhập điều kiện' }]}>
+            <Form.Item label="Mô tả" name="condition" rules={[{ required: true, message: 'Nhập mô tả' }]}>
               <Input.TextArea rows={3} />
             </Form.Item>
           </Col>

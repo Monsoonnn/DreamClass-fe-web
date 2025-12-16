@@ -108,7 +108,7 @@ export default function QuizzUpdate() {
   const handleSubmit = async (values) => {
     // Validate that each question has at least one correct answer
     for (const q of questions) {
-      if (!q.answers.some(a => a.isCorrect)) {
+      if (!q.answers.some((a) => a.isCorrect)) {
         showError('Mỗi câu hỏi phải có ít nhất một đáp án đúng được chọn!');
         return;
       }

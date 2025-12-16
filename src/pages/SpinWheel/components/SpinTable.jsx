@@ -219,7 +219,7 @@ export default function SpinTable() {
 
         <Space.Compact>
           <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/spin-mana/add')}>
-            Thêm mới
+            Thêm
           </Button>
           <Button
             danger
