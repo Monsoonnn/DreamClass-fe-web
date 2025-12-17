@@ -1,24 +1,43 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Input, InputNumber, Button, DatePicker, Select, Space, Card, Divider, Breadcrumb, Spin } from 'antd';
+import { Form, Input, InputNumber, Button, DatePicker, Select, Space, Card, Divider, Breadcrumb, Spin, Image, TimePicker } from 'antd';
 import { SaveOutlined, DeleteOutlined, HomeOutlined, UnorderedListOutlined, PlusOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import apiClient from '../../../services/api';
 import dayjs from 'dayjs';
 import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
 
-const { RangePicker } = DatePicker;
 const { Option } = Select;
 
 export default function SpinUpdate() {
   const { id } = useParams();
   const [form] = Form.useForm();
   const [items, setItems] = useState([]);
+  const [allItems, setAllItems] = useState([]); // Stores all items from API
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // 1. Fetch dữ liệu cũ
+  // Fetch all items on component mount
+  useEffect(() => {
+    const fetchAllItems = async () => {
+      try {
+        const res = await apiClient.get('/items'); // Assuming '/items' is the endpoint for all items
+        setAllItems(res.data?.data || []);
+      } catch (err) {
+        console.error('Lỗi khi tải danh sách vật phẩm:', err);
+        showError('Không thể tải danh sách vật phẩm!');
+      }
+    };
+    fetchAllItems();
+  }, []); // Empty dependency array means this runs once on mount
+
+  // 1. Fetch dữ liệu cũ (depends on allItems being available)
   useEffect(() => {
     const fetchSpinDetail = async () => {
+      if (allItems.length === 0 && id) { // Only proceed if items are loaded or it's a new spin
+        // If allItems are not yet loaded and it's an existing spin, wait for allItems
+        return;
+      }
+
       try {
         setLoading(true);
         const res = await apiClient.get(`/spin-wheels/${id}`);
@@ -29,16 +48,23 @@ export default function SpinUpdate() {
           description: data.description,
           spinPrice: data.spinPrice,
           currency: data.currency,
-          timeRange: [data.startTime ? dayjs(data.startTime) : null, data.endTime ? dayjs(data.endTime) : null],
+          startDate: data.startTime ? dayjs(data.startTime) : null,
+          startTime: data.startTime ? dayjs(data.startTime) : null,
+          endDate: data.endTime ? dayjs(data.endTime) : null,
+          endTime: data.endTime ? dayjs(data.endTime) : null,
         });
 
         if (data.items && Array.isArray(data.items)) {
           setItems(
-            data.items.map((item) => ({
-              itemId: item.itemId,
-              rate: item.rate,
-              isRare: item.isRare,
-            }))
+            data.items.map((item) => {
+              const fullItem = allItems.find(ai => ai.itemId === item.itemId);
+              return {
+                itemId: item.itemId,
+                rate: item.rate,
+                isRare: item.isRare,
+                imageUrl: fullItem ? fullItem.imageUrl : '', // Add imageUrl
+              };
+            })
           );
         }
       } catch (error) {
@@ -49,13 +75,16 @@ export default function SpinUpdate() {
       }
     };
 
-    if (id) {
+    if (id && allItems.length > 0) { // Only fetch detail if id exists and allItems are loaded
       fetchSpinDetail();
+    } else if (!id) {
+        // If it's a new spin (no id), make sure loading is false if allItems are loaded
+        setLoading(false);
     }
-  }, [id, form]);
+  }, [id, form, allItems]); // Added allItems to dependency array
 
   const addItem = () => {
-    setItems([...items, { itemId: '', rate: 0, isRare: false }]);
+    setItems([...items, { itemId: undefined, rate: 0, isRare: false, imageUrl: '' }]);
   };
 
   const removeItem = (index) => {
@@ -67,6 +96,11 @@ export default function SpinUpdate() {
   const updateItem = (index, field, value) => {
     const updated = [...items];
     updated[index][field] = value;
+
+    if (field === 'itemId') {
+      const selectedItem = allItems.find(item => item.itemId === value); // Corrected to item.itemId
+      updated[index].imageUrl = selectedItem ? selectedItem.imageUrl : '';
+    }
     setItems(updated);
   };
 
@@ -86,15 +120,23 @@ export default function SpinUpdate() {
         return;
       }
 
-      const [start, end] = values.timeRange;
+      const startDateTime = values.startDate
+        .hour(values.startTime.hour())
+        .minute(values.startTime.minute())
+        .second(values.startTime.second());
+
+      const endDateTime = values.endDate
+        .hour(values.endTime.hour())
+        .minute(values.endTime.minute())
+        .second(values.endTime.second());
 
       const payload = {
         name: values.name,
         description: values.description || '',
         spinPrice: Number(values.spinPrice),
         currency: values.currency,
-        startTime: start.toISOString(),
-        endTime: end.toISOString(),
+        startTime: startDateTime.toISOString(),
+        endTime: endDateTime.toISOString(),
         items: items.map((it) => ({
           itemId: it.itemId,
           rate: Number(it.rate),
@@ -182,9 +224,47 @@ export default function SpinUpdate() {
             </Select>
           </Form.Item>
 
-          <Form.Item label="Thời gian sự kiện" name="timeRange" rules={[{ required: true, message: 'Chọn thời gian!' }]}>
-            <RangePicker showTime className="w-full" format="DD/MM/YYYY HH:mm:ss" placeholder={['Bắt đầu', 'Kết thúc']} />
-          </Form.Item>
+          {/* New Start Time Selection */}
+          <div className="flex gap-4">
+             <Form.Item
+              label="Ngày bắt đầu"
+              name="startDate"
+              className="flex-1"
+              rules={[{ required: true, message: 'Chọn ngày bắt đầu!' }]}
+            >
+              <DatePicker className="w-full" format="DD/MM/YYYY" placeholder="Ngày bắt đầu" />
+            </Form.Item>
+
+             <Form.Item
+              label="Giờ bắt đầu"
+              name="startTime"
+              className="flex-1"
+              rules={[{ required: true, message: 'Chọn giờ bắt đầu!' }]}
+            >
+              <TimePicker className="w-full" format="HH:mm:ss" placeholder="Giờ bắt đầu" />
+            </Form.Item>
+          </div>
+
+          {/* New End Time Selection */}
+          <div className="flex gap-4">
+            <Form.Item
+              label="Ngày kết thúc"
+              name="endDate"
+              className="flex-1"
+              rules={[{ required: true, message: 'Chọn ngày kết thúc!' }]}
+            >
+              <DatePicker className="w-full" format="DD/MM/YYYY" placeholder="Ngày kết thúc" />
+            </Form.Item>
+
+             <Form.Item
+              label="Giờ kết thúc"
+              name="endTime"
+              className="flex-1"
+              rules={[{ required: true, message: 'Chọn giờ kết thúc!' }]}
+            >
+              <TimePicker className="w-full" format="HH:mm:ss" placeholder="Giờ kết thúc" />
+            </Form.Item>
+          </div>
 
           <Divider orientation="left">
             Danh sách vật phẩm
@@ -196,12 +276,29 @@ export default function SpinUpdate() {
           {items.map((item, index) => (
             <Card key={index} className="rounded-none mb-3 bg-gray-50" size="small">
               <Space direction="vertical" className="w-full" size="middle">
-                {/* Mã vật phẩm + nút xóa */}
                 <div>
-                  <label className="block text-sm font-medium mb-1">Mã vật phẩm</label>
+                  <label className="block text-sm font-medium mb-1">Tên vật phẩm</label>
 
-                  <div className="flex items-center gap-1">
-                    <Input placeholder="VD: CCT102025, GG001..." value={item.itemId} onChange={(e) => updateItem(index, 'itemId', e.target.value)} />
+                  <div className="flex items-center gap-2"> {/* Changed gap from 1 to 2 */}
+                    <Select
+                      placeholder="Chọn vật phẩm"
+                      value={item.itemId}
+                      onChange={(value) => updateItem(index, 'itemId', value)}
+                      className="flex-grow"
+                      showSearch
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                      }
+                    >
+                      {allItems.map((_item) => (
+                        <Option key={_item.itemId} value={_item.itemId}>
+                          {_item.name}
+                        </Option>
+                      ))}
+                    </Select>
+
+                    {item.imageUrl && <Image src={item.imageUrl} width={50} height={50} preview={false} />}
 
                     {items.length > 1 && (
                       <Button type="dashed" danger icon={<DeleteOutlined />} onClick={() => removeItem(index)} className="border border-red-200 bg-white whitespace-nowrap">

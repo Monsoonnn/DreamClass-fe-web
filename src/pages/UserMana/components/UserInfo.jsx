@@ -6,9 +6,11 @@ import { formatDate } from '../../../utils/dateUtil';
 export default function UserInfo({ user }) {
   // Helper dịch giới tính
   const translateGender = (gender) => {
-    if (gender === 'Male') return 'Nam';
-    if (gender === 'Female') return 'Nữ';
-    return 'Khác';
+    if (!gender) return '—';
+    const g = gender.toLowerCase();
+    if (g === 'male' || g === 'nam') return 'Nam';
+    if (g === 'female' || g === 'nữ') return 'Nữ';
+    return gender;
   };
 
   return (

@@ -1,21 +1,35 @@
-import React, { useState } from 'react';
-import { Form, Input, InputNumber, Button, DatePicker, Select, Space, Card, Divider, Switch, Breadcrumb } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Form, Input, InputNumber, Button, DatePicker, Select, Space, Card, Divider, Switch, Breadcrumb, Image, TimePicker } from 'antd';
 import { PlusOutlined, DeleteOutlined, HomeOutlined, UnorderedListOutlined } from '@ant-design/icons';
+
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../../../services/api';
 import dayjs from 'dayjs';
 import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
 
-const { RangePicker } = DatePicker;
 const { Option } = Select;
 
 export default function AddSpin() {
   const [form] = Form.useForm();
-  const [items, setItems] = useState([{ itemId: '', rate: 0, isRare: false }]);
+  const [items, setItems] = useState([{ itemId: undefined, rate: 0, isRare: false, imageUrl: '' }]); // Changed initial itemId to undefined and added imageUrl
+  const [allItems, setAllItems] = useState([]); // Stores all items from API
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchAllItems = async () => {
+      try {
+        const res = await apiClient.get('/items'); // Assuming '/items' is the endpoint for all items
+        setAllItems(res.data?.data || []);
+      } catch (err) {
+        console.error('Lỗi khi tải danh sách vật phẩm:', err);
+        showError('Không thể tải danh sách vật phẩm!');
+      }
+    };
+    fetchAllItems();
+  }, []);
+
   const addItem = () => {
-    setItems([...items, { itemId: '', rate: 0, isRare: false }]);
+    setItems([...items, { itemId: undefined, rate: 0, isRare: false, imageUrl: '' }]);
   };
 
   const removeItem = (index) => {
@@ -27,6 +41,11 @@ export default function AddSpin() {
   const updateItem = (index, field, value) => {
     const updated = [...items];
     updated[index][field] = value;
+
+    if (field === 'itemId') {
+      const selectedItem = allItems.find(item => item.itemId === value); // Corrected to item.itemId
+      updated[index].imageUrl = selectedItem ? selectedItem.imageUrl : '';
+    }
     setItems(updated);
   };
 
@@ -45,15 +64,23 @@ export default function AddSpin() {
         return;
       }
 
-      const [start, end] = values.timeRange;
+      const startDateTime = values.startDate
+        .hour(values.startTime.hour())
+        .minute(values.startTime.minute())
+        .second(values.startTime.second());
+
+      const endDateTime = values.endDate
+        .hour(values.endTime.hour())
+        .minute(values.endTime.minute())
+        .second(values.endTime.second());
 
       const payload = {
         name: values.name,
         description: values.description || '',
         spinPrice: Number(values.spinPrice),
         currency: values.currency,
-        startTime: start.toISOString(),
-        endTime: end.toISOString(),
+        startTime: startDateTime.toISOString(),
+        endTime: endDateTime.toISOString(),
         items: items.map((it) => ({
           itemId: it.itemId,
           rate: Number(it.rate),
@@ -128,9 +155,47 @@ export default function AddSpin() {
             </Select>
           </Form.Item>
 
-          <Form.Item label="Thời gian sự kiện" name="timeRange" rules={[{ required: true, message: 'Chọn thời gian!' }]}>
-            <RangePicker showTime className="w-full" format="DD/MM/YYYY HH:mm:ss" placeholder={['Bắt đầu', 'Kết thúc']} />
-          </Form.Item>
+          {/* New Start Time Selection */}
+          <div className="flex gap-4">
+             <Form.Item
+              label="Ngày bắt đầu"
+              name="startDate"
+              className="flex-1"
+              rules={[{ required: true, message: 'Chọn ngày bắt đầu!' }]}
+            >
+              <DatePicker className="w-full" format="DD/MM/YYYY" placeholder="Ngày bắt đầu" />
+            </Form.Item>
+
+             <Form.Item
+              label="Giờ bắt đầu"
+              name="startTime"
+              className="flex-1"
+              rules={[{ required: true, message: 'Chọn giờ bắt đầu!' }]}
+            >
+              <TimePicker className="w-full" format="HH:mm:ss" placeholder="Giờ bắt đầu" />
+            </Form.Item>
+          </div>
+
+          {/* New End Time Selection */}
+          <div className="flex gap-4">
+            <Form.Item
+              label="Ngày kết thúc"
+              name="endDate"
+              className="flex-1"
+              rules={[{ required: true, message: 'Chọn ngày kết thúc!' }]}
+            >
+              <DatePicker className="w-full" format="DD/MM/YYYY" placeholder="Ngày kết thúc" />
+            </Form.Item>
+
+             <Form.Item
+              label="Giờ kết thúc"
+              name="endTime"
+              className="flex-1"
+              rules={[{ required: true, message: 'Chọn giờ kết thúc!' }]}
+            >
+              <TimePicker className="w-full" format="HH:mm:ss" placeholder="Giờ kết thúc" />
+            </Form.Item>
+          </div>
 
           <Divider orientation="left">
             Danh sách vật phẩm
@@ -146,8 +211,26 @@ export default function AddSpin() {
                 <div>
                   <label className="block text-sm font-medium mb-1">Mã vật phẩm</label>
 
-                  <div className="flex items-center gap-1">
-                    <Input placeholder="VD: CCT102025, GG001..." value={item.itemId} onChange={(e) => updateItem(index, 'itemId', e.target.value)} />
+                  <div className="flex items-center gap-2">
+                    <Select
+                      placeholder="Chọn vật phẩm"
+                      value={item.itemId}
+                      onChange={(value) => updateItem(index, 'itemId', value)}
+                      className="flex-grow"
+                      showSearch
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                      }
+                    >
+                      {allItems.map((_item) => (
+                        <Option key={_item.itemId} value={_item.itemId}>
+                          {_item.name}
+                        </Option>
+                      ))}
+                    </Select>
+
+                    {item.imageUrl && <Image src={item.imageUrl} width={50} height={50} preview={false} />}
 
                     {items.length > 1 && (
                       <Button danger type="dashed" icon={<DeleteOutlined />} onClick={() => removeItem(index)}>

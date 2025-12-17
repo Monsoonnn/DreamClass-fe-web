@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Statistic, Table, Tag, Avatar, Spin, message } from 'antd';
-import { UserOutlined, ReadOutlined, RocketOutlined, TrophyOutlined, TeamOutlined } from '@ant-design/icons';
+import { Card, Row, Col, Statistic, Table, Tag, Avatar, Spin, message, Empty } from 'antd';
+import { UserOutlined, ReadOutlined, RocketOutlined, TrophyOutlined, TeamOutlined, SmileOutlined } from '@ant-design/icons';
 import { formatDate } from '../../utils/dateUtil';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import apiClient from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalStudents: 0,
@@ -16,15 +18,86 @@ export default function Dashboard() {
   const [gradeData, setGradeData] = useState([]);
   const [genderData, setGenderData] = useState([]);
   const [recentStudents, setRecentStudents] = useState([]);
+  const [teacherClassData, setTeacherClassData] = useState([]);
+  const [teacherClassName, setTeacherClassName] = useState('');
 
   // Màu cho biểu đồ tròn
   const COLORS = ['#0088FE', '#FF8042', '#FFBB28'];
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
+    if (user) {
+      if (user.role === 'teacher') {
+        fetchTeacherDashboard();
+      } else {
+        fetchAdminDashboard();
+      }
+    }
+  }, [user]);
 
-  const fetchDashboardData = async () => {
+  const fetchTeacherDashboard = async () => {
+    try {
+      setLoading(true);
+      
+      // 1. Get Class Name (for ranking)
+      const assignedClass = user.assignedClasses?.[0];
+      const className = assignedClass?.className;
+      setTeacherClassName(className || '');
+
+      // 2. Parallel Fetching
+      const [studentsRes, missionsRes, booksRes, rankingRes] = await Promise.all([
+        apiClient.get('/teacher/students'),
+        apiClient.get('/quests/admin/templates'),
+        apiClient.get('/pdfs/list/books'),
+        className ? apiClient.get(`/ranking/class/${className}`) : Promise.resolve({ data: { data: [] } })
+      ]);
+
+      // 3. Process Data
+      const studentData = studentsRes.data?.data || [];
+      const missionsData = missionsRes.data?.data || []; // Assuming array format
+      const booksData = booksRes.data?.data || [];
+      const rankingData = rankingRes.data?.data || [];
+
+      // Create Gender Map
+      const genderMap = {};
+      studentData.forEach(s => {
+        if (s.playerId) {
+            genderMap[s.playerId] = s.gender;
+        }
+      });
+
+      // 4. Update Stats
+      setStats({
+        totalStudents: studentData.length,
+        totalTeachers: 0, // Not relevant for teacher
+        totalMissions: missionsData.length,
+        totalBooks: booksData.length,
+      });
+
+      setTeacherClassData(rankingData);
+      
+      // 5. Set Recent Students (Top 5 from ranking)
+      setRecentStudents(rankingData.slice(0, 5).map((item) => {
+        const pid = item.playerId || item._id; // ranking item usually has playerId
+        return {
+            key: pid,
+            rank: item.rank,
+            name: item.name,
+            avatar: item.avatar,
+            class: item.className,
+            points: item.points || 0,
+            gender: genderMap[pid] || 'Other'
+        };
+      }));
+
+    } catch (error) {
+      console.error('Error fetching teacher dashboard:', error);
+      message.error('Không thể tải dữ liệu giáo viên');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchAdminDashboard = async () => {
     try {
       setLoading(true);
 
@@ -164,6 +237,118 @@ export default function Dashboard() {
     );
   }
 
+  // --- TEACHER VIEW ---
+  if (user?.role === 'teacher') {
+    return (
+      <div className="p-4 h-full flex flex-col gap-4 overflow-y-auto bg-slate-50">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-xl font-bold text-[#23408e] m-0">Tổng quan lớp {teacherClassName || '(Chưa có lớp)'}</h2>
+            <p className="text-gray-500 m-0">Chào mừng, {user.name}!</p>
+          </div>
+          <span className="text-sm text-gray-500">{formatDate(new Date())}</span>
+        </div>
+
+        {!teacherClassName ? (
+          <Empty description="Bạn chưa được phân công chủ nhiệm lớp nào." />
+        ) : (
+          <>
+            {/* Stats Cards */}
+            <Row gutter={[16, 16]}>
+              <Col xs={24} sm={8}>
+                <Card bordered={false} className="shadow-sm">
+                  <Statistic
+                    title="Tổng số học sinh"
+                    value={stats.totalStudents}
+                    prefix={<TeamOutlined className="text-blue-500" />}
+                    valueStyle={{ color: '#23408e', fontWeight: 'bold' }}
+                  />
+                </Card>
+              </Col>
+              <Col xs={24} sm={8}>
+                <Card bordered={false} className="shadow-sm">
+                  <Statistic
+                    title="Tổng số sách"
+                    value={stats.totalBooks}
+                    prefix={<ReadOutlined className="text-orange-500" />}
+                    valueStyle={{ color: '#d46b08', fontWeight: 'bold' }}
+                  />
+                </Card>
+              </Col>
+              <Col xs={24} sm={8}>
+                <Card bordered={false} className="shadow-sm">
+                  <Statistic
+                    title="Tổng số nhiệm vụ"
+                    value={stats.totalMissions}
+                    prefix={<RocketOutlined className="text-purple-500" />}
+                    valueStyle={{ color: '#531dab', fontWeight: 'bold' }}
+                  />
+                </Card>
+              </Col>
+            </Row>
+
+            {/* Content Row */}
+            <Row gutter={[16, 16]} className="flex-1">
+              {/* Top Students Table */}
+              <Col xs={24} md={12} lg={16}>
+                <Card 
+                  title={<><TrophyOutlined className="text-yellow-500 mr-2"/> Top học sinh xuất sắc</>} 
+                  bordered={false} 
+                  className="shadow-sm h-full"
+                >
+                  <Table 
+                    columns={columns} 
+                    dataSource={recentStudents} 
+                    pagination={false} 
+                    rowKey="key"
+                    size="middle"
+                  />
+                </Card>
+              </Col>
+
+              {/* Simple Chart for Top 5 Points */}
+              <Col xs={24} md={12} lg={8}>
+                 <Card 
+                    title={
+                        <div className="flex justify-between items-center">
+                            <span>Điểm số Top 5</span>
+                            <div className="flex gap-2 text-xs font-normal">
+                                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#0088FE]"></span>Nam</span>
+                                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#FF8042]"></span>Nữ</span>
+                            </div>
+                        </div>
+                    } 
+                    bordered={false} 
+                    className="shadow-sm h-full"
+                >
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={recentStudents} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis type="number" hide />
+                        <YAxis dataKey="name" type="category" width={80} tick={{fontSize: 12}} />
+                        <RechartsTooltip />
+                        <Bar dataKey="points" radius={[0, 4, 4, 0]}>
+                          {recentStudents.map((entry, index) => {
+                             const g = (entry.gender || '').toLowerCase();
+                             let color = '#00C49F'; // Other
+                             if (g === 'male' || g === 'nam') color = '#0088FE';
+                             if (g === 'female' || g === 'nữ') color = '#FF8042';
+                             return <Cell key={`cell-${index}`} fill={color} />;
+                          })}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                 </Card>
+              </Col>
+            </Row>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  // --- ADMIN VIEW (Default) ---
   return (
     <div className="p-2 h-full flex flex-col gap-2 overflow-hidden bg-slate-50">
       {/* 1. Header & Title */}
