@@ -7,15 +7,12 @@ import StudentAchievements from '../../Student/components/StudentAchievements';
 import apiClient from '../../../services/api';
 
 export default function StudentDetail() {
-  const { id } = useParams(); // id ở đây chính là playerId
+  const { id } = useParams(); 
   const navigate = useNavigate();
 
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ================================
-  // 🔵 Hàm gọi API lấy chi tiết học sinh
-  // ================================
   const getStudentById = async (playerID) => {
     try {
       const response = await apiClient.get(`/players/admin/players/${playerID}`);
@@ -26,9 +23,6 @@ export default function StudentDetail() {
     }
   };
 
-  // ================================
-  // 🟣 load data khi mở trang
-  // ================================
   useEffect(() => {
     const fetchData = async () => {
       if (!id) return;
@@ -50,9 +44,6 @@ export default function StudentDetail() {
     fetchData();
   }, [id]);
 
-  // ================================
-  // ⏳ UI loading
-  // ================================
   if (loading)
     return (
       <div className="flex items-center justify-center min-h-[200px]">

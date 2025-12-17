@@ -127,7 +127,7 @@ export default function SpinTable() {
       'Tiền tệ': item.currency,
       'Bắt đầu': item.startTime ? new Date(item.startTime).toLocaleString('vi-VN') : '',
       'Kết thúc': item.endTime ? new Date(item.endTime).toLocaleString('vi-VN') : '',
-      'Trạng thái': item.active ? 'Đang hoạt động' : 'Ngừng',
+      'Trạng thái': item.active ? 'Đang hoạt động' : 'Ngừng hoạt động',
       'Số lượng Item': item.itemCount,
     }));
 
@@ -187,7 +187,7 @@ export default function SpinTable() {
       dataIndex: 'active',
       align: 'center',
       width: 120,
-      render: (active) => <Tag color={active ? 'green' : 'red'}>{active ? 'Đang hoạt động' : 'Ngừng'}</Tag>,
+      render: (active) => <Tag color={active ? 'green' : 'red'}>{active ? 'Đang hoạt động' : 'Ngừng hoạt động'}</Tag>,
     },
     {
       title: 'Thao tác',

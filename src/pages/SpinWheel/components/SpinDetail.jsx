@@ -10,24 +10,30 @@ export default function SpinDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [spinData, setSpinData] = useState(null);
+  const [allItems, setAllItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchSpinDetail = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const res = await apiClient.get(`/spin-wheels/${id}`);
-        setSpinData(res.data.data || res.data);
+        const [spinRes, itemsRes] = await Promise.all([
+          apiClient.get(`/spin-wheels/${id}`),
+          apiClient.get('/items')
+        ]);
+        
+        setSpinData(spinRes.data.data || spinRes.data);
+        setAllItems(itemsRes.data?.data || []);
       } catch (error) {
-        console.error('Error fetching spin detail:', error);
-        message.error('Không thể tải thông tin vòng quay!');
+        console.error('Error fetching data:', error);
+        message.error('Không thể tải thông tin!');
       } finally {
         setLoading(false);
       }
     };
 
     if (id) {
-      fetchSpinDetail();
+      fetchData();
     }
   }, [id]);
 
@@ -54,11 +60,14 @@ export default function SpinDetail() {
 
   const itemsColumns = [
     {
-      title: 'Mã vật phẩm',
+      title: 'Tên vật phẩm',
       dataIndex: 'itemId',
       key: 'itemId',
       align: 'center',
-      render: (text) => <Text copyable>{text}</Text>, // Cho phép copy ID tiện lợi
+      render: (itemId) => {
+        const item = allItems.find(i => i.itemId === itemId);
+        return item ? <Text>{item.name}</Text> : <Text copyable>{itemId}</Text>;
+      },
     },
     {
       title: 'Tỉ lệ trúng',

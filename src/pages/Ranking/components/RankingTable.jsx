@@ -1,10 +1,11 @@
 // src/pages/ranking/RankingClass.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, Tag, Button, Space, Input, Pagination, Card, Avatar, Image, message } from 'antd';
 import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined, TrophyOutlined } from '@ant-design/icons';
 import { apiClient } from '../../../services/api';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
+import { useAuth } from '../../../context/AuthContext';
 
 export default function RankingClass() {
   const [classInput, setClassInput] = useState('');
@@ -16,20 +17,20 @@ export default function RankingClass() {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   // Fetch API ranking theo lớp
-  const handleFetch = async () => {
-    const cls = (classInput || '').trim();
-    if (!cls) return message.warning('Vui lòng nhập tên lớp (ví dụ: 10A1, 17A1...)');
-
+  const fetchRanking = async (clsName) => {
+    if (!clsName) return;
+    
     setLoading(true);
     setData([]);
     setCurrentPage(1);
 
     try {
-      const res = await apiClient.get(`/ranking/class/${cls}`);
+      const res = await apiClient.get(`/ranking/class/${clsName}`);
       setData(res.data?.data || []);
-      setClassName(cls);
+      setClassName(clsName);
     } catch (err) {
       console.error(err);
       message.error('Không thể tải bảng xếp hạng theo lớp');
@@ -38,6 +39,20 @@ export default function RankingClass() {
       setLoading(false);
     }
   };
+
+  const handleFetch = () => {
+    const cls = (classInput || '').trim();
+    if (!cls) return message.warning('Vui lòng nhập tên lớp (ví dụ: 10A1, 17A1...)');
+    fetchRanking(cls);
+  };
+
+  useEffect(() => {
+    if (user?.role === 'teacher' && user.assignedClasses?.length > 0) {
+      const teacherClass = user.assignedClasses[0].className;
+      setClassInput(teacherClass);
+      fetchRanking(teacherClass);
+    }
+  }, [user]);
 
   // filter + sort
   const filteredRanking = () => {
@@ -117,19 +132,34 @@ export default function RankingClass() {
   // Nếu có đúng 2 học sinh thì chỉ hiển thị top 1
   const top3 = allRanking.length === 2 ? allRanking.slice(0, 1) : allRanking.slice(0, 3);
 
+  const isTeacher = user?.role === 'teacher';
+
   return (
     <div className="bg-white p-4">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">Bảng xếp hạng theo lớp</h1>
-
-      {/* INPUT LỚP */}
-      <div className="flex justify-center mb-2">
-        <Space>
-          <Input placeholder="Nhập tên lớp của bạn ..." style={{ width: 260 }} value={classInput} onChange={(e) => setClassInput(e.target.value)} onPressEnter={handleFetch} />
-          <Button type="primary" icon={<SearchOutlined />} loading={loading} onClick={handleFetch}>
-            Xem bảng xếp hạng
-          </Button>
-        </Space>
+      <div className="flex items-center gap-2 mb-6">
+        <h1 className="text-2xl font-bold text-gray-800 m-0">
+          {isTeacher && className ? `Bảng xếp hạng lớp ${className}` : 'Bảng xếp hạng theo lớp'}
+        </h1>
+        {isTeacher && className && <Tag color="blue">Lớp chủ nhiệm</Tag>}
       </div>
+
+      {/* INPUT LỚP - Chỉ hiện nếu không phải giáo viên */}
+      {!isTeacher && (
+        <div className="flex justify-center mb-6">
+          <Space>
+            <Input
+              placeholder="Nhập tên lớp của bạn ..."
+              style={{ width: 260 }}
+              value={classInput}
+              onChange={(e) => setClassInput(e.target.value)}
+              onPressEnter={handleFetch}
+            />
+            <Button type="primary" icon={<SearchOutlined />} loading={loading} onClick={handleFetch}>
+              Xem bảng xếp hạng
+            </Button>
+          </Space>
+        </div>
+      )}
 
       {className !== null && (
         <>

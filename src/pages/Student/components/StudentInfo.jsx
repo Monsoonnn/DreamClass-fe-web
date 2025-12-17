@@ -2,6 +2,14 @@ import React from 'react';
 import { Descriptions, Tag, Card } from 'antd';
 
 export default function StudentInfo({ student }) {
+  const translateGender = (gender) => {
+    if (!gender) return '—';
+    const g = gender.toLowerCase();
+    if (g === 'male' || g === 'nam') return 'Nam';
+    if (g === 'female' || g === 'nữ') return 'Nữ';
+    return gender;
+  };
+
   return (
     <Card
       className="bg-white  border-0 w-full max-w-none"
@@ -50,7 +58,7 @@ export default function StudentInfo({ student }) {
               },
             }}
           >
-            <Descriptions.Item label="Giới tính">{student.gender}</Descriptions.Item>
+            <Descriptions.Item label="Giới tính">{translateGender(student.gender)}</Descriptions.Item>
             <Descriptions.Item label="Ngày sinh">{student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString('vi-VN') : '—'}</Descriptions.Item>
 
             <Descriptions.Item label="Địa chỉ">{student.address}</Descriptions.Item>
