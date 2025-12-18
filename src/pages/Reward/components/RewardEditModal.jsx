@@ -103,12 +103,12 @@ export default function RewardEditModal({ visible, onClose, reward, onUpdate }) 
 
   return (
     <Modal title="Chỉnh sửa phần thưởng" open={visible} onCancel={onClose} footer={null} width={800} confirmLoading={loading}>
-      <Form form={form} layout="vertical" onFinish={onFinish}>
+      <Form className="custom-form" form={form} layout="vertical" onFinish={onFinish}>
         <Row gutter={24}>
           {/* Cột trái */}
           <Col span={12}>
-            <Form.Item label="Mã phần thưởng" name="rewardCode" rules={[{ required: true, message: 'Vui lòng nhập mã phần thưởng' }]}>
-              <Input placeholder="Nhập mã phần thưởng" disabled />
+            <Form.Item label="Mã phần thưởng" name="rewardCode">
+              <Input placeholder="" disabled />
             </Form.Item>
             <Form.Item label="Tên phần thưởng" name="rewardName" rules={[{ required: true, message: 'Vui lòng nhập tên phần thưởng' }]}>
               <Input placeholder="Nhập tên phần thưởng" />
@@ -143,14 +143,15 @@ export default function RewardEditModal({ visible, onClose, reward, onUpdate }) 
         </Row>
 
         {/* Nút lưu / hủy */}
-        <Form.Item className="flex gap-2 mt-4">
+
+        <div className="flex mt-3 gap-2">
           <Button type="primary" htmlType="submit" loading={loading}>
-            Lưu
+            Cập nhật
           </Button>
-          <Button type="default" onClick={onClose}>
+          <Button danger type="default" onClick={onClose}>
             Hủy
           </Button>
-        </Form.Item>
+        </div>
       </Form>
     </Modal>
   );

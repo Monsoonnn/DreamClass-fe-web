@@ -43,7 +43,7 @@ export default function UserTable({ filterRole }) {
     } catch (error) {
       console.error('Error fetching players:', error);
       // showError('Không thể tải dữ liệu từ server. Đã chuyển sang dữ liệu tạm thời.');
-       setData(getUsers()); 
+      setData(getUsers());
     } finally {
       setLoading(false);
     }
@@ -240,12 +240,7 @@ export default function UserTable({ filterRole }) {
           <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/user-mana/add')}>
             Thêm
           </Button>
-          <Button
-            danger
-            icon={<DeleteOutlined />}
-            onClick={handleDeleteMultiple}
-            disabled={selectedRowKeys.length === 0}
-          >
+          <Button danger icon={<DeleteOutlined />} onClick={handleDeleteMultiple} disabled={selectedRowKeys.length === 0}>
             Xóa
           </Button>
           <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>

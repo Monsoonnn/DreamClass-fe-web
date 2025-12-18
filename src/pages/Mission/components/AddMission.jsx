@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Input, Button, Select, Switch, Form, Breadcrumb, Spin } from 'antd';
-import { ReadOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { SolutionOutlined, PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { getMissions } from './MissionService';
-import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { MinusCircleOutlined } from '@ant-design/icons';
 import { apiClient } from '../../../services/api';
 import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
 
@@ -61,7 +61,7 @@ export default function AddMission() {
       const createdQuest = res.data?.data;
 
       console.log('Quest created successfully:', createdQuest);
-      
+
       // Step 2: Assign quest to all players
       if (createdQuest?.questId) {
         console.log('Assigning quest to all players:', createdQuest.questId);
@@ -81,8 +81,8 @@ export default function AddMission() {
             closeLoading();
             await showSuccess(`Thêm thành công! Gán cho ${totalPlayers} người dùng (Thành công: ${successCount}, Thất bại: ${failedCount})`);
           } else {
-             closeLoading();
-             await showSuccess('Thêm nhiệm vụ thành công!');
+            closeLoading();
+            await showSuccess('Thêm nhiệm vụ thành công!');
           }
         } catch (assignErr) {
           console.warn('Quest assignment failed (non-critical):', assignErr.message);
@@ -90,8 +90,8 @@ export default function AddMission() {
           showError('Thêm nhiệm vụ thành công, nhưng gán cho người dùng thất bại. Vui lòng gán thủ công.');
         }
       } else {
-          closeLoading();
-          await showSuccess('Thêm nhiệm vụ thành công!');
+        closeLoading();
+        await showSuccess('Thêm nhiệm vụ thành công!');
       }
 
       form.resetFields();
@@ -106,7 +106,7 @@ export default function AddMission() {
   };
 
   return (
-    <div className="p-6 bg-blue-50 min-h-screen">
+    <div className="p-2 bg-blue-50 min-h-screen">
       <Breadcrumb
         className="mb-4 text-sm"
         items={[
@@ -114,7 +114,7 @@ export default function AddMission() {
             href: '/mission-mana',
             title: (
               <>
-                <ReadOutlined />
+                <SolutionOutlined />
                 <span>Quản lý nhiệm vụ</span>
               </>
             ),
@@ -122,7 +122,7 @@ export default function AddMission() {
           {
             title: (
               <>
-                <UnorderedListOutlined />
+                <PlusOutlined />
                 <span className="font-semibold text-[#23408e]">Thêm nhiệm vụ</span>
               </>
             ),
@@ -218,10 +218,12 @@ export default function AddMission() {
               </Form.List>
 
               {/* Footer buttons */}
-              <div className="flex justify-end gap-3 mt-6">
-                <Button onClick={() => navigate(-1)}>Hủy</Button>
+              <div className="flex justify-end gap-2 mt-6">
+                <Button danger onClick={() => navigate(-1)}>
+                  Hủy
+                </Button>
                 <Button type="primary" htmlType="submit" loading={submitting}>
-                  Lưu Quest
+                  Lưu
                 </Button>
               </div>
             </Form>

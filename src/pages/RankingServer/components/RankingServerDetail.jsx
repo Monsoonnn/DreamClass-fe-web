@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Tabs, Spin, Breadcrumb } from 'antd';
-import { OrderedListOutlined, TeamOutlined } from '@ant-design/icons';
+import { TrophyOutlined, UserOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import UserInfo from '../../UserMana/components/UserInfo';
 import UserLearning from '../../Student/components/StudentLearning';
@@ -61,7 +61,7 @@ export default function RankingServerDetail() {
             href: '/ranking-server',
             title: (
               <>
-                <TeamOutlined />
+                <TrophyOutlined />
                 <span>Bảng xếp hạng</span>
               </>
             ),
@@ -69,7 +69,7 @@ export default function RankingServerDetail() {
           {
             title: (
               <>
-                <OrderedListOutlined />
+                <UserOutlined />
                 <span className="font-semibold text-[#23408e]">Thông tin học sinh</span>
               </>
             ),

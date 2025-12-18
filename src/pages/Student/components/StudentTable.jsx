@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, Button, Space, Input, Pagination } from 'antd';
+import { Table, Button, Space, Input, Pagination, Select } from 'antd';
 import { EyeOutlined, FileExcelOutlined, SearchOutlined, FilterOutlined } from '@ant-design/icons';
-import apiClient from '../../../services/api'; // đường dẫn đến api.js của bạn
+import apiClient from '../../../services/api';
 import * as XLSX from 'xlsx';
 import { showSuccess, showError } from '../../../utils/swalUtils';
 
@@ -13,6 +13,7 @@ export default function StudentTable() {
   const [loading, setLoading] = useState(true);
   const [inputSearchText, setInputSearchText] = useState('');
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [genderFilter, setGenderFilter] = useState('');
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
@@ -36,7 +37,12 @@ export default function StudentTable() {
 
   const filteredStudents = students.filter((item) => {
     const t = inputSearchText.toLowerCase().trim();
-    return item.name?.toLowerCase().includes(t) || item.username?.toLowerCase().includes(t);
+
+    const matchText = item.name?.toLowerCase().includes(t) || item.username?.toLowerCase().includes(t);
+
+    const matchGender = !genderFilter || item.gender?.toLowerCase() === genderFilter;
+
+    return matchText && matchGender;
   });
 
   const handleExport = () => {
@@ -71,11 +77,7 @@ export default function StudentTable() {
       width: 70,
       align: 'center',
     },
-    // {
-    //   title: 'Mã học sinh',
-    //   dataIndex: 'username',
-    //   align: 'center',
-    // },
+
     {
       title: 'Họ tên',
       dataIndex: 'name',
@@ -118,6 +120,11 @@ export default function StudentTable() {
       ellipsis: true,
     },
     {
+      title: 'Tài khoản',
+      dataIndex: 'username',
+      align: 'center',
+    },
+    {
       title: 'Ghi chú',
       dataIndex: 'notes',
       align: 'left',
@@ -139,11 +146,34 @@ export default function StudentTable() {
     <div className="bg-white shadow-lg p-2 ">
       <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
         <Space.Compact className="w-full max-w-xl">
-          <Input placeholder="Nhập tìm kiếm..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 220 }} />
+          <Input
+            placeholder="Nhập tìm kiếm..."
+            value={inputSearchText}
+            onChange={(e) => {
+              setInputSearchText(e.target.value);
+              setCurrentPage(1);
+            }}
+            style={{ width: 220 }}
+          />
+
+          <Select
+            placeholder="Giới tính"
+            allowClear
+            style={{ width: 120 }}
+            value={genderFilter || undefined}
+            onChange={(value) => {
+              setGenderFilter(value || '');
+              setCurrentPage(1);
+            }}
+            options={[
+              { label: 'Nam', value: 'male' },
+              { label: 'Nữ', value: 'female' },
+            ]}
+          />
+
           <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a' }}>
             Tìm
           </Button>
-          {/* <Button type="primary" icon={<FilterOutlined />} /> */}
         </Space.Compact>
 
         <Button type="default" icon={<FileExcelOutlined />} style={{ backgroundColor: '#52c41a', color: '#fff' }} onClick={handleExport}>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Breadcrumb } from 'antd';
-import { HomeOutlined, UserOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { HomeOutlined, TeamOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import StudentTable from './components/StudentTable';
 
 export default function StudentMana() {
@@ -15,7 +15,7 @@ export default function StudentMana() {
                 href: '/student-mana',
                 title: (
                   <>
-                    <UserOutlined />
+                    <TeamOutlined />
                     <span>Quản lý học sinh</span>
                   </>
                 ),

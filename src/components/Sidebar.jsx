@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  UserOutlined,
   TeamOutlined,
   ReadOutlined,
   EditOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   HomeOutlined,
-  DashboardOutlined,
   DownOutlined,
   UpOutlined,
   GiftOutlined,
@@ -24,7 +22,7 @@ import { useAuth } from '../context/AuthContext';
 
 // MENU CHO GIÁO VIÊN
 const teacherMenu = [
-  { key: 'dashboard', label: 'Trang chủ', icon: <DashboardOutlined style={{ fontSize: 18 }} />, path: '/dashboard' },
+  { key: 'dashboard', label: 'Trang chủ', icon: <HomeOutlined style={{ fontSize: 18 }} />, path: '/dashboard' },
   { key: 'student', label: 'Quản lý học sinh', icon: <TeamOutlined style={{ fontSize: 18 }} />, path: '/student-mana' },
   { key: 'mission', label: 'Quản lý nhiệm vụ', icon: <SolutionOutlined style={{ fontSize: 18 }} />, path: '/teacher-mission-mana' },
   { key: 'ranking', label: 'Bảng xếp hạng', icon: <TrophyOutlined style={{ fontSize: 18 }} />, path: '/ranking-mana' },
@@ -34,7 +32,7 @@ const teacherMenu = [
 
 // MENU CHO ADMIN
 const adminMenu = [
-  { key: 'dashboard', label: 'Trang chủ', icon: <DashboardOutlined style={{ fontSize: 18 }} />, path: '/dashboard' },
+  { key: 'dashboard', label: 'Trang chủ', icon: <HomeOutlined style={{ fontSize: 18 }} />, path: '/dashboard' },
   { key: 'usermana', label: 'Quản lý người dùng', icon: <UserSwitchOutlined style={{ fontSize: 18 }} />, path: '/user-mana' },
 
   {

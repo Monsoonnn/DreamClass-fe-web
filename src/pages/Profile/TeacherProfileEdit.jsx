@@ -40,7 +40,7 @@ export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdate
       setSubmitting(true);
       showLoading();
       const values = await form.validateFields();
-      
+
       // 1. Update Profile Info (JSON) - Chỉ lấy các trường API cho phép
       const updateData = {
         name: values.name,
@@ -53,7 +53,7 @@ export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdate
         phone: values.phone,
         // notes, className, grade không được phép update qua API này
       };
-      
+
       // Nếu password rỗng (không đổi), xoá khỏi payload
       if (!updateData.password) {
         delete updateData.password;
@@ -65,7 +65,7 @@ export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdate
       if (selectedFile) {
         const formData = new FormData();
         formData.append('avatar', selectedFile);
-        
+
         await apiClient.put(`/teacher/profile/avatar`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
@@ -97,6 +97,7 @@ export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdate
       width={600}
     >
       <Form
+        className="custom-form"
         form={form}
         layout="vertical"
         initialValues={{
@@ -105,18 +106,13 @@ export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdate
         }}
       >
         {/* Avatar */}
-        <Form.Item label="Ảnh đại diện">
-          <Upload 
-            beforeUpload={handleBeforeUpload} 
-            showUploadList={false}
-            accept="image/*"
-            maxCount={1}
-            disabled={submitting}
-          >
-            <Button icon={<UploadOutlined />} disabled={submitting}>Chọn ảnh</Button>
-          </Upload>
+        <Form.Item className="flex justify-center" label="">
+          <Upload beforeUpload={handleBeforeUpload} showUploadList={false} accept="image/*" maxCount={1} disabled={submitting}></Upload>
 
-          {avatarPreview && <img src={avatarPreview} alt="avatar" className="mt-3 w-24 h-24 rounded-full object-cover" />}
+          {avatarPreview && <img src={avatarPreview} alt="avatar" className="mt-3 w-24 h-24 rounded-full object-cover " />}
+          <Button className="mt-2" icon={<UploadOutlined />} disabled={submitting}>
+            Chọn ảnh
+          </Button>
         </Form.Item>
 
         {/* 2 CỘT */}
@@ -125,8 +121,8 @@ export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdate
             <Input disabled={submitting} />
           </Form.Item>
 
-          <Form.Item name="username" label="Tài khoản" rules={[{ required: true }]}>
-            <Input disabled={submitting} />
+          <Form.Item name="username" label="Tài khoản">
+            <Input disabled={true} />
           </Form.Item>
 
           <Form.Item name="email" label="Email">
@@ -159,9 +155,9 @@ export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdate
           <Form.Item name="address" label="Địa chỉ">
             <Input disabled={submitting} />
           </Form.Item>
-          
+
           <Form.Item name="phone" label="Số điện thoại">
-             <Input disabled={submitting} />
+            <Input disabled={submitting} />
           </Form.Item>
 
           <Form.Item name="notes" label="Ghi chú">

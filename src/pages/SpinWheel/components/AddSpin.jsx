@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Input, InputNumber, Button, DatePicker, Select, Space, Card, Divider, Switch, Breadcrumb, Image, TimePicker } from 'antd';
-import { PlusOutlined, DeleteOutlined, HomeOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { DeleteOutlined, SyncOutlined, PlusOutlined } from '@ant-design/icons';
 
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../../../services/api';
@@ -43,7 +43,7 @@ export default function AddSpin() {
     updated[index][field] = value;
 
     if (field === 'itemId') {
-      const selectedItem = allItems.find(item => item.itemId === value); // Corrected to item.itemId
+      const selectedItem = allItems.find((item) => item.itemId === value); // Corrected to item.itemId
       updated[index].imageUrl = selectedItem ? selectedItem.imageUrl : '';
     }
     setItems(updated);
@@ -64,15 +64,9 @@ export default function AddSpin() {
         return;
       }
 
-      const startDateTime = values.startDate
-        .hour(values.startTime.hour())
-        .minute(values.startTime.minute())
-        .second(values.startTime.second());
+      const startDateTime = values.startDate.hour(values.startTime.hour()).minute(values.startTime.minute()).second(values.startTime.second());
 
-      const endDateTime = values.endDate
-        .hour(values.endTime.hour())
-        .minute(values.endTime.minute())
-        .second(values.endTime.second());
+      const endDateTime = values.endDate.hour(values.endTime.hour()).minute(values.endTime.minute()).second(values.endTime.second());
 
       const payload = {
         name: values.name,
@@ -117,7 +111,7 @@ export default function AddSpin() {
               href: '/spin-mana',
               title: (
                 <>
-                  <HomeOutlined />
+                  <SyncOutlined />
                   <span className="font-semibold text-[#23408e]">Danh sách vòng quay</span>
                 </>
               ),
@@ -125,7 +119,7 @@ export default function AddSpin() {
             {
               title: (
                 <>
-                  <UnorderedListOutlined />
+                  <PlusOutlined />
                   <span>Thêm vòng quay</span>
                 </>
               ),
@@ -157,42 +151,22 @@ export default function AddSpin() {
 
           {/* New Start Time Selection */}
           <div className="flex gap-4">
-             <Form.Item
-              label="Ngày bắt đầu"
-              name="startDate"
-              className="flex-1"
-              rules={[{ required: true, message: 'Chọn ngày bắt đầu!' }]}
-            >
+            <Form.Item label="Ngày bắt đầu" name="startDate" className="flex-1" rules={[{ required: true, message: 'Chọn ngày bắt đầu!' }]}>
               <DatePicker className="w-full" format="DD/MM/YYYY" placeholder="Ngày bắt đầu" />
             </Form.Item>
 
-             <Form.Item
-              label="Giờ bắt đầu"
-              name="startTime"
-              className="flex-1"
-              rules={[{ required: true, message: 'Chọn giờ bắt đầu!' }]}
-            >
+            <Form.Item label="Giờ bắt đầu" name="startTime" className="flex-1" rules={[{ required: true, message: 'Chọn giờ bắt đầu!' }]}>
               <TimePicker className="w-full" format="HH:mm:ss" placeholder="Giờ bắt đầu" />
             </Form.Item>
           </div>
 
           {/* New End Time Selection */}
           <div className="flex gap-4">
-            <Form.Item
-              label="Ngày kết thúc"
-              name="endDate"
-              className="flex-1"
-              rules={[{ required: true, message: 'Chọn ngày kết thúc!' }]}
-            >
+            <Form.Item label="Ngày kết thúc" name="endDate" className="flex-1" rules={[{ required: true, message: 'Chọn ngày kết thúc!' }]}>
               <DatePicker className="w-full" format="DD/MM/YYYY" placeholder="Ngày kết thúc" />
             </Form.Item>
 
-             <Form.Item
-              label="Giờ kết thúc"
-              name="endTime"
-              className="flex-1"
-              rules={[{ required: true, message: 'Chọn giờ kết thúc!' }]}
-            >
+            <Form.Item label="Giờ kết thúc" name="endTime" className="flex-1" rules={[{ required: true, message: 'Chọn giờ kết thúc!' }]}>
               <TimePicker className="w-full" format="HH:mm:ss" placeholder="Giờ kết thúc" />
             </Form.Item>
           </div>
@@ -219,9 +193,7 @@ export default function AddSpin() {
                       className="flex-grow"
                       showSearch
                       optionFilterProp="children"
-                      filterOption={(input, option) =>
-                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                      }
+                      filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
                     >
                       {allItems.map((_item) => (
                         <Option key={_item.itemId} value={_item.itemId}>
@@ -264,12 +236,14 @@ export default function AddSpin() {
 
           <Divider />
 
-          <Form.Item>
+          <Form.Item className="flex justify-end">
             <Space>
               <Button type="primary" htmlType="submit">
                 Tạo Vòng Quay
               </Button>
-              <Button onClick={() => navigate('/spin-mana')}>Hủy</Button>
+              <Button danger onClick={() => navigate('/spin-mana')}>
+                Hủy
+              </Button>
             </Space>
           </Form.Item>
         </Form>

@@ -207,9 +207,9 @@ export default function RewardTable() {
       align: 'center',
       render: (_, record) => (
         <Space>
-          <EyeOutlined style={{ color: '#1890ff', fontSize: 16, cursor: 'pointer' }} onClick={() => handleViewDetail(record)} />
-          <EditOutlined style={{ color: 'blue', fontSize: 16, cursor: 'pointer' }} onClick={() => handleEdit(record)} />
-          <DeleteOutlined style={{ color: '#ff4d4f', fontSize: 16, cursor: 'pointer' }} onClick={() => handleDeleteItem(record.rewardCode)} />
+          <EyeOutlined style={{ color: 'green', cursor: 'pointer' }} onClick={() => handleViewDetail(record)} />
+          <EditOutlined style={{ color: 'blue', cursor: 'pointer' }} onClick={() => handleEdit(record)} />
+          <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} onClick={() => handleDeleteItem(record.rewardCode)} />
         </Space>
       ),
     },

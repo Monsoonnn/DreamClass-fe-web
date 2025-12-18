@@ -1,6 +1,6 @@
 import React from 'react';
 import { Breadcrumb } from 'antd';
-import { HomeOutlined, UserOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { GiftOutlined, UserOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import RewardTable from './components/RewardTable';
 
 export default function RewardMana() {
@@ -15,7 +15,7 @@ export default function RewardMana() {
                 href: '/item-mana',
                 title: (
                   <>
-                    <HomeOutlined />
+                    <GiftOutlined />
                     <span className="font-semibold text-[#23408e]">Quản lý phần thưởng</span>
                   </>
                 ),

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Tag, Breadcrumb, Button, Spin, message } from 'antd';
-import { UserOutlined, EyeOutlined } from '@ant-design/icons';
+import { QuestionCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../../../services/api';
 
@@ -60,7 +60,7 @@ export default function QuizzDetail() {
             href: '/quizz-mana',
             title: (
               <>
-                <UserOutlined />
+                <QuestionCircleOutlined />
                 <span>Quản lý quizz</span>
               </>
             ),
@@ -68,7 +68,7 @@ export default function QuizzDetail() {
           {
             title: (
               <>
-                <EyeOutlined />
+                <InfoCircleOutlined />
                 <span className="font-semibold text-[#23408e]">Chi tiết quizz</span>
               </>
             ),
@@ -77,8 +77,8 @@ export default function QuizzDetail() {
       />
 
       {/* KHUNG CHÍNH */}
-      <div className="mx-auto bg-white p-4 rounded-xl shadow">
-        <div className="flex justify-between items-center mb-4">
+      <div className="mx-auto bg-white p-4 rounded-none shadow max-w-6xl">
+        <div className="flex justify-between items-center mb-4 ">
           <h2 className="text-xl font-semibold">{quizz.name}</h2>
           <Button type="primary" onClick={() => navigate(`/quizz-mana/update/${quizzId}`)}>
             Chỉnh sửa

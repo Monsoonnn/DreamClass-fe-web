@@ -1,6 +1,6 @@
 import React from 'react';
 import { Breadcrumb } from 'antd';
-import { HomeOutlined, UserOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { HomeOutlined, QuestionCircleOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import QuizzTable from './components/QuizzTable';
 
 export default function QuizzMana() {
@@ -15,7 +15,7 @@ export default function QuizzMana() {
                 href: '/quizz-mana',
                 title: (
                   <>
-                    <UserOutlined />
+                    <QuestionCircleOutlined />
                     <span>Quản lý quizz</span>
                   </>
                 ),

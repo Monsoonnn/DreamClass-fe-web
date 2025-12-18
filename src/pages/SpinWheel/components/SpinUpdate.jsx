@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Form, Input, InputNumber, Button, DatePicker, Select, Space, Card, Divider, Breadcrumb, Spin, Image, TimePicker } from 'antd';
-import { SaveOutlined, DeleteOutlined, HomeOutlined, UnorderedListOutlined, PlusOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { SaveOutlined, DeleteOutlined, SyncOutlined, EditOutlined, UnorderedListOutlined, PlusOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import apiClient from '../../../services/api';
 import dayjs from 'dayjs';
@@ -33,7 +33,8 @@ export default function SpinUpdate() {
   // 1. Fetch dữ liệu cũ (depends on allItems being available)
   useEffect(() => {
     const fetchSpinDetail = async () => {
-      if (allItems.length === 0 && id) { // Only proceed if items are loaded or it's a new spin
+      if (allItems.length === 0 && id) {
+        // Only proceed if items are loaded or it's a new spin
         // If allItems are not yet loaded and it's an existing spin, wait for allItems
         return;
       }
@@ -57,7 +58,7 @@ export default function SpinUpdate() {
         if (data.items && Array.isArray(data.items)) {
           setItems(
             data.items.map((item) => {
-              const fullItem = allItems.find(ai => ai.itemId === item.itemId);
+              const fullItem = allItems.find((ai) => ai.itemId === item.itemId);
               return {
                 itemId: item.itemId,
                 rate: item.rate,
@@ -75,11 +76,12 @@ export default function SpinUpdate() {
       }
     };
 
-    if (id && allItems.length > 0) { // Only fetch detail if id exists and allItems are loaded
+    if (id && allItems.length > 0) {
+      // Only fetch detail if id exists and allItems are loaded
       fetchSpinDetail();
     } else if (!id) {
-        // If it's a new spin (no id), make sure loading is false if allItems are loaded
-        setLoading(false);
+      // If it's a new spin (no id), make sure loading is false if allItems are loaded
+      setLoading(false);
     }
   }, [id, form, allItems]); // Added allItems to dependency array
 
@@ -98,7 +100,7 @@ export default function SpinUpdate() {
     updated[index][field] = value;
 
     if (field === 'itemId') {
-      const selectedItem = allItems.find(item => item.itemId === value); // Corrected to item.itemId
+      const selectedItem = allItems.find((item) => item.itemId === value); // Corrected to item.itemId
       updated[index].imageUrl = selectedItem ? selectedItem.imageUrl : '';
     }
     setItems(updated);
@@ -120,15 +122,9 @@ export default function SpinUpdate() {
         return;
       }
 
-      const startDateTime = values.startDate
-        .hour(values.startTime.hour())
-        .minute(values.startTime.minute())
-        .second(values.startTime.second());
+      const startDateTime = values.startDate.hour(values.startTime.hour()).minute(values.startTime.minute()).second(values.startTime.second());
 
-      const endDateTime = values.endDate
-        .hour(values.endTime.hour())
-        .minute(values.endTime.minute())
-        .second(values.endTime.second());
+      const endDateTime = values.endDate.hour(values.endTime.hour()).minute(values.endTime.minute()).second(values.endTime.second());
 
       const payload = {
         name: values.name,
@@ -177,7 +173,7 @@ export default function SpinUpdate() {
               href: '/spin-mana',
               title: (
                 <>
-                  <HomeOutlined />
+                  <SyncOutlined />
                   <span className="font-semibold text-[#23408e]">Danh sách vòng quay</span>
                 </>
               ),
@@ -185,7 +181,7 @@ export default function SpinUpdate() {
             {
               title: (
                 <>
-                  <UnorderedListOutlined />
+                  <EditOutlined />
                   <span>Sửa vòng quay</span>
                 </>
               ),
@@ -201,7 +197,7 @@ export default function SpinUpdate() {
             <span>Cập Nhật Vòng Quay</span>
           </div>
         }
-        className="rounded-none max-w-3xl mx-auto"
+        className="rounded-none max-w-4xl mx-auto"
       >
         <Form className="custom-form" layout="vertical" form={form} onFinish={handleSubmit}>
           <Form.Item label="Tên vòng quay" name="name" rules={[{ required: true, message: 'Nhập tên vòng quay!' }]}>
@@ -226,42 +222,22 @@ export default function SpinUpdate() {
 
           {/* New Start Time Selection */}
           <div className="flex gap-4">
-             <Form.Item
-              label="Ngày bắt đầu"
-              name="startDate"
-              className="flex-1"
-              rules={[{ required: true, message: 'Chọn ngày bắt đầu!' }]}
-            >
+            <Form.Item label="Ngày bắt đầu" name="startDate" className="flex-1" rules={[{ required: true, message: 'Chọn ngày bắt đầu!' }]}>
               <DatePicker className="w-full" format="DD/MM/YYYY" placeholder="Ngày bắt đầu" />
             </Form.Item>
 
-             <Form.Item
-              label="Giờ bắt đầu"
-              name="startTime"
-              className="flex-1"
-              rules={[{ required: true, message: 'Chọn giờ bắt đầu!' }]}
-            >
+            <Form.Item label="Giờ bắt đầu" name="startTime" className="flex-1" rules={[{ required: true, message: 'Chọn giờ bắt đầu!' }]}>
               <TimePicker className="w-full" format="HH:mm:ss" placeholder="Giờ bắt đầu" />
             </Form.Item>
           </div>
 
           {/* New End Time Selection */}
           <div className="flex gap-4">
-            <Form.Item
-              label="Ngày kết thúc"
-              name="endDate"
-              className="flex-1"
-              rules={[{ required: true, message: 'Chọn ngày kết thúc!' }]}
-            >
+            <Form.Item label="Ngày kết thúc" name="endDate" className="flex-1" rules={[{ required: true, message: 'Chọn ngày kết thúc!' }]}>
               <DatePicker className="w-full" format="DD/MM/YYYY" placeholder="Ngày kết thúc" />
             </Form.Item>
 
-             <Form.Item
-              label="Giờ kết thúc"
-              name="endTime"
-              className="flex-1"
-              rules={[{ required: true, message: 'Chọn giờ kết thúc!' }]}
-            >
+            <Form.Item label="Giờ kết thúc" name="endTime" className="flex-1" rules={[{ required: true, message: 'Chọn giờ kết thúc!' }]}>
               <TimePicker className="w-full" format="HH:mm:ss" placeholder="Giờ kết thúc" />
             </Form.Item>
           </div>
@@ -279,7 +255,9 @@ export default function SpinUpdate() {
                 <div>
                   <label className="block text-sm font-medium mb-1">Tên vật phẩm</label>
 
-                  <div className="flex items-center gap-2"> {/* Changed gap from 1 to 2 */}
+                  <div className="flex items-center gap-2">
+                    {' '}
+                    {/* Changed gap from 1 to 2 */}
                     <Select
                       placeholder="Chọn vật phẩm"
                       value={item.itemId}
@@ -287,9 +265,7 @@ export default function SpinUpdate() {
                       className="flex-grow"
                       showSearch
                       optionFilterProp="children"
-                      filterOption={(input, option) =>
-                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                      }
+                      filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
                     >
                       {allItems.map((_item) => (
                         <Option key={_item.itemId} value={_item.itemId}>
@@ -297,9 +273,7 @@ export default function SpinUpdate() {
                         </Option>
                       ))}
                     </Select>
-
                     {item.imageUrl && <Image src={item.imageUrl} width={50} height={50} preview={false} />}
-
                     {items.length > 1 && (
                       <Button type="dashed" danger icon={<DeleteOutlined />} onClick={() => removeItem(index)} className="border border-red-200 bg-white whitespace-nowrap">
                         Xóa
@@ -334,7 +308,9 @@ export default function SpinUpdate() {
 
           <Form.Item>
             <Space className="w-full justify-end">
-              <Button onClick={() => navigate(`/spin-mana/detail/${id}`)}>Hủy bỏ</Button>
+              <Button danger onClick={() => navigate(`/spin-mana/detail/${id}`)}>
+                Hủy bỏ
+              </Button>
               <Button type="primary" htmlType="submit" icon={<SaveOutlined />}>
                 Lưu Thay Đổi
               </Button>

@@ -53,7 +53,7 @@ export default function ProfileEdit({ visible, onClose, user, onUpdated }) {
         ...values,
         dateOfBirth: values.dateOfBirth ? values.dateOfBirth.format('YYYY-MM-DD') : null,
       };
-      
+
       // Update profile info
       await apiClient.put(baseEndpoint, updateData);
 
@@ -61,7 +61,7 @@ export default function ProfileEdit({ visible, onClose, user, onUpdated }) {
       if (selectedFile) {
         const formData = new FormData();
         formData.append('avatar', selectedFile);
-        
+
         // Update avatar with PUT method
         await apiClient.put(`${baseEndpoint}/avatar`, formData, {
           headers: {
@@ -96,23 +96,20 @@ export default function ProfileEdit({ visible, onClose, user, onUpdated }) {
       width={600}
     >
       <Form
+        className="custom-form"
         form={form}
         layout="vertical"
         initialValues={{
-          ...user, 
+          ...user,
           dateOfBirth: user.dateOfBirth ? dayjs(user.dateOfBirth) : null,
         }}
       >
         {/* Avatar */}
         <Form.Item label="Ảnh đại diện">
-          <Upload 
-            beforeUpload={handleBeforeUpload} 
-            showUploadList={false}
-            accept="image/*"
-            maxCount={1}
-            disabled={submitting}
-          >
-            <Button icon={<UploadOutlined />} disabled={submitting}>Chọn ảnh</Button>
+          <Upload beforeUpload={handleBeforeUpload} showUploadList={false} accept="image/*" maxCount={1} disabled={submitting}>
+            <Button icon={<UploadOutlined />} disabled={submitting}>
+              Chọn ảnh
+            </Button>
           </Upload>
 
           {avatarPreview && <img src={avatarPreview} alt="avatar" className="mt-3 w-24 h-24 rounded-full object-cover" />}
@@ -131,7 +128,7 @@ export default function ProfileEdit({ visible, onClose, user, onUpdated }) {
           <Form.Item name="email" label="Email">
             <Input disabled={submitting} />
           </Form.Item>
-          
+
           {/* Chỉ hiển thị Lớp và Khối nếu là Student */}
           {isStudent && (
             <>
@@ -163,7 +160,7 @@ export default function ProfileEdit({ visible, onClose, user, onUpdated }) {
           <Form.Item name="address" label="Địa chỉ">
             <Input disabled={submitting} />
           </Form.Item>
-          
+
           <Form.Item name="phone" label="Số điện thoại">
             <Input disabled={submitting} />
           </Form.Item>
