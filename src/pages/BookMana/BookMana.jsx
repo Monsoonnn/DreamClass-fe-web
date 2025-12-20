@@ -1,6 +1,6 @@
 import React from 'react';
 import { Breadcrumb } from 'antd';
-import { HomeOutlined, UserOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { HomeOutlined, BookOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import BookTable from './components/BookTable';
 
 export default function StoreMana() {
@@ -15,7 +15,7 @@ export default function StoreMana() {
                 href: '/book-mana',
                 title: (
                   <>
-                    <UserOutlined />
+                    <BookOutlined />
                     <span>Quản lý sách</span>
                   </>
                 ),

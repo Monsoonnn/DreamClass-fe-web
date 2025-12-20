@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Descriptions, Tag, Button, Spin, message, Breadcrumb } from 'antd';
-import { ArrowLeftOutlined, HomeOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, UserSwitchOutlined, UserOutlined } from '@ant-design/icons';
 // import { getUsers } from './userService';
 import UserUpdate from './UserUpdate';
 import { apiClient } from '../../../services/api';
@@ -88,14 +88,24 @@ export default function UserDetail() {
         {/* Breadcrumb */}
         <div className="mb-2">
           <Breadcrumb
-            style={{ fontSize: 14 }}
+            className="mb-4 text-sm"
             items={[
               {
                 href: '/user-mana',
-                title: 'Quản lý người dùng',
+                title: (
+                  <>
+                    <UserSwitchOutlined />
+                    <span>Quản lý người dùng</span>
+                  </>
+                ),
               },
               {
-                title: <span className="font-semibold text-[#23408e]">Chi tiết người dùng</span>,
+                title: (
+                  <>
+                    <UserOutlined />
+                    <span className="font-semibold text-[#23408e]">Chi tiết người dùng</span>
+                  </>
+                ),
               },
             ]}
           />

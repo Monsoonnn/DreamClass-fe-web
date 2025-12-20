@@ -151,9 +151,11 @@ export default function EditMissionModal({ visible, onClose, missionData, refres
 
         {/* Footer */}
         <div className="flex justify-end mt-4 gap-2">
-          <Button onClick={onClose}>Hủy</Button>
+          <Button danger onClick={onClose}>
+            Hủy
+          </Button>
           <Button type="primary" htmlType="submit" loading={submitting} disabled={submitting}>
-            Lưu
+            Cập nhật
           </Button>
         </div>
       </Form>

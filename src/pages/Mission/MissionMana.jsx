@@ -1,6 +1,6 @@
 import React from 'react';
 import { Breadcrumb } from 'antd';
-import { ReadOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { SolutionOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import MissionTable from './components/MissonTable';
 
 export default function MissonMana() {
@@ -15,7 +15,7 @@ export default function MissonMana() {
                 href: '/mission-mana',
                 title: (
                   <>
-                    <ReadOutlined />
+                    <SolutionOutlined />
                     <span>Quản lý nhiệm vụ</span>
                   </>
                 ),

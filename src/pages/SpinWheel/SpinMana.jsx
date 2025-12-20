@@ -1,6 +1,6 @@
 import React from 'react';
 import { Breadcrumb } from 'antd';
-import { HomeOutlined, UserOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { SyncOutlined, UserOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import SpinTable from './components/SpinTable';
 
 export default function SpinMana() {
@@ -15,7 +15,7 @@ export default function SpinMana() {
                 href: '/spin-mana',
                 title: (
                   <>
-                    <HomeOutlined />
+                    <SyncOutlined />
                     <span className="font-semibold text-[#23408e]">Quản lý vòng quay</span>
                   </>
                 ),

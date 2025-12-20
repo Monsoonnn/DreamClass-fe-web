@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Descriptions, Tag, Table, Spin, message, Button, Typography, Row, Col, Statistic, Breadcrumb } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeftOutlined, CalendarOutlined, DollarCircleOutlined, EditOutlined, GiftOutlined, UnorderedListOutlined, ClockCircleOutlined, HomeOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, CalendarOutlined, DollarCircleOutlined, EditOutlined, GiftOutlined, InfoCircleOutlined, ClockCircleOutlined, SyncOutlined } from '@ant-design/icons';
 import apiClient from '../../../services/api';
 
 const { Title, Text } = Typography;
@@ -17,11 +17,8 @@ export default function SpinDetail() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [spinRes, itemsRes] = await Promise.all([
-          apiClient.get(`/spin-wheels/${id}`),
-          apiClient.get('/items')
-        ]);
-        
+        const [spinRes, itemsRes] = await Promise.all([apiClient.get(`/spin-wheels/${id}`), apiClient.get('/items')]);
+
         setSpinData(spinRes.data.data || spinRes.data);
         setAllItems(itemsRes.data?.data || []);
       } catch (error) {
@@ -65,7 +62,7 @@ export default function SpinDetail() {
       key: 'itemId',
       align: 'center',
       render: (itemId) => {
-        const item = allItems.find(i => i.itemId === itemId);
+        const item = allItems.find((i) => i.itemId === itemId);
         return item ? <Text>{item.name}</Text> : <Text copyable>{itemId}</Text>;
       },
     },
@@ -106,7 +103,7 @@ export default function SpinDetail() {
                 href: '/spin-mana',
                 title: (
                   <>
-                    <HomeOutlined />
+                    <SyncOutlined />
                     <span className="font-semibold text-[#23408e]">Quản lý vòng quay</span>
                   </>
                 ),
@@ -114,7 +111,7 @@ export default function SpinDetail() {
               {
                 title: (
                   <>
-                    <UnorderedListOutlined />
+                    <InfoCircleOutlined />
                     <span>Thông tin vòng quay</span>
                   </>
                 ),

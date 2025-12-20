@@ -136,7 +136,9 @@ export default function RankingGrade() {
   const top3 = filteredRanking().slice(0, 3);
 
   return (
-    <div className="p-2"> {/* Take p-2 from origin/main */}
+    <div className="p-2">
+      {' '}
+      {/* Take p-2 from origin/main */}
       <Breadcrumb
         className="mb-4 text-sm"
         items={[
@@ -144,7 +146,7 @@ export default function RankingGrade() {
             href: '/ranking-grade',
             title: (
               <>
-                <TeamOutlined />
+                <TrophyOutlined />
                 <span> Xếp hạng theo khối</span>
               </>
             ),
@@ -152,20 +154,23 @@ export default function RankingGrade() {
           {
             title: (
               <>
-                <OrderedListOutlined />
+                <TeamOutlined />
                 <span className="font-semibold text-[#23408e]">Bảng xếp hạng</span>
               </>
             ),
           },
         ]}
       />
-      <div className="bg-white p-2"> {/* Take bg-white p-2 from origin/main */}
+      <div className="bg-white p-2">
+        {' '}
+        {/* Take bg-white p-2 from origin/main */}
         <h1 className="text-2xl font-bold text-gray-800 mb-4">Bảng xếp hạng theo khối</h1>
-
         {/* INPUT KHỐI - HIỂN THỊ Ở GIỮA */}
         <div className="flex justify-center mb-6">
           <Space>
-            <Select placeholder="Chọn khối" style={{ width: 260 }} value={gradeInput} onChange={(value) => setGradeInput(value)}> {/* My change */}
+            <Select placeholder="Chọn khối" style={{ width: 260 }} value={gradeInput} onChange={(value) => setGradeInput(value)}>
+              {' '}
+              {/* My change */}
               <Option value="10">Khối 10</Option>
               <Option value="11">Khối 11</Option>
               <Option value="12">Khối 12</Option>
@@ -175,7 +180,6 @@ export default function RankingGrade() {
             </Button>
           </Space>
         </div>
-
         {/* Nếu chưa tìm khối thì thôi (chỉ show input). Nếu đã tìm (grade != null) show kết quả (cả khi rỗng) */}
         {grade !== null && (
           <>
@@ -257,10 +261,16 @@ export default function RankingGrade() {
 
             {/* SEARCH + BUTTONS */}
             <div className="flex justify-end items-center flex-wrap mb-3 gap-2">
-            <Button type="default" icon={<FileExcelOutlined />} className="ml-auto" style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
-              Xuất Excel
-            </Button>
-          </div>
+              <Button
+                type="default"
+                icon={<FileExcelOutlined />}
+                className="ml-auto"
+                style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }}
+                onClick={handleExport}
+              >
+                Xuất Excel
+              </Button>
+            </div>
 
             {/* TABLE */}
             <div className="w-full overflow-auto">

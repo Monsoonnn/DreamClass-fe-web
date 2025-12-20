@@ -1,6 +1,6 @@
 import React from 'react';
 import { Breadcrumb } from 'antd';
-import { OrderedListOutlined, TeamOutlined } from '@ant-design/icons';
+import { OrderedListOutlined, TrophyOutlined } from '@ant-design/icons';
 import RankingTable from './components/RankingTable';
 
 export default function RankingMana() {
@@ -15,8 +15,8 @@ export default function RankingMana() {
                 href: '/ranking-mana',
                 title: (
                   <>
-                    <TeamOutlined />
-                    <span>Quản lý Ranking</span>
+                    <TrophyOutlined />
+                    <span>Bảng xếp hạng</span>
                   </>
                 ),
               },
@@ -24,7 +24,7 @@ export default function RankingMana() {
                 title: (
                   <>
                     <OrderedListOutlined />
-                    <span className="font-semibold text-[#23408e]">Bảng xếp hạng</span>
+                    <span className="font-semibold text-[#23408e]">Bảng xếp hạng lớp</span>
                   </>
                 ),
               },

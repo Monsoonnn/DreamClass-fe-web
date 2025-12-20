@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Tabs, Spin, Breadcrumb } from 'antd';
+import { InfoCircleOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import StudentInfo from './StudentInfo';
 import StudentLearning from './StudentLearning';
@@ -52,7 +53,28 @@ export default function StudentDetail() {
     );
   return (
     <div className="p-2 bg-blue-50 min-h-screen">
-      <Breadcrumb className="py-2 px-2 font-semibold text-[#23408e]" items={[{ href: '/student-mana', title: 'Danh sách học sinh' }, { title: 'Chi tiết học sinh' }]} />
+      <Breadcrumb
+        className="mb-4 text-sm"
+        items={[
+          {
+            href: '/student-mana',
+            title: (
+              <>
+                <TeamOutlined />
+                <span>Quản lý học sinh</span>
+              </>
+            ),
+          },
+          {
+            title: (
+              <>
+                <UserOutlined />
+                <span className="font-semibold text-[#23408e]">Thông tin học sinh</span>
+              </>
+            ),
+          },
+        ]}
+      />
 
       <div className="bg-white shadow p-2">
         {student && (

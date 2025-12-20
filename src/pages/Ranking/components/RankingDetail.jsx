@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Tabs, Spin, Breadcrumb, message } from 'antd';
+import { InfoCircleOutlined, TrophyOutlined, UserOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import StudentInfo from '../../Student/components/StudentInfo';
 import StudentLearning from '../../Student/components/StudentLearning';
@@ -7,7 +8,7 @@ import StudentAchievements from '../../Student/components/StudentAchievements';
 import apiClient from '../../../services/api';
 
 export default function StudentDetail() {
-  const { id } = useParams(); 
+  const { id } = useParams();
   const navigate = useNavigate();
 
   const [student, setStudent] = useState(null);
@@ -53,9 +54,30 @@ export default function StudentDetail() {
 
   return (
     <div className="p-2 bg-blue-50 min-h-screen">
-      <Breadcrumb className="py-2 px-2 font-semibold text-[#23408e]" items={[{ href: '/ranking-mana', title: 'Bảng xếp hạng' }, { title: 'Chi tiết học sinh' }]} />
+      <Breadcrumb
+        className="mb-4 text-sm"
+        items={[
+          {
+            href: '/ranking-mana',
+            title: (
+              <>
+                <TrophyOutlined />
+                <span>Bảng xếp hạng</span>
+              </>
+            ),
+          },
+          {
+            title: (
+              <>
+                <UserOutlined />
+                <span className="font-semibold text-[#23408e]">Thông tin học sinh</span>
+              </>
+            ),
+          },
+        ]}
+      />
 
-      <div className="bg-white shadow p-2">
+      <div className="bg-white shadow p-4">
         {student && (
           <Tabs
             className="font-medium text-[#23408e]"

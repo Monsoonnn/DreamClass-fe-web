@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Button, Card, Input, Select, Form, Tag, Breadcrumb, message } from 'antd';
-import { PlusOutlined, DeleteOutlined, FileExcelOutlined, UserOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { PlusOutlined, DeleteOutlined, FileExcelOutlined, UserOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../../services/api';
 import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
@@ -11,18 +11,7 @@ export default function AddQuizz() {
   const fileInputRef = useRef(null);
   const [form] = Form.useForm();
 
-  // State lưu danh sách câu hỏi (Dùng cho UI hiển thị)
-  const [questions, setQuestions] = useState([
-    {
-      questionText: '',
-      answers: [
-        { text: '', isCorrect: false },
-        { text: '', isCorrect: false },
-        { text: '', isCorrect: false },
-        { text: '', isCorrect: false },
-      ],
-    },
-  ]);
+  const [questions, setQuestions] = useState([]);
 
   // --- LOGIC XỬ LÝ CÂU HỎI THỦ CÔNG (GIỮ NGUYÊN CHO UI) ---
   const handleAddQuestion = () => {
@@ -207,7 +196,7 @@ export default function AddQuizz() {
             href: '/quizz-mana',
             title: (
               <>
-                <UserOutlined />
+                <QuestionCircleOutlined />
                 <span>Quản lý quizz</span>
               </>
             ),
@@ -215,7 +204,7 @@ export default function AddQuizz() {
           {
             title: (
               <>
-                <UnorderedListOutlined />
+                <PlusOutlined />
                 <span className="font-semibold text-[#23408e]">Thêm quizz</span>
               </>
             ),
@@ -286,7 +275,7 @@ export default function AddQuizz() {
               </div>
             }
             bordered={false}
-            className="shadow-sm h-[500px] overflow-y-auto rounded-none"
+            className={`shadow-sm rounded-none ${questions.length > 0 ? 'h-[500px] overflow-y-auto' : ''}`}
           >
             {questions.map((q, qIndex) => (
               <Card
@@ -336,7 +325,9 @@ export default function AddQuizz() {
         </div>
 
         <div className="flex justify-end gap-1 mt-2 ">
-          <Button onClick={() => navigate('/quizz-mana')}>Hủy bỏ</Button>
+          <Button danger onClick={() => navigate('/quizz-mana')}>
+            Hủy bỏ
+          </Button>
           <Button type="primary" htmlType="submit" className="px-2">
             Lưu bộ câu hỏi
           </Button>

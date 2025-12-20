@@ -1,6 +1,6 @@
 import React from 'react';
 import { Breadcrumb, Tabs } from 'antd';
-import { UserOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { UserSwitchOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import UserTable from './components/UserTable';
 import TeacherTable from './components/TeacherTable';
 
@@ -29,7 +29,7 @@ export default function UserMana() {
                 href: '/user-mana',
                 title: (
                   <>
-                    <UserOutlined />
+                    <UserSwitchOutlined />
                     <span>Quản lý người dùng</span>
                   </>
                 ),
@@ -45,7 +45,7 @@ export default function UserMana() {
             ]}
           />
 
-          <div className="shadow-md bg-white rounded-xl p-3">
+          <div className="shadow-md bg-white rounded-none p-3">
             <Tabs defaultActiveKey="students" items={tabItems} />
           </div>
         </main>

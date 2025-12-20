@@ -1,6 +1,6 @@
 import React from 'react';
 import { Breadcrumb } from 'antd';
-import { OrderedListOutlined, TeamOutlined } from '@ant-design/icons';
+import { TrophyOutlined, TeamOutlined } from '@ant-design/icons';
 import RankingServerTable from './components/RankingServerTable';
 
 export default function RankingServer() {
@@ -15,7 +15,7 @@ export default function RankingServer() {
                 href: '/ranking-server',
                 title: (
                   <>
-                    <TeamOutlined />
+                    <TrophyOutlined />
                     <span> Xếp hạng máy chủ</span>
                   </>
                 ),
@@ -23,7 +23,7 @@ export default function RankingServer() {
               {
                 title: (
                   <>
-                    <OrderedListOutlined />
+                    <TeamOutlined />
                     <span className="font-semibold text-[#23408e]">Bảng xếp hạng</span>
                   </>
                 ),

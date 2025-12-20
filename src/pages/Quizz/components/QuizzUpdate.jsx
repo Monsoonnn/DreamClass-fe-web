@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Card, Input, Select, Form, Tag, Breadcrumb, Spin } from 'antd';
-import { PlusOutlined, DeleteOutlined, UserOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { PlusOutlined, DeleteOutlined, EditOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import apiClient from '../../../services/api';
 import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
@@ -170,7 +170,7 @@ export default function QuizzUpdate() {
               href: '/quizz-mana',
               title: (
                 <>
-                  <UserOutlined />
+                  <QuestionCircleOutlined />
                   <span>Quản lý quizz</span>
                 </>
               ),
@@ -178,7 +178,7 @@ export default function QuizzUpdate() {
             {
               title: (
                 <>
-                  <UnorderedListOutlined />
+                  <EditOutlined />
                   <span className="font-semibold text-[#23408e]">Chỉnh sửa quizz</span>
                 </>
               ),
@@ -187,7 +187,7 @@ export default function QuizzUpdate() {
         />
       </div>
 
-      <div className="mx-auto p-3 bg-white rounded-none shadow">
+      <div className="mx-auto p-3 bg-white rounded-none shadow max-w-6xl">
         <h2 className="text-xl font-semibold">Chỉnh sửa quizz</h2>
 
         <Form form={form} layout="vertical" onFinish={handleSubmit} className="custom-form">
@@ -259,7 +259,9 @@ export default function QuizzUpdate() {
           </Button>
 
           <div className="mt-2 flex justify-end gap-1">
-            <Button onClick={() => navigate('/quizz-mana')}>Hủy</Button>
+            <Button danger onClick={() => navigate('/quizz-mana')}>
+              Hủy
+            </Button>
             <Button type="primary" htmlType="submit" loading={submitLoading}>
               Lưu thay đổi
             </Button>

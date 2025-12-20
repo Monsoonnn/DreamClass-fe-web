@@ -195,8 +195,8 @@ export default function SpinTable() {
       width: 140,
       render: (_, record) => (
         <Space>
-          <EyeOutlined style={{ color: '#1890ff', fontSize: 16, cursor: 'pointer' }} onClick={() => handleViewDetail(record)} />
-          <DeleteOutlined style={{ color: '#ff4d4f', fontSize: 16, cursor: 'pointer' }} onClick={() => handleDeleteSpin(record.key)} />
+          <EyeOutlined style={{ color: 'green', cursor: 'pointer' }} onClick={() => handleViewDetail(record)} />
+          <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} onClick={() => handleDeleteSpin(record.key)} />
         </Space>
       ),
     },

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Breadcrumb, Spin, message } from 'antd'; // Bỏ Descriptions, Tag, Card, Space vì không dùng nữa
-import { ReadOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { InfoCircleOutlined, SolutionOutlined } from '@ant-design/icons';
 import TeacherMissionEdit from './TeacherMissionEdit';
 import { apiClient } from '../../../services/api';
 
@@ -83,7 +83,7 @@ export default function TeacherMissionDetail() {
             href: '/teacher-mission-mana',
             title: (
               <>
-                <ReadOutlined />
+                <SolutionOutlined />
                 <span>Quản lý nhiệm vụ</span>
               </>
             ),
@@ -91,18 +91,17 @@ export default function TeacherMissionDetail() {
           {
             title: (
               <>
-                <UnorderedListOutlined />
+                <InfoCircleOutlined />
                 <span className="font-semibold text-[#23408e]">Thông tin nhiệm vụ</span>
               </>
             ),
           },
         ]}
       />
-      <h2 className="text-xl font-semibold mb-4">Thông tin nhiệm vụ</h2>
 
-      <div className="bg-gray-200 p-2 rounded-md flex justify-center">
-        <div className="bg-white p-4 rounded shadow-md w-full max-w-3xl">
-          <h3 className="text-lg font-semibold mb-4">Thông tin quest</h3>
+      <div className="p-2 rounded-md flex justify-center">
+        <div className="bg-white p-4 rounded shadow-md w-full max-w-4xl">
+          <h3 className="text-lg font-semibold mb-4">Thông tin nhiệm vụ</h3>
 
           {/* Layout Grid giống MissionDetail.jsx */}
           <div className="grid grid-cols-2 gap-y-2 text-sm">

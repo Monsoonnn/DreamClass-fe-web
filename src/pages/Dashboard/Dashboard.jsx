@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Statistic, Table, Tag, Avatar, Spin, message, Empty } from 'antd';
-import { UserOutlined, ReadOutlined, RocketOutlined, TrophyOutlined, TeamOutlined, SmileOutlined } from '@ant-design/icons';
+import { UserOutlined, ReadOutlined, RocketOutlined, TrophyOutlined, TeamOutlined, SolutionOutlined } from '@ant-design/icons';
 import { formatDate } from '../../utils/dateUtil';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import apiClient from '../../services/api';
@@ -37,7 +37,7 @@ export default function Dashboard() {
   const fetchTeacherDashboard = async () => {
     try {
       setLoading(true);
-      
+
       // 1. Get Class Name (for ranking)
       const assignedClass = user.assignedClasses?.[0];
       const className = assignedClass?.className;
@@ -48,7 +48,7 @@ export default function Dashboard() {
         apiClient.get('/teacher/students'),
         apiClient.get('/quests/admin/templates'),
         apiClient.get('/pdfs/list/books'),
-        className ? apiClient.get(`/ranking/class/${className}`) : Promise.resolve({ data: { data: [] } })
+        className ? apiClient.get(`/ranking/class/${className}`) : Promise.resolve({ data: { data: [] } }),
       ]);
 
       // 3. Process Data
@@ -59,9 +59,9 @@ export default function Dashboard() {
 
       // Create Gender Map
       const genderMap = {};
-      studentData.forEach(s => {
+      studentData.forEach((s) => {
         if (s.playerId) {
-            genderMap[s.playerId] = s.gender;
+          genderMap[s.playerId] = s.gender;
         }
       });
 
@@ -74,21 +74,22 @@ export default function Dashboard() {
       });
 
       setTeacherClassData(rankingData);
-      
+
       // 5. Set Recent Students (Top 5 from ranking)
-      setRecentStudents(rankingData.slice(0, 5).map((item) => {
-        const pid = item.playerId || item._id; // ranking item usually has playerId
-        return {
+      setRecentStudents(
+        rankingData.slice(0, 5).map((item) => {
+          const pid = item.playerId || item._id; // ranking item usually has playerId
+          return {
             key: pid,
             rank: item.rank,
             name: item.name,
             avatar: item.avatar,
             class: item.className,
             points: item.points || 0,
-            gender: genderMap[pid] || 'Other'
-        };
-      }));
-
+            gender: genderMap[pid] || 'Other',
+          };
+        })
+      );
     } catch (error) {
       console.error('Error fetching teacher dashboard:', error);
       message.error('Không thể tải dữ liệu giáo viên');
@@ -240,7 +241,7 @@ export default function Dashboard() {
   // --- TEACHER VIEW ---
   if (user?.role === 'teacher') {
     return (
-      <div className="p-4 h-full flex flex-col gap-4 overflow-y-auto bg-slate-50">
+      <div className="p-4 h-full flex flex-col gap-4  bg-blue-50">
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
@@ -292,54 +293,56 @@ export default function Dashboard() {
             <Row gutter={[16, 16]} className="flex-1">
               {/* Top Students Table */}
               <Col xs={24} md={12} lg={16}>
-                <Card 
-                  title={<><TrophyOutlined className="text-yellow-500 mr-2"/> Top học sinh xuất sắc</>} 
-                  bordered={false} 
+                <Card
+                  title={
+                    <>
+                      <TrophyOutlined className="text-yellow-500 mr-2" /> Top học sinh xuất sắc
+                    </>
+                  }
+                  bordered={false}
                   className="shadow-sm h-full"
                 >
-                  <Table 
-                    columns={columns} 
-                    dataSource={recentStudents} 
-                    pagination={false} 
-                    rowKey="key"
-                    size="middle"
-                  />
+                  <Table columns={columns} dataSource={recentStudents} pagination={false} rowKey="key" size="middle" />
                 </Card>
               </Col>
 
               {/* Simple Chart for Top 5 Points */}
               <Col xs={24} md={12} lg={8}>
-                 <Card 
-                    title={
-                        <div className="flex justify-between items-center">
-                            <span>Điểm số Top 5</span>
-                            <div className="flex gap-2 text-xs font-normal">
-                                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#0088FE]"></span>Nam</span>
-                                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#FF8042]"></span>Nữ</span>
-                            </div>
-                        </div>
-                    } 
-                    bordered={false} 
-                    className="shadow-sm h-full"
+                <Card
+                  title={
+                    <div className="flex justify-between items-center">
+                      <span>Điểm số Top 5</span>
+                      <div className="flex gap-2 text-xs font-normal">
+                        <span className="flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-[#0088FE]"></span>Nam
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-[#FF8042]"></span>Nữ
+                        </span>
+                      </div>
+                    </div>
+                  }
+                  bordered={false}
+                  className="shadow-sm h-full"
                 >
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={recentStudents} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis type="number" hide />
-                        <YAxis dataKey="name" type="category" width={80} tick={{fontSize: 12}} />
-                        <RechartsTooltip />
-                        <Bar dataKey="points" radius={[0, 4, 4, 0]}>
-                          {recentStudents.map((entry, index) => {
-                             const g = (entry.gender || '').toLowerCase();
-                             let color = '#00C49F'; // Other
-                             if (g === 'male' || g === 'nam') color = '#0088FE';
-                             if (g === 'female' || g === 'nữ') color = '#FF8042';
-                             return <Cell key={`cell-${index}`} fill={color} />;
-                          })}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                 </Card>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={recentStudents} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" hide />
+                      <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 12 }} />
+                      <RechartsTooltip />
+                      <Bar dataKey="points" radius={[0, 4, 4, 0]}>
+                        {recentStudents.map((entry, index) => {
+                          const g = (entry.gender || '').toLowerCase();
+                          let color = '#00C49F'; // Other
+                          if (g === 'male' || g === 'nam') color = '#0088FE';
+                          if (g === 'female' || g === 'nữ') color = '#FF8042';
+                          return <Cell key={`cell-${index}`} fill={color} />;
+                        })}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </Card>
               </Col>
             </Row>
           </>
@@ -353,8 +356,8 @@ export default function Dashboard() {
     <div className="p-2 h-full flex flex-col gap-2 overflow-hidden bg-slate-50">
       {/* 1. Header & Title */}
       <div className="shrink-0 flex justify-between items-center px-1">
-        <h2 className="text-lg font-bold text-[#23408e] m-0">Dashboard</h2>
-        <span className="text-xs text-gray-500">{formatDate(new Date())}</span>
+        <h2 className="text-lg font-bold text-[#23408e] m-0">Trang chủ</h2>
+        <span className="text-xs text-gray-500">Cập nhật từ: {formatDate(new Date())}</span>
       </div>
 
       {/* 2. Statistics (Compact) */}
@@ -395,7 +398,7 @@ export default function Dashboard() {
               <Statistic
                 title={<span className="text-xs text-gray-500">Nhiệm vụ</span>}
                 value={stats.totalMissions}
-                prefix={<RocketOutlined className="text-purple-500" />}
+                prefix={<SolutionOutlined className="text-purple-500" />}
                 valueStyle={{ fontSize: '18px', fontWeight: 'bold', color: '#531dab' }}
               />
             </Card>
@@ -446,7 +449,7 @@ export default function Dashboard() {
           <Card
             title={
               <div className="flex items-center gap-2 truncate">
-                <TrophyOutlined className="text-yellow-500" /> Bảng xếp hạng
+                <TrophyOutlined className="text-yellow-500" /> Bảng xếp hạng máy chủ
               </div>
             }
             bordered={false}

@@ -119,7 +119,9 @@ export default function RankingClass() {
   const top3 = allRanking.length === 2 ? allRanking.slice(0, 1) : allRanking.slice(0, 3);
 
   return (
-    <div className="p-2"> {/* Take p-2 from origin/main */}
+    <div className="p-2">
+      {' '}
+      {/* Take p-2 from origin/main */}
       <Breadcrumb
         className="mb-4 text-sm"
         items={[
@@ -127,7 +129,7 @@ export default function RankingClass() {
             href: '/ranking-class',
             title: (
               <>
-                <TeamOutlined />
+                <TrophyOutlined />
                 <span> Xếp hạng theo lớp</span>
               </>
             ),
@@ -135,26 +137,26 @@ export default function RankingClass() {
           {
             title: (
               <>
-                <OrderedListOutlined />
+                <TeamOutlined />
                 <span className="font-semibold text-[#23408e]">Bảng xếp hạng</span>
               </>
             ),
           },
         ]}
       />
-      <div className="bg-white p-2"> {/* Take bg-white p-2 from origin/main */}
+      <div className="bg-white p-2">
+        {' '}
+        {/* Take bg-white p-2 from origin/main */}
         <h1 className="text-2xl font-bold text-gray-800 mb-4">Bảng xếp hạng theo lớp</h1> {/* My h1 */}
-
         {/* INPUT LỚP */}
         <div className="flex justify-center mb-6">
           <Space>
-            <Input placeholder="Nhập tên lớp (ví dụ: 17A1)" style={{ width: 260 }} value={classInput} onChange={(e) => setClassInput(e.target.value)} onPressEnter={handleFetch} />
+            <Input placeholder="Nhập tên lớp (ví dụ: 11A1)" style={{ width: 260 }} value={classInput} onChange={(e) => setClassInput(e.target.value)} onPressEnter={handleFetch} />
             <Button type="primary" icon={<SearchOutlined />} loading={loading} onClick={handleFetch}>
               Xem bảng xếp hạng
             </Button>
           </Space>
         </div>
-
         {className !== null && (
           <>
             {/* TOP 3 CARDS (giống ranking grade) */}
@@ -242,10 +244,16 @@ export default function RankingClass() {
               <Button type="primary" icon={<FilterOutlined />} style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }} />
             </Space.Compact> */}
 
-            <Button type="default" icon={<FileExcelOutlined />} className="ml-auto" style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }} onClick={handleExport}>
-              Xuất Excel
-            </Button>
-          </div>
+              <Button
+                type="default"
+                icon={<FileExcelOutlined />}
+                className="ml-auto"
+                style={{ backgroundColor: '#52c41a', color: '#fff', borderColor: '#52c41a' }}
+                onClick={handleExport}
+              >
+                Xuất Excel
+              </Button>
+            </div>
 
             {/* TABLE */}
             <div className="w-full overflow-auto">
