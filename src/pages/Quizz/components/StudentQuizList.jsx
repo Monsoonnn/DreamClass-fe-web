@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { apiClient } from '../../../services/api';
+import { Breadcrumb, Tabs } from 'antd';
+import { SolutionOutlined, UnorderedListOutlined } from '@ant-design/icons';
 
 export default function StudentQuizList() {
   const [quizzes, setQuizzes] = useState([]);
@@ -33,12 +35,33 @@ export default function StudentQuizList() {
   const getTotalQuestions = (quiz) => quiz.chapters?.reduce((sum, ch) => sum + ch.questions.length, 0) || 0;
 
   return (
-    <div className="min-h-screen bg-blue-50  md:p-10 font-sans text-slate-800">
+    <div className="min-h-screen bg-blue-50  md:p-3 font-sans text-slate-800">
       <div className=" ">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-2 gap-1">
           <div>
-            <h1 className="text-lg md:text-2xl font-extrabold text-slate-900 tracking-tight">Danh sách quizz</h1>
+            <Breadcrumb
+              className="mb-4 text-sm"
+              items={[
+                {
+                  href: '/user-mana',
+                  title: (
+                    <>
+                      <SolutionOutlined />
+                      <span>Làm bài Quizz</span>
+                    </>
+                  ),
+                },
+                {
+                  title: (
+                    <>
+                      <UnorderedListOutlined />
+                      <span className="font-semibold text-[#23408e]">Danh sách bài Quizz</span>
+                    </>
+                  ),
+                },
+              ]}
+            />{' '}
           </div>
         </div>
 
@@ -53,7 +76,7 @@ export default function StudentQuizList() {
             </div>
             <input
               type="text"
-              placeholder="Tìm kiếm bài thi..."
+              placeholder="Tìm kiếm ..."
               className="pl-10 block w-full border-gray-200 rounded-lg bg-gray-50 text-sm focus:border-blue-500 focus:ring-blue-500 p-2.5 transition-all"
               onChange={(e) => setSearchText(e.target.value)}
             />
