@@ -181,7 +181,7 @@ export default function StudyHistory({ student }) {
           <div className="flex flex-col items-center">
             {subjects.length > 0 ? (
               <>
-                <div className="mb-2 w-full px-4">
+                <div className="mb-1 w-full px-4">
                   <label className="block text-sm font-medium mb-2 text-gray-700">Chọn môn học</label>
                   <Select value={selectedSubject} onChange={setSelectedSubject} options={subjects} className="w-full" size="middle" />
                 </div>

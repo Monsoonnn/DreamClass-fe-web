@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Tabs, Spin, Breadcrumb, message } from 'antd';
+import { ReadOutlined, EditOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import StudyHistory from './components/StudyHistory';
 import StudyAchievements from './components/StudyAchievements';
@@ -52,9 +53,30 @@ export default function StudyMana() {
   }
 
   return (
-    <div className="p-2 bg-blue-50 min-h-screen">
+    <div className="p-3 bg-blue-50 ">
       {/* Breadcrumb giống StudentDetail */}
-      <Breadcrumb className="py-2 px-2 font-semibold text-[#23408e]" items={[{ href: '/student-home', title: 'Trang học sinh' }, { title: 'Học tập' }]} />
+      <Breadcrumb
+        className="mb-4 text-sm"
+        items={[
+          {
+            href: '/student-study',
+            title: (
+              <>
+                <ReadOutlined />
+                <span>Học tập</span>
+              </>
+            ),
+          },
+          {
+            title: (
+              <>
+                <EditOutlined />
+                <span className="font-semibold text-[#23408e]">Lịch sử học tập</span>
+              </>
+            ),
+          },
+        ]}
+      />
 
       <div className="bg-white shadow p-2">
         {student && (

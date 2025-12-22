@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Input, Pagination, Tag, Breadcrumb, Spin } from 'antd';
-import { EyeOutlined, SearchOutlined, UserOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { EyeOutlined, SearchOutlined, BookOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../../services/api';
 // import EditBookModal from './BookEdit';
@@ -88,8 +88,9 @@ export default function StudentBook() {
       align: 'center',
       render: (_, record) => (
         <Space>
-          <EyeOutlined style={{ color: 'green', cursor: 'pointer' }} onClick={() => window.open(record.filePath, '_blank')} />
-
+          <Button type="primary" icon={<EyeOutlined />} onClick={() => window.open(record.filePath, '_blank')}>
+            Xem
+          </Button>
           {/* <EditOutlined
             style={{ color: 'blue', cursor: 'pointer' }}
             onClick={() => {
@@ -107,7 +108,7 @@ export default function StudentBook() {
   ];
 
   return (
-    <div className="bg-white p-3">
+    <div className=" p-3">
       {loading ? (
         <div className="flex justify-center items-center min-h-[200px]">
           <Spin size="large" />
@@ -123,8 +124,8 @@ export default function StudentBook() {
                   href: '/book-mana',
                   title: (
                     <>
-                      <UserOutlined />
-                      <span>Quản lý bài trắc nghiệm</span>
+                      <BookOutlined />
+                      <span>Xem sách</span>
                     </>
                   ),
                 },
@@ -132,55 +133,57 @@ export default function StudentBook() {
                   title: (
                     <>
                       <UnorderedListOutlined />
-                      <span className="font-semibold text-[#23408e]">Danh sách bài trắc nghiệm</span>
+                      <span className="font-semibold text-[#23408e]">Danh sách sách</span>
                     </>
                   ),
                 },
               ]}
             />
           </div>
-          <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
-            <Space.Compact className="w-full max-w-xl">
-              <Input placeholder="Tìm kiếm..." value={inputSearch} onChange={(e) => setInputSearch(e.target.value)} style={{ width: 220 }} />
+          <div className="bg-white p-2 rounded-lg shadow-md">
+            <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
+              <Space.Compact className="w-full max-w-xl">
+                <Input placeholder="Tìm kiếm..." value={inputSearch} onChange={(e) => setInputSearch(e.target.value)} style={{ width: 220 }} />
 
-              <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}>
-                Tìm
-              </Button>
-            </Space.Compact>
+                <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}>
+                  Tìm
+                </Button>
+              </Space.Compact>
 
-            <Space.Compact>
-              {/* <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/book-mana/add')}>
+              <Space.Compact>
+                {/* <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/book-mana/add')}>
                 Thêm mới
               </Button> */}
-            </Space.Compact>
-          </div>
+              </Space.Compact>
+            </div>
 
-          {/* Bảng */}
-          <Table
-            dataSource={filteredBooks().slice((currentPage - 1) * pageSize, currentPage * pageSize)}
-            columns={columns}
-            pagination={false}
-            rowKey="key"
-            // rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
-            bordered
-            size="small"
-          />
-
-          {/* Pagination */}
-          <div className="flex justify-between items-center mt-4">
-            <span>{/* Đã chọn: {selectedRowKeys.length} bản ghi */}</span>
-
-            <Pagination
-              current={currentPage}
-              pageSize={pageSize}
-              total={filteredBooks().length}
-              onChange={(p, s) => {
-                setCurrentPage(p);
-                setPageSize(s);
-              }}
-              showSizeChanger
-              pageSizeOptions={['5', '10', '20', '50']}
+            {/* Bảng */}
+            <Table
+              dataSource={filteredBooks().slice((currentPage - 1) * pageSize, currentPage * pageSize)}
+              columns={columns}
+              pagination={false}
+              rowKey="key"
+              // rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
+              bordered
+              size="small"
             />
+
+            {/* Pagination */}
+            <div className="flex justify-between items-center mt-4">
+              <span>{/* Đã chọn: {selectedRowKeys.length} bản ghi */}</span>
+
+              <Pagination
+                current={currentPage}
+                pageSize={pageSize}
+                total={filteredBooks().length}
+                onChange={(p, s) => {
+                  setCurrentPage(p);
+                  setPageSize(s);
+                }}
+                showSizeChanger
+                pageSizeOptions={['5', '10', '20', '50']}
+              />
+            </div>
           </div>
 
           {/* {editModalVisible && currentBook && (
