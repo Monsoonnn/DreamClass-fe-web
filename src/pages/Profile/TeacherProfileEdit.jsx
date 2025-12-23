@@ -106,13 +106,14 @@ export default function TeacherProfileEdit({ visible, onClose, teacher, onUpdate
         }}
       >
         {/* Avatar */}
-        <Form.Item className="flex justify-center" label="">
-          <Upload beforeUpload={handleBeforeUpload} showUploadList={false} accept="image/*" maxCount={1} disabled={submitting}></Upload>
+        <Form.Item className="flex flex-col items-center justify-center" label="">
+          {avatarPreview && <img src={avatarPreview} alt="avatar" className="mb-3 w-24 h-24 rounded-full object-cover" />}
 
-          {avatarPreview && <img src={avatarPreview} alt="avatar" className="mt-3 w-24 h-24 rounded-full object-cover " />}
-          <Button className="mt-2" icon={<UploadOutlined />} disabled={submitting}>
-            Chọn ảnh
-          </Button>
+          <Upload beforeUpload={handleBeforeUpload} showUploadList={false} accept="image/*" maxCount={1} disabled={submitting}>
+            <Button icon={<UploadOutlined />} disabled={submitting}>
+              Chọn ảnh
+            </Button>
+          </Upload>
         </Form.Item>
 
         {/* 2 CỘT */}

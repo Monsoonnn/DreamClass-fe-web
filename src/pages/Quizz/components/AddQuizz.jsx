@@ -251,10 +251,6 @@ export default function AddQuizz() {
             <Form.Item label="Chương" name="chapter" rules={[{ required: true, message: 'Nhập tên chương!' }]}>
               <Input placeholder="Chương 1..." />
             </Form.Item>
-
-            <Form.Item label="Ghi chú" name="note">
-              <Input.TextArea rows={2} />
-            </Form.Item>
           </Card>
 
           <Card

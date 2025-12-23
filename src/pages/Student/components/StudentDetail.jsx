@@ -5,6 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import StudentInfo from './StudentInfo';
 import StudentLearning from './StudentLearning';
 import StudentAchievements from './StudentAchievements';
+import StudentHistory from './StudentHistory';
 import apiClient from '../../../services/api';
 import { showError } from '../../../utils/swalUtils';
 
@@ -102,6 +103,11 @@ export default function StudentDetail() {
                 key: '3',
                 label: 'Thành tích',
                 children: <StudentAchievements student={student} />,
+              },
+              {
+                key: '4',
+                label: 'Lịch sử',
+                children: <StudentHistory playerId={student.playerId} />,
               },
             ]}
           />
