@@ -142,11 +142,11 @@ export default function AddMission() {
               <h3 className="text-lg font-semibold mb-2">I. Thông tin chung</h3>
               <hr className="mb-4" />
 
-              <Form.Item label="Quest ID" name="questId" rules={[{ required: true }]}>
+              <Form.Item label="Mã nhiệm vụ" name="questId" rules={[{ required: true }]}>
                 <Input placeholder="Nhập mã nhiệm vụ..." />
               </Form.Item>
 
-              <Form.Item label="Tên Quest" name="name" rules={[{ required: true }]}>
+              <Form.Item label="Tên nhiệm vụ" name="name" rules={[{ required: true }]}>
                 <Input placeholder="Nhập tên nhiệm vụ..." />
               </Form.Item>
 
@@ -157,12 +157,12 @@ export default function AddMission() {
                 <Input type="number" placeholder="Nhập điểm thưởng..." />
               </Form.Item>
 
-              <Form.Item label="Có phải quest hàng ngày không?" name="isDailyQuest" valuePropName="checked">
+              <Form.Item label="Có phải nhiệm vụ hàng ngày không?" name="isDailyQuest" valuePropName="checked">
                 <Switch onChange={setIsDailyQuest} />
               </Form.Item>
 
-              <Form.Item label="Cách nhận quest" name="dailyQuestType" rules={[{ required: isDailyQuest }]}>
-                <Select placeholder="Chọn loại cách nhận quest" disabled={!isDailyQuest}>
+              <Form.Item label="Cách nhận nhiệm vụ" name="dailyQuestType" rules={[{ required: isDailyQuest }]}>
+                <Select placeholder="Chọn  cách nhận nhiệm vụ" disabled={!isDailyQuest}>
                   <Select.Option value="NPC_INTERACTION">Tương tác NPC</Select.Option>
                   <Select.Option value="AUTO_ASSIGN">Tự động</Select.Option>
                 </Select>
