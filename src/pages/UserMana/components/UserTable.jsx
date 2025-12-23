@@ -173,7 +173,8 @@ export default function UserTable({ filterRole }) {
         return gender;
       },
     },
-
+    { title: 'Khối', dataIndex: 'grade', key: 'grade', align: 'center' },
+    { title: 'Lớp', dataIndex: 'className', key: 'className', align: 'center' },
     {
       title: 'Ngày sinh',
       dataIndex: 'dateOfBirth',

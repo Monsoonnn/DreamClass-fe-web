@@ -71,12 +71,12 @@ export default function EditMissionModal({ visible, onClose, missionData, refres
       <Form className="custom-form" layout="vertical" form={form} onFinish={handleSubmit}>
         <h3 className="font-semibold">I. Thông tin nhiệm vụ</h3>
         {/* Quest ID */}
-        <Form.Item label="Quest ID" name="questId">
+        <Form.Item label="Mã nhiệm vụ" name="questId">
           <Input disabled />
         </Form.Item>
 
         {/* Tên Quest */}
-        <Form.Item label="Tên Quest" name="name" rules={[{ required: true, message: 'Vui lòng nhập tên nhiệm vụ' }]}>
+        <Form.Item label="Tên nhiệm vụ" name="name" rules={[{ required: true, message: 'Vui lòng nhập tên nhiệm vụ' }]}>
           <Input />
         </Form.Item>
 
@@ -91,12 +91,12 @@ export default function EditMissionModal({ visible, onClose, missionData, refres
         </Form.Item>
 
         {/* Loại Quest */}
-        <Form.Item label="Có phải quest hàng ngày không?" name="isDailyQuest" valuePropName="checked">
+        <Form.Item label="Có phải nhiệm vụ hàng ngày không?" name="isDailyQuest" valuePropName="checked">
           <Switch onChange={setIsDailyQuest} />
         </Form.Item>
 
         {/* Daily Type */}
-        <Form.Item label="Cách nhận quest" name="dailyQuestType" rules={[{ required: isDailyQuest, message: 'Chọn loại Daily Quest' }]}>
+        <Form.Item label="Cách nhận nhiệm vụ" name="dailyQuestType" rules={[{ required: isDailyQuest, message: 'Chọn loại Daily Quest' }]}>
           <Select disabled={!isDailyQuest} placeholder="Chọn loại Daily Quest">
             <Select.Option value="NPC_INTERACTION">Tương tác NPC</Select.Option>
             <Select.Option value="AUTO_ASSIGN">Tự động</Select.Option>
