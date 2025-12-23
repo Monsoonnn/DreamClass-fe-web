@@ -18,13 +18,18 @@ export default function StudentDetail() {
 
   const getStudentById = async (playerID) => {
     try {
-      const response = await apiClient.get(`/teacher/students/${playerID}`);
+      // Đã đổi sang API admin/players để lấy đầy đủ thông tin (bao gồm email)
+      const response = await apiClient.get(`/players/admin/players/${playerID}`);
+
+      // API này trả về cấu trúc { message: "...", data: { ... } }
+      // nên response.data.data là chính xác
       return response.data.data || null;
     } catch (error) {
       console.error('Error fetching student detail:', error);
       return null;
     }
   };
+
   useEffect(() => {
     const fetchData = async () => {
       if (!id) return;
@@ -52,6 +57,7 @@ export default function StudentDetail() {
         <Spin size="large" />
       </div>
     );
+
   return (
     <div className="p-2 bg-blue-50 min-h-screen">
       <Breadcrumb
