@@ -5,6 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import UserInfo from '../../UserMana/components/UserInfo';
 import UserLearning from '../../Student/components/StudentLearning';
 import UserAchievements from '../../UserMana/components/UserAchievements';
+import StudentHistory from '../../Student/components/StudentHistory';
 import { apiClient } from '../../../services/api.js';
 
 export default function RankingServerDetail() {
@@ -98,6 +99,11 @@ export default function RankingServerDetail() {
                 key: '3',
                 label: 'Thành tích',
                 children: <UserAchievements user={user} />,
+              },
+              {
+                key: '4',
+                label: 'Lịch sử',
+                children: <StudentHistory playerId={user.playerId} />,
               },
             ]}
           />

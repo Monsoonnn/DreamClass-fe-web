@@ -93,16 +93,13 @@ export default function QuizzDetail() {
           <p>
             <b>Khối:</b> {quizz.grade}
           </p>
-          <p>
-            <b>Số chương:</b> {quizz.chapters.length}
-          </p>
         </div>
 
         {/* HIỂN THỊ CÁC CHƯƠNG & CÂU HỎI */}
         {quizz.chapters.map((chapter, chapterIndex) => (
           <div key={chapterIndex} className="mt-4">
             <h3 className="font-semibold text-lg mb-2">
-              Chương {chapterIndex + 1}: {chapter.name}
+              Chương: {chapter.name}
             </h3>
 
             {chapter.questions.map((q, qIndex) => (

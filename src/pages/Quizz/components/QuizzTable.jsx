@@ -33,7 +33,6 @@ export default function QuizzTable() {
         subject: q.subject,
         grade: q.grade,
         chapter: q.chapters?.map((c) => c.name).join(', ') || 'Không có',
-        note: `Số chương: ${q.chapters?.length || 0}`,
       }));
 
       setQuizzList(mapped);
@@ -119,7 +118,6 @@ export default function QuizzTable() {
       Khối: item.grade,
       'Môn học': item.subject,
       Chương: item.chapter,
-      'Ghi chú': item.note,
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -156,10 +154,6 @@ export default function QuizzTable() {
       title: 'Chương',
       dataIndex: 'chapter',
       render: (text) => <Tag color="purple">{text}</Tag>,
-    },
-    {
-      title: 'Ghi chú',
-      dataIndex: 'note',
     },
     {
       title: 'Thao tác',

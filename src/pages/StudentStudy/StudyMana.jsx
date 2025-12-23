@@ -4,6 +4,7 @@ import { ReadOutlined, EditOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import StudyHistory from './components/StudyHistory';
 import StudyAchievements from './components/StudyAchievements';
+import StudentHistoryList from '../Student/components/StudentHistory';
 import apiClient from '../../services/api';
 
 export default function StudyMana() {
@@ -86,13 +87,18 @@ export default function StudyMana() {
             items={[
               {
                 key: '1',
-                label: 'Lịch sử học tập',
+                label: 'Tổng quan hoạt động',
                 children: <StudyHistory student={student} />,
               },
               {
                 key: '2',
                 label: 'Thành tích học tập',
                 children: <StudyAchievements student={student} />,
+              },
+              {
+                key: '3',
+                label: 'Lịch sử chi tiết',
+                children: <StudentHistoryList playerId={student.playerId} isMyHistory={true} />,
               },
             ]}
           />

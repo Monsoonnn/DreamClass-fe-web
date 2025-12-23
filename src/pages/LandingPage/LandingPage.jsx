@@ -1,6 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const DOWNLOAD_LINK = import.meta.env.VITE_DOWNLOAD_LINK || '#';
+
 // Dữ liệu mẫu
 const GAME_DATA = {
   name: 'Dream Class',
@@ -37,10 +39,10 @@ const GAME_DATA = {
     title: 'Tải Game Ngay',
     description: 'Sẵn sàng cho cuộc phiêu lưu? Chọn nền tảng của bạn và bắt đầu!',
     platforms: [
-      { name: 'APK', link: '#', image: '/images/forapk.png' },
-      { name: 'PC (Steam)', link: '#', image: '/images/meta.png' },
-      { name: 'Meta', link: '#', image: '/images/steam2.png' },
-      { name: 'Google Play', link: '#', image: '/images/googleplay.png' },
+      { name: 'APK', link: DOWNLOAD_LINK, image: '/images/forapk.png' },
+      { name: 'PC (Steam)', link: DOWNLOAD_LINK, image: '/images/meta.png' },
+      { name: 'Meta', link: DOWNLOAD_LINK, image: '/images/steam2.png' },
+      { name: 'Google Play', link: DOWNLOAD_LINK, image: '/images/googleplay.png' },
     ],
   },
 };
@@ -113,7 +115,7 @@ const Header = () => {
         </nav>
 
         <div className="hidden md:flex items-center space-x-4">
-          <a href="#download" className="bg-cyan-500 hover:bg-cyan-400 text-black font-bold py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+          <a href={DOWNLOAD_LINK} className="bg-cyan-500 hover:bg-cyan-400 text-black font-bold py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
             Tải Ngay
           </a>
           <button
@@ -158,7 +160,7 @@ const Hero = () => (
       <p className="mt-4 text-xl md:text-2xl font-light text-gray-300">{GAME_DATA.tagline}</p>
 
       <a
-        href="#download"
+        href={DOWNLOAD_LINK}
         className="mt-8 inline-block bg-cyan-500 hover:bg-cyan-400 text-black font-bold py-4 px-12 rounded-lg text-lg uppercase transition-all duration-300 transform hover:scale-105 shadow-lg shadow-cyan-500/30"
       >
         Tải Game Miễn Phí

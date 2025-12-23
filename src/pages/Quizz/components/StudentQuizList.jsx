@@ -1,35 +1,58 @@
 import React, { useEffect, useState } from 'react';
 import { apiClient } from '../../../services/api';
-import { Breadcrumb, Tabs } from 'antd';
-import { SolutionOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { Breadcrumb, Tabs, Tag } from 'antd';
+import { SolutionOutlined, UnorderedListOutlined, CheckCircleFilled } from '@ant-design/icons';
 
 export default function StudentQuizList() {
   const [quizzes, setQuizzes] = useState([]);
+  const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [subjectFilter, setSubjectFilter] = useState('');
   const [searchText, setSearchText] = useState('');
 
+  const [statusFilter, setStatusFilter] = useState('all'); // all, passed, not_passed
+
   useEffect(() => {
-    fetchQuizzes();
+    fetchData();
   }, []);
 
-  const fetchQuizzes = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await apiClient.get('/quizzes');
-      setQuizzes(res.data.data || []);
+      // Gọi song song cả danh sách quiz và lịch sử làm bài của bản thân
+      const [quizRes, historyRes] = await Promise.all([
+        apiClient.get('/quizzes'),
+        apiClient.get('/quizzes/history/my?limit=100') // Lấy lịch sử để kiểm tra bài đã làm
+      ]);
+      
+      setQuizzes(quizRes.data.data || []);
+      setHistory(historyRes.data.data || []);
     } catch (err) {
       console.error(err);
-      alert('Không tải được danh sách quiz!');
+      // alert('Không tải được dữ liệu!');
     } finally {
       setLoading(false);
     }
   };
 
+  const isQuizPassed = (quizId) => {
+    // Kiểm tra xem trong lịch sử có lần nào đạt (isPassed: true) cho quizId này không
+    return history.some(h => (h.quizId?._id === quizId || h.quizId === quizId) && h.isPassed);
+  };
+
   const filtered = quizzes.filter((q) => {
+    const passed = isQuizPassed(q._id);
     const bySubject = subjectFilter ? q.subject === subjectFilter : true;
     const bySearch = searchText ? q.name.toLowerCase().includes(searchText.toLowerCase()) : true;
-    return bySubject && bySearch;
+    
+    let byStatus = true;
+    if (statusFilter === 'passed') {
+      byStatus = passed;
+    } else if (statusFilter === 'not_passed') {
+      byStatus = !passed;
+    }
+
+    return bySubject && bySearch && byStatus;
   });
 
   const getTotalQuestions = (quiz) => quiz.chapters?.reduce((sum, ch) => sum + ch.questions.length, 0) || 0;
@@ -66,8 +89,8 @@ export default function StudentQuizList() {
         </div>
 
         {/* Filters Section */}
-        <div className="bg-white max-w-xl p-2 rounded-xl shadow-sm border border-gray-100 mb-2 flex flex-col sm:flex-row gap-2 items-center">
-          <div className="relative w-full sm:w-80">
+        <div className="bg-white max-w-4xl p-2 rounded-xl shadow-sm border border-gray-100 mb-2 flex flex-col sm:flex-row gap-2 items-center">
+          <div className="relative w-full sm:w-96">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               {/* Search Icon SVG */}
               <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -76,13 +99,13 @@ export default function StudentQuizList() {
             </div>
             <input
               type="text"
-              placeholder="Tìm kiếm ..."
+              placeholder="Tìm kiếm bài thi..."
               className="pl-10 block w-full border-gray-200 rounded-lg bg-gray-50 text-sm focus:border-blue-500 focus:ring-blue-500 p-2.5 transition-all"
               onChange={(e) => setSearchText(e.target.value)}
             />
           </div>
 
-          <div className="w-full sm:w-60">
+          <div className="w-full sm:w-72">
             <select
               className="block w-full border-gray-200 rounded-lg bg-gray-50 text-sm focus:border-blue-500 focus:ring-blue-500 p-2.5 cursor-pointer"
               onChange={(e) => setSubjectFilter(e.target.value)}
@@ -93,6 +116,18 @@ export default function StudentQuizList() {
                   {subj}
                 </option>
               ))}
+            </select>
+          </div>
+
+          <div className="w-full sm:w-64">
+            <select
+              className="block w-full border-gray-200 rounded-lg bg-gray-50 text-sm focus:border-blue-500 focus:ring-blue-500 p-2.5 cursor-pointer"
+              onChange={(e) => setStatusFilter(e.target.value)}
+              value={statusFilter}
+            >
+              <option value="all">Tất cả trạng thái</option>
+              <option value="passed">Đã hoàn thành</option>
+              <option value="not_passed">Chưa hoàn thành</option>
             </select>
           </div>
         </div>
@@ -114,49 +149,59 @@ export default function StudentQuizList() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                {filtered.map((quiz) => (
-                  <div
-                    key={quiz._id}
-                    className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden"
-                  >
-                    {/* Decorative Top Bar */}
-                    <div className="h-2 w-full bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+                {filtered.map((quiz) => {
+                  const passed = isQuizPassed(quiz._id);
+                  return (
+                    <div
+                      key={quiz._id}
+                      className={`group bg-white rounded-2xl border ${passed ? 'border-green-100 shadow-green-50' : 'border-gray-100 shadow-sm'} hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden relative`}
+                    >
+                      {/* Decorative Top Bar */}
+                      <div className={`h-2 w-full ${passed ? 'bg-gradient-to-r from-green-400 to-green-600' : 'bg-gradient-to-r from-blue-500 to-indigo-500'}`}></div>
 
-                    <div className="p-4 flex-1 flex flex-col">
-                      <div className="flex justify-between items-start mb-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">{quiz.subject}</span>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Khối {quiz.grade}</span>
+                      <div className="p-4 flex-1 flex flex-col">
+                        <div className="flex justify-between items-start mb-4">
+                          <div className="flex gap-1">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">{quiz.subject}</span>
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Khối {quiz.grade}</span>
+                          </div>
+                          {passed && (
+                            <Tag color="success" icon={<CheckCircleFilled />} className="m-0 rounded-full border-0 px-3 bg-green-50 text-green-600 font-bold">
+                              ĐÃ HOÀN THÀNH
+                            </Tag>
+                          )}
+                        </div>
+
+                        <h3 className={`text-xl font-bold mb-2 transition-colors line-clamp-2 ${passed ? 'text-green-800 group-hover:text-green-600' : 'text-gray-900 group-hover:text-blue-600'}`}>{quiz.name}</h3>
+
+                        <div className="mt-auto pt-2 flex items-center text-gray-500 text-sm">
+                          {/* Question Icon */}
+                          <svg className="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          {getTotalQuestions(quiz)} câu hỏi
+                        </div>
                       </div>
 
-                      <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">{quiz.name}</h3>
-
-                      <div className="mt-auto pt-2 flex items-center text-gray-500 text-sm">
-                        {/* Question Icon */}
-                        <svg className="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                        {getTotalQuestions(quiz)} câu hỏi
+                      <div className="px-6 pb-6">
+                        <button
+                          onClick={() => window.open(`/student-quizz-detail/${quiz._id}`, '_blank')}
+                          className={`w-full flex items-center justify-center px-4 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white transition-all transform hover:-translate-y-0.5 ${passed ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500' : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'}`}
+                        >
+                          <span>{passed ? 'Làm lại bài' : 'Làm bài ngay'}</span>
+                          <svg className="ml-2 -mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                          </svg>
+                        </button>
                       </div>
                     </div>
-
-                    <div className="px-6 pb-6">
-                      <button
-                        onClick={() => window.open(`/student-quizz-detail/${quiz._id}`, '_blank')}
-                        className="w-full flex items-center justify-center px-4 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all transform hover:-translate-y-0.5"
-                      >
-                        <span>Làm bài ngay</span>
-                        <svg className="ml-2 -mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </>
