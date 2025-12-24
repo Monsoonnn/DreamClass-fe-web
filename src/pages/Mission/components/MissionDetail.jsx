@@ -143,7 +143,7 @@ export default function MissionDetail() {
               <strong>Điểm thưởng:</strong> {mission.point}
             </p>
             <p>
-              <strong>Có phải quest hàng ngày không:</strong> {mission.isDailyQuest ? 'Có' : 'Không'}
+              <strong>Có phải quest hàng ngày không:</strong> {mission.isDailyQuest || mission.isDaily ? 'Có' : 'Không'}
             </p>
             <p>
               <strong>Ngày tạo:</strong> {formatDate(mission.createdAt)}

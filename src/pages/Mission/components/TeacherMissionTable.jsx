@@ -151,9 +151,12 @@ export default function TeacherMissionTable() {
     { title: 'Ngày tạo', dataIndex: 'createdAt', align: 'center', render: (createdAt) => formatDate(createdAt) },
     {
       title: 'Loại',
-      dataIndex: 'isDailyQuest',
+      key: 'isDailyQuest',
       align: 'center',
-      render: (isDailyQuest) => <Tag color={isDailyQuest ? 'green' : 'gold'}>{isDailyQuest ? 'Hàng ngày' : 'Thông thường'}</Tag>,
+      render: (_, record) => {
+        const isDaily = record.isDailyQuest || record.isDaily;
+        return <Tag color={isDaily ? 'green' : 'gold'}>{isDaily ? 'Hàng ngày' : 'Thông thường'}</Tag>;
+      },
     },
     {
       title: 'Cách nhận',

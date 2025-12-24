@@ -13,7 +13,8 @@ export default function TeacherMissionEdit({ visible, onClose, missionData, refr
 
   useEffect(() => {
     if (missionData) {
-      setIsDailyQuest(missionData.isDailyQuest);
+      const isDaily = missionData.isDailyQuest || missionData.isDaily;
+      setIsDailyQuest(isDaily);
 
       form.setFieldsValue({
         questId: missionData.questId,
@@ -22,7 +23,7 @@ export default function TeacherMissionEdit({ visible, onClose, missionData, refr
         rewardGold: missionData.rewardGold,
         point: missionData.point,
         dailyQuestType: missionData.dailyQuestType,
-        isDailyQuest: missionData.isDailyQuest,
+        isDailyQuest: isDaily,
         prerequisiteQuestIds: missionData.prerequisiteQuestIds || [],
         steps: missionData.steps || [],
       });

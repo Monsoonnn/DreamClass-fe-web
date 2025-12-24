@@ -117,8 +117,12 @@ export default function UserUpdate({ open, onClose, userData, onUpdated }) {
               <Input />
             </Form.Item>
 
-            <Form.Item label="Khối" name="level">
-              <Input />
+            <Form.Item label="Khối" name="grade">
+              <Select placeholder="Chọn khối">
+                <Option value="10">10</Option>
+                <Option value="11">11</Option>
+                <Option value="12">12</Option>
+              </Select>
             </Form.Item>
           </Col>
 

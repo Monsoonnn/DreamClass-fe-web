@@ -163,7 +163,7 @@ function QuestHistoryTable({ playerId, isMyHistory }) {
       title: 'Loại',
       key: 'type',
       render: (_, record) => {
-        const isDaily = record.dailyQuest || record.quest?.type === 'daily' || record.quest?.type === 'dailyQuest';
+        const isDaily = record.isDaily || record.dailyQuest || record.quest?.type === 'daily' || record.quest?.type === 'dailyQuest' || record.quest?.isDailyQuest;
         return isDaily ? (
           <Tag color="orange">Hàng ngày</Tag>
         ) : (

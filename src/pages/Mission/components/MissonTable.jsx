@@ -151,9 +151,12 @@ export default function MissionTable() {
     { title: 'Ngày tạo', dataIndex: 'createdAt', align: 'center', render: (createdAt) => formatDate(createdAt) },
     {
       title: 'Loại',
-      dataIndex: 'isDailyQuest',
+      key: 'isDaily',
       align: 'center',
-      render: (isDailyQuest) => <Tag color={isDailyQuest ? 'green' : 'gold'}>{isDailyQuest ? 'Hàng ngày' : 'Thông thường'}</Tag>,
+      render: (_, record) => {
+        const isDaily = record.isDaily || record.isDailyQuest;
+        return <Tag color={isDaily ? 'green' : 'gold'}>{isDaily ? 'Hàng ngày' : 'Thông thường'}</Tag>;
+      },
     },
 
     {

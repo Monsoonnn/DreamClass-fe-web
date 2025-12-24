@@ -25,7 +25,16 @@ const teacherMenu = [
   { key: 'dashboard', label: 'Trang chủ', icon: <HomeOutlined style={{ fontSize: 18 }} />, path: '/dashboard' },
   { key: 'student', label: 'Quản lý học sinh', icon: <TeamOutlined style={{ fontSize: 18 }} />, path: '/student-mana' },
   { key: 'mission', label: 'Quản lý nhiệm vụ', icon: <SolutionOutlined style={{ fontSize: 18 }} />, path: '/teacher-mission-mana' },
-  { key: 'ranking', label: 'Bảng xếp hạng', icon: <TrophyOutlined style={{ fontSize: 18 }} />, path: '/ranking-mana' },
+  {
+    key: 'ranking',
+    label: 'Bảng xếp hạng',
+    icon: <TrophyOutlined style={{ fontSize: 18 }} />,
+    children: [
+      { key: 'rankingserver', label: 'Xếp hạng máy chủ', path: '/ranking-server' },
+      { key: 'rankinggrade', label: 'Xếp hạng theo khối', path: '/ranking-grade' },
+      { key: 'rankingclass', label: 'Xếp hạng theo lớp', path: '/ranking-class' },
+    ],
+  },
   { key: 'book', label: 'Quản lý sách', icon: <BookOutlined style={{ fontSize: 18 }} />, path: '/book-mana' },
   { key: 'quizz', label: 'Quản lý Quizz', icon: <QuestionCircleOutlined style={{ fontSize: 18 }} />, path: '/quizz-mana' },
 ];
