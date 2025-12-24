@@ -1,9 +1,33 @@
 import React from 'react';
-import { Breadcrumb } from 'antd';
-import { OrderedListOutlined, TrophyOutlined } from '@ant-design/icons';
+import { Breadcrumb, Tabs } from 'antd';
+import { OrderedListOutlined, TrophyOutlined, TeamOutlined } from '@ant-design/icons';
 import RankingTable from './components/RankingTable';
+import TeacherRankingGrade from './components/TeacherRankingGrade';
 
 export default function RankingMana() {
+  const items = [
+    {
+      key: 'class',
+      label: (
+        <span className="flex items-center gap-2">
+          <TeamOutlined />
+          Theo lớp
+        </span>
+      ),
+      children: <RankingTable />,
+    },
+    {
+      key: 'grade',
+      label: (
+        <span className="flex items-center gap-2">
+          <TrophyOutlined />
+          Theo khối
+        </span>
+      ),
+      children: <TeacherRankingGrade />,
+    },
+  ];
+
   return (
     <div className="flex flex-col min-h-screen bg-blue-50">
       <div className="flex flex-1">
@@ -24,14 +48,14 @@ export default function RankingMana() {
                 title: (
                   <>
                     <OrderedListOutlined />
-                    <span className="font-semibold text-[#23408e]">Bảng xếp hạng lớp</span>
+                    <span className="font-semibold text-[#23408e]">Quản lý bảng xếp hạng</span>
                   </>
                 ),
               },
             ]}
           />
-          <div className=" shadow-md rounded-xl ">
-            <RankingTable />
+          <div className="bg-white shadow-md rounded-xl p-2">
+            <Tabs defaultActiveKey="class" items={items} />
           </div>
         </main>
       </div>

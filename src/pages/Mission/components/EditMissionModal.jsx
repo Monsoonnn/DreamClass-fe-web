@@ -14,7 +14,8 @@ export default function EditMissionModal({ visible, onClose, missionData, refres
 
   useEffect(() => {
     if (missionData) {
-      setIsDailyQuest(missionData.isDailyQuest);
+      const isDaily = missionData.isDailyQuest || missionData.isDaily;
+      setIsDailyQuest(isDaily);
       setOldQuestId(missionData.questId);
 
       form.setFieldsValue({
@@ -23,7 +24,7 @@ export default function EditMissionModal({ visible, onClose, missionData, refres
         rewardGold: missionData.rewardGold,
         point: missionData.point,
         description: missionData.description,
-        isDailyQuest: missionData.isDailyQuest,
+        isDailyQuest: isDaily,
         dailyQuestType: missionData.dailyQuestType,
         prerequisiteQuestIds: missionData.prerequisiteQuestIds,
         steps: missionData.steps,

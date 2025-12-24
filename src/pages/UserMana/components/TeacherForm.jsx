@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Select, Row, Col } from 'antd';
+import { Form, Input, Button, Select, Row, Col, DatePicker } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../../services/api';
 import { showLoading, closeLoading, showSuccess, showError } from '../../../utils/swalUtils';
@@ -25,7 +25,7 @@ export default function TeacherForm() {
         password: values.password, // bắt buộc
         email: values.email || '',
         gender: values.gender, // Male / Female
-        dateOfBirth: values.dateOfBirth, // YYYY-MM-DD
+        dateOfBirth: values.dateOfBirth ? values.dateOfBirth.format('YYYY-MM-DD') : '',
         address: values.address || '',
         phone: values.phone || '',
         notes: values.notes || '',
@@ -64,7 +64,7 @@ export default function TeacherForm() {
           </Form.Item>
 
           <Form.Item label="Ngày sinh" name="dateOfBirth" rules={[{ required: true, message: 'Chọn ngày sinh' }]}>
-            <Input type="date" />
+             <DatePicker format="DD/MM/YYYY" className="w-full" placeholder="Chọn ngày sinh" />
           </Form.Item>
 
           <Form.Item label="Giới tính" name="gender" rules={[{ required: true, message: 'Chọn giới tính' }]}>
@@ -89,13 +89,17 @@ export default function TeacherForm() {
           </Form.Item>
 
           {/* KHỐI */}
-          <Form.Item label="Khối phụ trách" name="grade" rules={[{ required: true, message: 'Nhập khối' }]}>
-            <Input placeholder="VD: 9" />
+          <Form.Item label="Khối phụ trách" name="grade" rules={[{ required: true, message: 'Chọn khối' }]}>
+            <Select placeholder="Chọn khối">
+              <Option value="10">10</Option>
+              <Option value="11">11</Option>
+              <Option value="12">12</Option>
+            </Select>
           </Form.Item>
 
           {/* LỚP */}
           <Form.Item label="Lớp phụ trách" name="className" rules={[{ required: true, message: 'Nhập lớp' }]}>
-            <Input placeholder="VD: 9A" />
+            <Input/>
           </Form.Item>
 
           <Form.Item label="Ghi chú" name="notes">

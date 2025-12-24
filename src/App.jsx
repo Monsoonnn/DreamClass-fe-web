@@ -406,7 +406,7 @@ function App() {
             <Route
               path="/ranking-server"
               element={
-                <RoleRoute allowedRoles={['admin']}>
+                <RoleRoute allowedRoles={['admin', 'teacher']}>
                   <RankingServer />
                 </RoleRoute>
               }
@@ -414,7 +414,7 @@ function App() {
             <Route
               path="/ranking-server/view/:id"
               element={
-                <RoleRoute allowedRoles={['admin']}>
+                <RoleRoute allowedRoles={['admin', 'teacher']}>
                   <RankingServerDetail />
                 </RoleRoute>
               }
@@ -422,7 +422,7 @@ function App() {
             <Route
               path="/ranking-grade"
               element={
-                <RoleRoute allowedRoles={['admin']}>
+                <RoleRoute allowedRoles={['admin', 'teacher']}>
                   <RankingGrade />
                 </RoleRoute>
               }
@@ -430,7 +430,7 @@ function App() {
             <Route
               path="/ranking-grade/view/:id"
               element={
-                <RoleRoute allowedRoles={['admin']}>
+                <RoleRoute allowedRoles={['admin', 'teacher']}>
                   <RankingServerDetail />
                 </RoleRoute>
               }
@@ -438,7 +438,7 @@ function App() {
             <Route
               path="/ranking-class"
               element={
-                <RoleRoute allowedRoles={['admin']}>
+                <RoleRoute allowedRoles={['admin', 'teacher']}>
                   <RankingClass />
                 </RoleRoute>
               }
@@ -446,7 +446,7 @@ function App() {
             <Route
               path="/ranking-class/view/:id"
               element={
-                <RoleRoute allowedRoles={['admin']}>
+                <RoleRoute allowedRoles={['admin', 'teacher']}>
                   <RankingServerDetail />
                 </RoleRoute>
               }
