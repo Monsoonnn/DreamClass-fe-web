@@ -28,17 +28,9 @@ export default function StudyAchievements() {
     load();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[200px]">
-        <Spin size="large" />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
-      <Card title="Danh hiệu & Thành tích đạt được" className="shadow">
+      <Card title="Danh hiệu & Thành tích đạt được" className="shadow" loading={loading}>
         {items.length === 0 ? (
           <div className="text-center text-gray-500 py-6">Học sinh chưa có thành tích nào.</div>
         ) : (

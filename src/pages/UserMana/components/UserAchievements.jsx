@@ -1,56 +1,46 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Card, Tag } from 'antd';
 import { apiClient } from '../../../services/api'; // Đảm bảo import apiClient đúng
 
 export default function UserAchievements({ user }) {
-  const [itemsDetails, setItemsDetails] = useState([]);
-  const [allItems, setAllItems] = useState([]); // Lưu trữ danh sách tất cả vật phẩm từ API
-  const inventory = user.inventory || [];
+  const [allItems, setAllItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const inventory = useMemo(() => user.inventory || [], [user.inventory]);
 
   // Hàm lấy danh sách tất cả vật phẩm từ API
-  const getAllItems = async () => {
-    try {
-      const response = await apiClient.get('/items/admin');
-      return response.data.data || [];
-    } catch (error) {
-      console.error('Error fetching all items:', error);
-      return [];
-    }
-  };
-
-  // Hàm kết hợp vật phẩm từ inventory với chi tiết từ danh sách vật phẩm
-  const getItemDetails = (itemId) => {
-    const item = allItems.find((item) => item.itemId === itemId);
-    return item || null;
-  };
-
   useEffect(() => {
-    const fetchAllItems = async () => {
-      const items = await getAllItems();
-      setAllItems(items); // Lưu danh sách tất cả vật phẩm vào state
+    const getAllItems = async () => {
+      try {
+        setLoading(true);
+        const response = await apiClient.get('/items/admin');
+        setAllItems(response.data.data || []);
+      } catch (error) {
+        console.error('Error fetching all items:', error);
+        setAllItems([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
     if (allItems.length === 0) {
-      fetchAllItems();
+      getAllItems();
     }
   }, [allItems.length]);
 
-  useEffect(() => {
-    const fetchItemDetails = () => {
-      const itemsWithDetails = inventory.map((item) => {
-        const details = getItemDetails(item.itemId); // Lấy thông tin vật phẩm từ danh sách allItems
+  // Hàm kết hợp vật phẩm từ inventory với chi tiết từ danh sách vật phẩm
+  const itemsDetails = useMemo(() => {
+    if (inventory.length > 0 && allItems.length > 0) {
+      return inventory.map((item) => {
+        const details = allItems.find((i) => i.itemId === item.itemId) || null;
         return { ...item, details };
       });
-      setItemsDetails(itemsWithDetails);
-    };
-
-    if (inventory.length > 0 && allItems.length > 0) {
-      fetchItemDetails();
     }
+    return [];
   }, [inventory, allItems]);
 
   return (
-    <Card className="bg-white border-0 w-full max-w-none" styles={{ body: { padding: 0 } }}>
+    <Card className="bg-white border-0 w-full max-w-none" styles={{ body: { padding: 0 } }} loading={loading}>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-2 p-2">
         {/* LEFT SIDE - Avatar + Info (Giao diện giống StudentAchievements) */}
         <div className="md:col-span-1 flex flex-col items-start gap-2">
