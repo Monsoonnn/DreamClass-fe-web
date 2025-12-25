@@ -18,6 +18,7 @@ export default function MissionTable() {
   const [pageSize, setPageSize] = useState(5);
   const [loading, setLoading] = useState(false);
   const [filterType, setFilterType] = useState('all');
+  const [filterIsDaily, setFilterIsDaily] = useState('all');
 
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [currentMission, setCurrentMission] = useState(null);
@@ -49,6 +50,11 @@ export default function MissionTable() {
 
     if (filterType !== 'all') {
       list = list.filter((m) => m.dailyQuestType === filterType);
+    }
+
+    if (filterIsDaily !== 'all') {
+      const isDailyBool = filterIsDaily === 'true';
+      list = list.filter((m) => (m.isDaily || m.isDailyQuest) === isDailyBool);
     }
 
     if (inputSearchText.trim()) {
@@ -206,6 +212,11 @@ export default function MissionTable() {
               <Option value="all">Cách nhận</Option>
               <Option value="NPC_INTERACTION">Tương tác NPC</Option>
               <Option value="AUTO_ASSIGN">Tự động</Option>
+            </Select>
+            <Select defaultValue="all" style={{ width: 160 }} onChange={setFilterIsDaily}>
+              <Option value="all">Loại</Option>
+              <Option value="true">Hàng ngày</Option>
+              <Option value="false">Thông thường</Option>
             </Select>
             <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }} onClick={() => setCurrentPage(1)}>
               Tìm

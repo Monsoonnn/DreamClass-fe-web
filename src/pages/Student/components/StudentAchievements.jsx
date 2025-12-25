@@ -1,52 +1,46 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Card, Tag } from 'antd';
 import { apiClient } from '../../../services/api';
 
 export default function StudentAchievements({ student }) {
-  const [itemsDetails, setItemsDetails] = useState([]);
   const [allItems, setAllItems] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const inventory = student.inventory || [];
-
-  const getAllItems = async () => {
-    try {
-      const response = await apiClient.get('/items/admin');
-      return response.data.data || [];
-    } catch (error) {
-      console.error('Error fetching all items:', error);
-      return [];
-    }
-  };
-
-  // Lấy chi tiết vật phẩm theo itemId
-  const getItemDetails = (itemId) => {
-    const found = allItems.find((item) => item.itemId === itemId);
-    return found || null;
-  };
+  const inventory = useMemo(() => student.inventory || [], [student.inventory]);
 
   // Fetch danh sách vật phẩm (all items)
   useEffect(() => {
-    const fetchItems = async () => {
-      const items = await getAllItems();
-      setAllItems(items);
+    const getAllItems = async () => {
+      try {
+        setLoading(true);
+        const response = await apiClient.get('/items/admin');
+        setAllItems(response.data.data || []);
+      } catch (error) {
+        console.error('Error fetching all items:', error);
+        setAllItems([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    if (allItems.length === 0) fetchItems();
+    if (allItems.length === 0) {
+      getAllItems();
+    }
   }, [allItems.length]);
 
   // Ghép inventory với chi tiết item
-  useEffect(() => {
+  const itemsDetails = useMemo(() => {
     if (inventory.length > 0 && allItems.length > 0) {
-      const merged = inventory.map((item) => {
-        const details = getItemDetails(item.itemId);
+      return inventory.map((item) => {
+        const details = allItems.find((i) => i.itemId === item.itemId) || null;
         return { ...item, details };
       });
-      setItemsDetails(merged);
     }
+    return [];
   }, [inventory, allItems]);
 
   return (
-    <Card className="bg-white border-0 w-full max-w-none" styles={{ body: { padding: 0 } }}>
+    <Card className="bg-white border-0 w-full max-w-none" styles={{ body: { padding: 0 } }} loading={loading}>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-2 p-3">
         {/* LEFT SIDE - Avatar + Info */}
         <div className="md:col-span-1 flex flex-col items-start gap-2">

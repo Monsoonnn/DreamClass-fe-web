@@ -17,11 +17,11 @@ export default function TeacherTable() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
-  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingTeacher, setEditingTeacher] = useState(null);
-  const [filterGender, setFilterGender] = useState('');
+  const [filterGrade, setFilterGrade] = useState('');
+  const [filterClass, setFilterClass] = useState('');
 
   const navigate = useNavigate();
 
@@ -49,12 +49,10 @@ export default function TeacherTable() {
 
       const teachers = response.data?.data || [];
       setData(teachers);
-      setTotal(teachers.length);
     } catch (error) {
       console.error('Error fetching teachers:', error);
       // showError('Không thể tải dữ liệu từ server.'); // Optional silent fail for fetch
       setData([]);
-      setTotal(0);
     } finally {
       setLoading(false);
     }
@@ -68,8 +66,11 @@ export default function TeacherTable() {
   // Client-side filtering wrapper
   const filteredData = () => {
     let list = data;
-    if (filterGender) {
-      list = list.filter((t) => t.gender === filterGender);
+    if (filterGrade) {
+      list = list.filter((t) => t.assignedClasses?.some((c) => c.grade === filterGrade));
+    }
+    if (filterClass) {
+      list = list.filter((t) => t.assignedClasses?.some((c) => c.className === filterClass));
     }
     // Search is already handled by API but we can double check or refined filter
     if (inputSearchText) {
@@ -223,14 +224,42 @@ export default function TeacherTable() {
 
   const paginatedData = filteredData().slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
+  // Get unique grades and classes for filter options
+  const uniqueGrades = [
+    ...new Set(
+      data
+        .flatMap((item) => item.assignedClasses || [])
+        .map((c) => c.grade)
+        .filter(Boolean)
+    ),
+  ].sort();
+  const uniqueClasses = [
+    ...new Set(
+      data
+        .flatMap((item) => item.assignedClasses || [])
+        .map((c) => c.className)
+        .filter(Boolean)
+    ),
+  ].sort();
+
   return (
     <div className="bg-white p-3">
       <div className="flex justify-between items-center flex-wrap mb-3 gap-2">
         <Space.Compact className="w-full max-w-xl">
           <Input placeholder="Nhập tìm kiếm..." value={inputSearchText} onChange={(e) => setInputSearchText(e.target.value)} style={{ width: 240 }} />
-          <Select placeholder="Lọc giới tính" style={{ width: 120 }} allowClear onChange={(value) => setFilterGender(value)}>
-            <Option value="Male">Nam</Option>
-            <Option value="Female">Nữ</Option>
+          <Select placeholder="Lọc Khối" style={{ width: 120 }} allowClear onChange={(value) => setFilterGrade(value)}>
+            {uniqueGrades.map((g) => (
+              <Option key={g} value={g}>
+                {g}
+              </Option>
+            ))}
+          </Select>
+          <Select placeholder="Lọc Lớp" style={{ width: 120 }} allowClear onChange={(value) => setFilterClass(value)}>
+            {uniqueClasses.map((c) => (
+              <Option key={c} value={c}>
+                {c}
+              </Option>
+            ))}
           </Select>
           <Button type="primary" icon={<SearchOutlined />} style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }} onClick={() => setCurrentPage(1)}>
             Tìm
